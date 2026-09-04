@@ -27,11 +27,22 @@ Target: submit by **noon Pacific on September 14**.
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
+| Live demo link | **Not started** | Explicitly optional: *"(Optional) Include a live demo link"*, which strengthens Technical Implementation. Requires a deploy; blocked on the same AWS access as below. The local build already satisfies the mandatory access rule. |
 | AgentCore Runtime deployment | **Blocked** | Entrypoint implemented and verified against the SDK; not deployed. AWS credentials in the build environment are invalid. `docs/deployment-agentcore.md`. |
 | Live hosted-model demo | **Blocked** | Same blocker. Provider adapter and opt-in integration tests are ready. |
 | Tracing / observability | **Partial** | Strands emits OTEL spans; wiring is documented, exporter not configured. |
 | Builder.aws posts (0.2 each, max 0.6) | **Not started** | Stage Two only. Title must include "Agents for Humans". Publish before the deadline. |
 | AWS promotional credits | **Deadline 2026-09-11 noon Pacific** | Requires owner action, while supplies last. |
+
+## How judges will actually evaluate this
+
+The rules say: *"Judges are not required to test the Project and may choose to
+judge based solely on the text description, images, and video provided in the
+Submission."*
+
+Treat the video as the primary artifact, not a supplement. `docs/demo-script.md`
+is built to prove the entire workflow on its own — including the refusal, which
+is the part that distinguishes this from an agent that merely acts.
 
 ## Judging categories (equally weighted; Technological Implementation is the first tie-breaker)
 

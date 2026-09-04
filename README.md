@@ -54,6 +54,20 @@ make run       # http://127.0.0.1:8000
 Then, in the app: check in **CASE-2001** → *Approve and teach* → activate the policy →
 check in **CASE-2002** (resolves itself) → check in **CASE-2003** (escalates).
 
+Activating a policy asks for an approval token, because a human authorizing
+automation is the whole point. On a fresh clone that token is:
+
+```
+replace-me-local-demo-token
+```
+
+It is a placeholder, not a secret, and the activation screen prints it for you.
+Set `ONEDECISION_APPROVAL_TOKEN` to replace it — the on-screen notice disappears
+when you do.
+
+No account, no sign-up, no cloud, no credentials, no spend: the whole product
+runs on one machine from a fresh clone.
+
 ### On PostgreSQL, the deployment target
 
 ```bash

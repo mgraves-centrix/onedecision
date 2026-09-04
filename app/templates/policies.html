@@ -65,6 +65,14 @@
         <input type="password" name="approval_token" placeholder="Approval token" required>
         <button type="submit" class="btn primary">Activate</button>
       </form>
+      {% if demo_approval_token %}
+      <p class="token-hint">
+        <strong>Demo token:</strong> <code>{{ demo_approval_token }}</code>
+        &mdash; this placeholder ships with the repository so the flow can be
+        completed on a fresh clone. Set <code>ONEDECISION_APPROVAL_TOKEN</code> to
+        replace it; this notice disappears when you do.
+      </p>
+      {% endif %}
     </div>
     {% endif %}
   </article>

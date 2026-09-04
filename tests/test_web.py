@@ -110,3 +110,45 @@ def test_reset_restores_the_fixtures(client):
     with db.read_only() as conn:
         assert conn.execute("SELECT COUNT(*) c FROM exceptions").fetchone()["c"] == 0
         assert conn.execute("SELECT COUNT(*) c FROM return_cases").fetchone()["c"] == 30
+
+
+def test_the_demo_token_is_discoverable_while_the_placeholder_is_in_use(
+    client, monkeypatch
+):
+    """A judge must be able to finish the flow without reading the source.
+
+    The hackathon requires the project to be usable "free of charge and without
+    any restriction" for evaluation. An undocumented password field at the
+    activation step is exactly such a restriction.
+    """
+    from app import config
+    import app.main as main
+
+    # The suite normally overrides the token; this test is about the shipped
+    # default a judge would actually meet on a fresh clone.
+    monkeypatch.setenv("ONEDECISION_APPROVAL_TOKEN", config.DEFAULT_APPROVAL_TOKEN)
+    monkeypatch.setattr(main, "settings", config.reload_settings())
+
+    r = client.post("/events/CASE-2001", follow_redirects=True)
+    exception_id = r.url.path.rsplit("/", 1)[-1]
+    r = client.post(f"/exceptions/{exception_id}/approve", follow_redirects=True)
+
+    assert "Demo token:" in r.text
+    assert config.DEFAULT_APPROVAL_TOKEN in r.text
+    assert "ONEDECISION_APPROVAL_TOKEN" in r.text
+
+
+def test_the_demo_token_hint_disappears_once_a_real_token_is_set(client, monkeypatch):
+    """The hint is a demo affordance, not a credential leak."""
+    from app import config
+    import app.main as main
+
+    r = client.post("/events/CASE-2001", follow_redirects=True)
+    exception_id = r.url.path.rsplit("/", 1)[-1]
+
+    monkeypatch.setenv("ONEDECISION_APPROVAL_TOKEN", "a-real-operator-secret")
+    monkeypatch.setattr(main, "settings", config.reload_settings())
+
+    r = client.post(f"/exceptions/{exception_id}/approve", follow_redirects=True)
+    assert "Demo token:" not in r.text
+    assert "a-real-operator-secret" not in r.text

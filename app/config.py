@@ -24,6 +24,13 @@ MAX_REPLACEMENT_COST_CEILING_USD = 50.0
 # A policy may never authorize more than this many missing components.
 MAX_MISSING_COMPONENTS_CEILING = 1
 
+# The out-of-the-box approval token. It is a placeholder, not a secret: the demo
+# has to be usable by someone who just cloned the repository. While it is still
+# in use the interface says so out loud, so nobody mistakes it for real
+# authorization. Setting ONEDECISION_APPROVAL_TOKEN replaces it and silences the
+# notice.
+DEFAULT_APPROVAL_TOKEN = "replace-me-local-demo-token"
+
 
 def _env_float(name: str, default: float) -> float:
     raw = os.environ.get(name)
@@ -71,6 +78,11 @@ class Settings:
     def db_backend(self) -> str:
         return "postgres" if self.database_url else "sqlite"
 
+    @property
+    def uses_default_approval_token(self) -> bool:
+        """True while the shipped placeholder token is still in use."""
+        return self.approval_token == DEFAULT_APPROVAL_TOKEN
+
 
 def resolve_database_url() -> str:
     """The PostgreSQL DSN, or empty to use the local SQLite demo backend.
@@ -107,7 +119,7 @@ def load_settings() -> Settings:
         db_connect_timeout_seconds=_env_int("ONEDECISION_DB_CONNECT_TIMEOUT", 10),
         confidence_threshold=_env_float("ONEDECISION_CONFIDENCE_THRESHOLD", 0.75),
         model_timeout_seconds=_env_int("ONEDECISION_MODEL_TIMEOUT_SECONDS", 60),
-        approval_token=os.environ.get("ONEDECISION_APPROVAL_TOKEN", "replace-me-local-demo-token"),
+        approval_token=os.environ.get("ONEDECISION_APPROVAL_TOKEN", DEFAULT_APPROVAL_TOKEN),
         otel_enabled=os.environ.get("ONEDECISION_OTEL_ENABLED", "false").lower() == "true",
     )
 

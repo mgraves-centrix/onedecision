@@ -3,7 +3,8 @@
 Recorded against the local app with the offline provider, so it reproduces exactly.
 
 **Before recording:** `make seed && make run`, browser at `http://127.0.0.1:8000`,
-window at 1500×1000, terminal ready in a second tab.
+window at 1500×1000, terminal ready in a second tab. The approval token on a
+fresh clone is `replace-me-local-demo-token`; the activation screen shows it.
 
 Timings are cumulative. Everything in brackets is on-screen action; everything else is
 narration.

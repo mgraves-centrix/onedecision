@@ -82,6 +82,12 @@ def _base_context(request: Request) -> dict[str, Any]:
         "offline": settings.is_offline_provider,
         "operator": OPERATOR,
         "status_labels": STATUS_LABELS,
+        # Shown beside the activation control only while the shipped placeholder
+        # is in use, so anyone evaluating this can complete the flow without
+        # reading the source. It disappears the moment a real token is set.
+        "demo_approval_token": (
+            settings.approval_token if settings.uses_default_approval_token else None
+        ),
     }
 
 

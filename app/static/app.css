@@ -229,3 +229,10 @@ pre.note {
   padding: 12px 14px; white-space: pre-wrap; font-size: 12.5px; color: var(--ink-dim);
   margin: 0 0 10px;
 }
+
+.token-hint {
+  margin: 10px 0 0; font-size: 12.5px; color: var(--ink-dim);
+  padding: 9px 12px; border-radius: 7px;
+  background: rgba(251, 191, 36, .07); border: 1px solid rgba(251, 191, 36, .22);
+}
+.token-hint code { color: var(--warn); }

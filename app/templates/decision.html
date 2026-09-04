@@ -144,6 +144,14 @@
         <input type="hidden" name="reason" value="candidate rejected at review">
         <button type="submit" class="btn ghost">Reject</button>
       </form>
+      {% if demo_approval_token %}
+      <p class="token-hint">
+        <strong>Demo token:</strong> <code>{{ demo_approval_token }}</code>
+        &mdash; this placeholder ships with the repository so the flow can be
+        completed on a fresh clone. Set <code>ONEDECISION_APPROVAL_TOKEN</code> to
+        replace it; this notice disappears when you do.
+      </p>
+      {% endif %}
     </div>
     {% else %}
     <div class="activation blocked">
