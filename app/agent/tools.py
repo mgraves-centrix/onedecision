@@ -16,8 +16,12 @@ gate re-runs it server-side regardless of what the agent reports.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.db import Connection
+
 import json
-import sqlite3
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -46,7 +50,7 @@ class ToolCall:
 class AgentContext:
     """Everything the tools need, bound at agent construction time."""
 
-    conn: sqlite3.Connection
+    conn: "Connection"
     trace_id: str
     case_id: str
     exception_id: str | None = None

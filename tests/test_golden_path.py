@@ -178,7 +178,10 @@ def test_activation_does_not_resolve_a_case_that_no_longer_qualifies(conn, appro
     """If the facts change between the decision and activation, it escalates."""
     first = handle_event("CASE-2001", conn=conn)
     teach = approve_and_teach(conn, first.exception_id, decided_by=OPERATOR)
-    conn.execute("UPDATE return_cases SET new_damage_present = 1 WHERE case_id = 'CASE-2001'")
+    conn.execute(
+        "UPDATE return_cases SET new_damage_present = ? WHERE case_id = ?",
+        (True, "CASE-2001"),
+    )
 
     activate_policy(conn, teach.policy_id, approval_token=approval_token, activated_by=OPERATOR)
     row = conn.execute(

@@ -1,0 +1,24 @@
+# Local PostgreSQL for development and for running the test suite against the
+# real deployment target. Nothing here is production configuration: the password
+# is a throwaway for a container bound to localhost.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: onedecision-db
+    environment:
+      POSTGRES_USER: onedecision
+      POSTGRES_PASSWORD: localdev
+      POSTGRES_DB: onedecision
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - onedecision-pgdata:/var/lib/postgresql/data
+      - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onedecision -d onedecision"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  onedecision-pgdata:

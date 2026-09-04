@@ -7,7 +7,11 @@ execution can never create a second work order.
 
 from __future__ import annotations
 
-import sqlite3
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.db import Connection
+
 from datetime import datetime, timezone
 from typing import Any
 
@@ -23,7 +27,7 @@ def _now() -> str:
 
 
 def set_disposition(
-    conn: sqlite3.Connection, *, case_id: str, disposition: str, idempotency_key: str
+    conn: "Connection", *, case_id: str, disposition: str, idempotency_key: str
 ) -> dict[str, Any]:
     if disposition not in ALLOWED_DISPOSITIONS:
         raise AdapterError(
@@ -61,7 +65,7 @@ def set_disposition(
 
 
 def create_work_order(
-    conn: sqlite3.Connection,
+    conn: "Connection",
     *,
     case_id: str,
     work_order_type: str,
@@ -113,13 +117,18 @@ def create_work_order(
     }
 
 
-def get_disposition(conn: sqlite3.Connection, case_id: str) -> dict[str, Any] | None:
+def get_disposition(conn: "Connection", case_id: str) -> dict[str, Any] | None:
     row = conn.execute("SELECT * FROM dispositions WHERE case_id = ?", (case_id,)).fetchone()
     return dict(row) if row else None
 
 
-def get_work_orders(conn: sqlite3.Connection, case_id: str) -> list[dict[str, Any]]:
+def get_work_orders(conn: "Connection", case_id: str) -> list[dict[str, Any]]:
     rows = conn.execute(
         "SELECT * FROM work_orders WHERE case_id = ? ORDER BY created_at", (case_id,)
     ).fetchall()
-    return [dict(r) for r in rows]
+    out = []
+    for row in rows:
+        record = dict(row)
+        record["cost_usd"] = float(record["cost_usd"])
+        out.append(record)
+    return out

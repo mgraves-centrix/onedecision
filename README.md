@@ -47,18 +47,33 @@ before anyone trusts it.
 
 ```bash
 make setup     # venv + pinned dependencies
-make seed      # build SQLite from the synthetic fixtures
+make seed      # build the demo database from the synthetic fixtures
 make run       # http://127.0.0.1:8000
 ```
 
 Then, in the app: check in **CASE-2001** → *Approve and teach* → activate the policy →
 check in **CASE-2002** (resolves itself) → check in **CASE-2003** (escalates).
 
+### On PostgreSQL, the deployment target
+
+```bash
+make db-up     # docker compose PostgreSQL + migrations + seed
+make test-pg   # the whole suite against BOTH backends
+make run
+```
+
+Or point at any PostgreSQL and the app follows:
+
+```bash
+export ONEDECISION_DATABASE_URL=postgresql://user:pass@host:5432/onedecision
+make migrate && make seed && make run
+```
+
 Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 94 tests, hermetic, ~4 seconds
+make test      # 105 hermetic tests, ~5 seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
@@ -117,7 +132,7 @@ The separation between *reasoning* and *acting* is the product.
 | 6 | Replay gates activation: one false automatic action blocks it outright. | `app/policy/replay.py` |
 | 7 | Default to escalation on anything ambiguous. | throughout |
 | 8 | Every state-changing action carries an idempotency key. | `app/adapters/warehouse.py` |
-| 9 | Append-only, hash-chained audit log; `UPDATE`/`DELETE` rejected by database triggers. | `app/audit.py`, `app/db.py` |
+| 9 | Append-only, hash-chained audit log; `UPDATE`/`DELETE` rejected by database triggers, and by `REVOKE` on PostgreSQL. | `app/audit.py`, `app/db/` |
 | 10 | No hidden chain-of-thought is surfaced or stored. | `app/agent/prompts.py` |
 
 **The agent has no state-changing tools at all.** Every tool in `app/agent/tools.py` is
@@ -187,10 +202,38 @@ app/
   evaluation.py    the measurement harness
   main.py          FastAPI: inbox / decision+replay / policies+audit
   agentcore.py     Bedrock AgentCore Runtime entrypoint (optional)
+  db/
+    postgres_backend.py  deployment target: pooling, advisory lock, NUMERIC
+    sqlite_backend.py    zero-setup demo backend
+    migrations/          versioned SQL, one file per dialect
 fixtures/          synthetic catalog + 24 historical + 6 demo cases
-tests/             94 tests, hermetic; 3 opt-in live-model tests
-docs/              scope, architecture, evaluation, demo script, provenance
+tests/             hermetic; every test runs on both backends
+docs/              scope, architecture, database, evaluation, demo, provenance
 ```
+
+## Database
+
+**PostgreSQL is the deployment target. SQLite is a labeled zero-setup demo
+backend**, kept so the product runs from a fresh clone with no server. One
+environment variable switches between them, and **the entire suite runs against
+both** — so they cannot drift.
+
+Porting off SQLite surfaced three defects that were only invisible because
+SQLite has a single writer:
+
+1. **The audit hash chain could fork.** Appending is read-head-then-insert, a
+   race with concurrent writers. Fixed with a transaction-scoped advisory lock,
+   plus `UNIQUE(prev_hash)` as a backstop. Remove the lock and
+   `test_concurrent_audit_appends_keep_the_chain_intact` fails immediately with
+   a duplicate-key violation on the forked head — the test has teeth.
+2. **Event de-duplication was select-then-insert.** Two copies of one warehouse
+   event both passed the check. Now `ON CONFLICT (event_key) DO NOTHING
+   RETURNING`, so the database decides the race and the loser is a no-op.
+3. **Money was floating point.** `REAL` gating an authorized spend cap is a
+   latent rounding bug. Now `NUMERIC(12,2)`, coerced at the adapter boundary.
+
+Full write-up, including what still stands between this and production:
+[docs/database.md](docs/database.md).
 
 ## Configuration
 
@@ -200,8 +243,9 @@ to run the demo. **Never commit a real `.env`.**
 ## Tests
 
 ```bash
-make test                                   # 94 hermetic tests. No network, no model calls.
-pytest -m integration                       # opt-in, needs a live provider
+make test        # hermetic. No network, no model calls. SQLite, plus PostgreSQL if it is up.
+make test-pg     # the whole suite against BOTH backends (188 tests)
+pytest -m integration    # opt-in, needs a live model provider
 ```
 
 Coverage includes: policy-schema validation, allowlisted fields/operators/actions,
@@ -211,7 +255,9 @@ audit behavior and tamper detection, malformed and incomplete evidence, prompt
 injection inside case notes, model timeout and tool failure, unknown case → decision
 card, approval → candidate without activation, failed replay blocking activation,
 explicit activation after successful replay, later matching case completing
-automatically, and a risky near-match escalating.
+automatically, and a risky near-match escalating — plus, on PostgreSQL,
+concurrent audit appends, concurrent duplicate events, and concurrent
+idempotency-key collisions.
 
 ## License
 

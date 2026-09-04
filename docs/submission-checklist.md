@@ -37,7 +37,7 @@ Target: submit by **noon Pacific on September 14**.
 
 | Category | Where this project makes its case |
 | --- | --- |
-| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 94 hermetic tests; swappable model provider; AgentCore-ready entrypoint. |
+| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 105 hermetic tests run against both PostgreSQL and SQLite (201 runs); swappable model provider; AgentCore-ready entrypoint. |
 | Design | Three coherent views; the decision card is the product surface; every claim on screen is traceable to a tool call. |
 | Potential Impact | Any recurring human judgment call with a bounded action space — returns, claims, refunds, exceptions, approvals. |
 | Creativity & Originality | Not "an agent that writes SOPs". It converts one human decision into governed, replay-tested automation, and proves what it *would have done* before anyone trusts it. |

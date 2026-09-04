@@ -47,6 +47,7 @@ class CaseOutcome:
 @dataclass
 class EvaluationResult:
     provider: str
+    database: str
     generated_at: str
     cases_evaluated: int
     task_completion_rate: float
@@ -98,7 +99,8 @@ def run_evaluation(reset: bool = True) -> EvaluationResult:
         # ---------------------------------------------------- run the set
         rows = conn.execute(
             """SELECT case_id, expected_label, scenario_note FROM return_cases
-                WHERE is_historical = 1 ORDER BY case_id"""
+                WHERE is_historical = ? ORDER BY case_id""",
+            (True,)
         ).fetchall()
 
         outcomes: list[CaseOutcome] = []
@@ -154,6 +156,7 @@ def run_evaluation(reset: bool = True) -> EvaluationResult:
 
         return EvaluationResult(
             provider=provider_label(),
+            database=db.describe(),
             generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
             cases_evaluated=len(outcomes),
             task_completion_rate=round(sum(o.correct for o in outcomes) / len(outcomes), 4),
@@ -202,6 +205,7 @@ def render_report(result: EvaluationResult) -> str:
         REPORT_HEADER,
         f"- **Run at:** {r.generated_at}",
         f"- **Model provider:** {r.provider}",
+        f"- **Database:** {r.database}",
         f"- **Policy under evaluation:** `{r.policy_version}`",
         f"- **Cases evaluated:** {r.cases_evaluated} (fixed synthetic historical set)",
         "",
@@ -290,6 +294,7 @@ def main() -> None:
         print(json.dumps(result.to_dict(), indent=2, default=str))
     else:
         print(f"provider                     : {result.provider}")
+        print(f"database                     : {result.database}")
         print(f"cases evaluated              : {result.cases_evaluated}")
         print(f"task completion rate         : {result.task_completion_rate:.1%}")
         print(f"correct auto-resolution rate : {result.correct_auto_resolution_rate:.1%}")

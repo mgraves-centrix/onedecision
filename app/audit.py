@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sqlite3
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from app.db import Connection
 
 GENESIS_HASH = "0" * 64
 
@@ -88,13 +90,13 @@ def compute_hash(
     return hashlib.sha256(material.encode("utf-8")).hexdigest()
 
 
-def _head_hash(conn: sqlite3.Connection) -> str:
+def _head_hash(conn: "Connection") -> str:
     row = conn.execute("SELECT entry_hash FROM audit_log ORDER BY seq DESC LIMIT 1").fetchone()
     return row["entry_hash"] if row else GENESIS_HASH
 
 
 def record(
-    conn: sqlite3.Connection,
+    conn: "Connection",
     *,
     trace_id: str,
     event_type: str,
@@ -106,6 +108,10 @@ def record(
 ) -> AuditEntry:
     """Append one entry. The only way to write to the audit log."""
     payload = payload or {}
+    # Appending is read-head-then-insert, which is a race with concurrent
+    # writers. The lock is held until this transaction ends; `prev_hash UNIQUE`
+    # is the backstop if a writer ever reaches the insert without it.
+    conn.lock_audit_chain()
     entry_id = f"aud_{uuid.uuid4().hex[:16]}"
     created_at = _now()
     prev_hash = _head_hash(conn)
@@ -123,6 +129,7 @@ def record(
         INSERT INTO audit_log (entry_id, trace_id, event_type, case_id, exception_id,
                                policy_id, actor, payload, prev_hash, entry_hash, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        RETURNING seq
         """,
         (
             entry_id,
@@ -138,8 +145,9 @@ def record(
             created_at,
         ),
     )
+    inserted = cur.fetchone()
     return AuditEntry(
-        seq=int(cur.lastrowid or 0),
+        seq=int(inserted["seq"]) if inserted else 0,
         entry_id=entry_id,
         trace_id=trace_id,
         event_type=event_type,
@@ -154,7 +162,7 @@ def record(
     )
 
 
-def _row_to_entry(row: sqlite3.Row) -> AuditEntry:
+def _row_to_entry(row: dict) -> AuditEntry:
     return AuditEntry(
         seq=row["seq"],
         entry_id=row["entry_id"],
@@ -171,21 +179,21 @@ def _row_to_entry(row: sqlite3.Row) -> AuditEntry:
     )
 
 
-def read_all(conn: sqlite3.Connection, limit: int = 500) -> list[AuditEntry]:
+def read_all(conn: "Connection", limit: int = 500) -> list[AuditEntry]:
     rows = conn.execute(
         "SELECT * FROM audit_log ORDER BY seq DESC LIMIT ?", (limit,)
     ).fetchall()
     return [_row_to_entry(r) for r in rows]
 
 
-def read_for_case(conn: sqlite3.Connection, case_id: str) -> list[AuditEntry]:
+def read_for_case(conn: "Connection", case_id: str) -> list[AuditEntry]:
     rows = conn.execute(
         "SELECT * FROM audit_log WHERE case_id = ? ORDER BY seq ASC", (case_id,)
     ).fetchall()
     return [_row_to_entry(r) for r in rows]
 
 
-def read_for_trace(conn: sqlite3.Connection, trace_id: str) -> list[AuditEntry]:
+def read_for_trace(conn: "Connection", trace_id: str) -> list[AuditEntry]:
     rows = conn.execute(
         "SELECT * FROM audit_log WHERE trace_id = ? ORDER BY seq ASC", (trace_id,)
     ).fetchall()
@@ -200,7 +208,7 @@ class ChainVerification:
     detail: str = ""
 
 
-def verify_chain(conn: sqlite3.Connection) -> ChainVerification:
+def verify_chain(conn: "Connection") -> ChainVerification:
     """Recompute the hash chain end to end."""
     rows = conn.execute("SELECT * FROM audit_log ORDER BY seq ASC").fetchall()
     prev = GENESIS_HASH

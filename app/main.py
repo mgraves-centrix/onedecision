@@ -41,11 +41,15 @@ OPERATOR = "dana.r@northgate-optics.example"
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    if not db.db_path().exists():
-        seed.seed(reset=True)
-    else:
-        db.init_db()
+    # Migrations first, then seed only an empty database. A deployment points at
+    # a database that already has data; it must not be reseeded on boot.
+    db.init_db()
+    with db.read_only() as conn:
+        empty = conn.execute("SELECT COUNT(*) AS c FROM return_cases").fetchone()["c"] == 0
+    if empty:
+        seed.seed()
     yield
+    db.reset_backend()
 
 
 app = FastAPI(title="OneDecision", docs_url="/api/docs", redoc_url=None, lifespan=lifespan)
@@ -102,9 +106,10 @@ def _pending_cases(conn) -> list[dict[str, Any]]:
         """SELECT c.case_id, c.scenario_note, k.name AS kit_name
              FROM return_cases c
              JOIN kit_catalog k ON k.sku = c.sku
-            WHERE c.is_historical = 0
+            WHERE c.is_historical = ?
               AND c.case_id NOT IN (SELECT case_id FROM exceptions)
-            ORDER BY c.case_id"""
+            ORDER BY c.case_id""",
+        (False,),
     ).fetchall()
     return [dict(r) for r in rows]
 
@@ -259,6 +264,7 @@ def healthz() -> dict[str, Any]:
     return {
         "status": "ok",
         "provider": settings.model_provider,
+        "database": db.backend_name(),
         "audit_chain_ok": chain.ok,
         "audit_entries": chain.entries_checked,
     }

@@ -125,7 +125,8 @@ confirmed, and `docs/deployment-agentcore.md` states plainly which steps have no
 - **Zero** false automatic actions, **zero** prohibited actions, and **zero** duplicate
   actions across 24 evaluation cases — measured by a harness that counts from the
   database, not asserted.
-- 94 hermetic tests in under four seconds, including prompt injection inside case notes,
+- 105 hermetic tests, run against both PostgreSQL and SQLite for 201 total runs in
+  under twenty seconds, including prompt injection inside case notes,
   audit tampering, model timeouts, tool outages, and duplicate events.
 - A replay gate that shows a supervisor what a proposed policy *would have done* to their
   own history before they trust it.

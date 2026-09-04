@@ -53,7 +53,11 @@ class Settings:
     bedrock_model_id: str
     anthropic_model_id: str
     aws_region: str
+    database_url: str
     db_path: Path
+    db_pool_min_size: int
+    db_pool_max_size: int
+    db_connect_timeout_seconds: int
     confidence_threshold: float
     model_timeout_seconds: int
     approval_token: str
@@ -62,6 +66,24 @@ class Settings:
     @property
     def is_offline_provider(self) -> bool:
         return self.model_provider == "scripted"
+
+    @property
+    def db_backend(self) -> str:
+        return "postgres" if self.database_url else "sqlite"
+
+
+def resolve_database_url() -> str:
+    """The PostgreSQL DSN, or empty to use the local SQLite demo backend.
+
+    `ONEDECISION_DATABASE_URL` wins. `DATABASE_URL` is honored as the platform
+    convention so a managed host that injects it needs no extra wiring. A secret
+    is read from the environment and never written anywhere.
+    """
+    for name in ("ONEDECISION_DATABASE_URL", "DATABASE_URL"):
+        value = os.environ.get(name, "").strip()
+        if value:
+            return value
+    return ""
 
 
 def load_settings() -> Settings:
@@ -78,7 +100,11 @@ def load_settings() -> Settings:
             "ONEDECISION_ANTHROPIC_MODEL_ID", "claude-sonnet-4-5-20250929"
         ),
         aws_region=os.environ.get("AWS_REGION", "us-west-2"),
+        database_url=resolve_database_url(),
         db_path=db_path,
+        db_pool_min_size=_env_int("ONEDECISION_DB_POOL_MIN", 1),
+        db_pool_max_size=_env_int("ONEDECISION_DB_POOL_MAX", 10),
+        db_connect_timeout_seconds=_env_int("ONEDECISION_DB_CONNECT_TIMEOUT", 10),
         confidence_threshold=_env_float("ONEDECISION_CONFIDENCE_THRESHOLD", 0.75),
         model_timeout_seconds=_env_int("ONEDECISION_MODEL_TIMEOUT_SECONDS", 60),
         approval_token=os.environ.get("ONEDECISION_APPROVAL_TOKEN", "replace-me-local-demo-token"),
@@ -87,6 +113,16 @@ def load_settings() -> Settings:
 
 
 settings = load_settings()
+
+
+def get_settings() -> Settings:
+    """The live settings object.
+
+    Call this rather than importing `settings` directly anywhere that must see a
+    reload — importing binds the value at import time, which is exactly the bug
+    this avoids.
+    """
+    return settings
 
 
 def reload_settings() -> Settings:

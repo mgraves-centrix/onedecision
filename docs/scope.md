@@ -85,8 +85,9 @@ The separation between *reasoning* and *acting* is the product.
    timeout, low confidence, or conflicting policies all escalate.
 8. **Idempotency everywhere.** Every state-changing action carries an
    idempotency key; replays are no-ops that return the original result.
-9. **Append-only audit.** The audit log is hash-chained and protected by SQLite
-   triggers that reject `UPDATE` and `DELETE`.
+9. **Append-only audit.** The audit log is hash-chained and protected by database
+   triggers that reject `UPDATE` and `DELETE` — and, on PostgreSQL, by a `REVOKE`
+   so a non-owner application role cannot rewrite history at all.
 10. **No hidden chain-of-thought.** The agent returns a short, structured
     rationale intended for a human reader. Raw reasoning is never surfaced or
     stored.
@@ -111,13 +112,13 @@ analytics suite.
 
 | # | Decision | Rationale | Reversible? |
 | --- | --- | --- | --- |
-| 1 | Python 3.11 + FastAPI + SQLite + Jinja2/HTMX | Zero-build, server-rendered, one process, easy for a judge to run | Yes |
+| 1 | Python 3.11 + FastAPI + Jinja2, PostgreSQL in deployment and SQLite for the offline demo | Zero-build and server-rendered; a judge needs no database server, a deployment gets a real one. Both run the same suite. See docs/database.md | Yes |
 | 2 | Exactly one Strands agent | The product is governance, not agent count | Yes |
 | 3 | Model provider behind an adapter (`app/agent/providers/`) | AWS credentials are unavailable in the build environment; the runtime must not care which model backs it | Yes |
 | 4 | A deterministic `scripted` Strands `Model` implementation | Gives hermetic tests, CI, and an offline demo while still exercising the **real** Strands agent loop and real tool calls | Yes |
 | 5 | Policy DSL as a closed Pydantic schema | Makes "the model cannot widen its own authority" a type error, not a prompt instruction | Hard to reverse (core) |
 | 6 | Facts re-derived deterministically, agent report reconciled | Prevents a hallucinated or injected fact from driving an action | Hard to reverse (core) |
-| 7 | Hash-chained append-only audit in SQLite | Tamper-evidence without extra infrastructure | Yes |
+| 7 | Hash-chained append-only audit, serialized by an advisory lock and guarded by `UNIQUE(prev_hash)` | Tamper-evidence that survives more than one writer | Yes |
 | 8 | AgentCore compatibility kept as a thin entrypoint, not a dependency | Local golden path first, per the brief | Yes |
 
 ## 8. Assumptions

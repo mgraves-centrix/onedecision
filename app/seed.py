@@ -10,8 +10,6 @@ from __future__ import annotations
 import argparse
 import json
 import uuid
-from pathlib import Path
-
 from app import audit, db
 from app.audit import AuditEventType
 from app.config import REPO_ROOT
@@ -23,16 +21,16 @@ def _load(name: str) -> dict:
     return json.loads((FIXTURES / name).read_text())
 
 
-def seed(reset: bool = False, path: Path | None = None) -> dict[str, int]:
+def seed(reset: bool = False) -> dict[str, int]:
     if reset:
-        db.drop_all(path)
-    db.init_db(path)
+        db.drop_all()
+    db.init_db()
 
     catalog = _load("catalog.json")
     cases = _load("cases.json")
     counts = {"kits": 0, "components": 0, "parts": 0, "historical_cases": 0, "demo_cases": 0}
 
-    with db.session(path) as conn:
+    with db.session() as conn:
         conn.execute("DELETE FROM kit_components")
         conn.execute("DELETE FROM parts_catalog")
         conn.execute("DELETE FROM work_orders")
@@ -58,9 +56,9 @@ def seed(reset: bool = False, path: Path | None = None) -> dict[str, int]:
                     comp["sku"],
                     comp["component_id"],
                     comp["name"],
-                    comp["serialized"],
-                    comp["safety_critical"],
-                    comp["essential"],
+                    bool(comp["serialized"]),
+                    bool(comp["safety_critical"]),
+                    bool(comp["essential"]),
                 ),
             )
             counts["components"] += 1
@@ -89,12 +87,12 @@ def seed(reset: bool = False, path: Path | None = None) -> dict[str, int]:
                         case["received_serial"],
                         json.dumps(case["received_components"]),
                         json.dumps(case["inspection_evidence"]),
-                        case["new_damage_present"],
+                        bool(case["new_damage_present"]),
                         case["inspector_notes"],
                         case["received_at"],
                         case["expected_label"],
                         case["scenario_note"],
-                        case["is_historical"],
+                        bool(case["is_historical"]),
                     ),
                 )
                 counts[bucket] += 1
@@ -118,7 +116,7 @@ def main() -> None:
     print("Seeded synthetic fixtures:")
     for key, value in counts.items():
         print(f"  {key:>18}: {value}")
-    print(f"\nDatabase: {db.db_path()}")
+    print(f"\nDatabase: {db.describe()}")
 
 
 if __name__ == "__main__":

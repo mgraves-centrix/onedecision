@@ -7,8 +7,12 @@ human approval token, and it refuses without a passing replay report.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.db import Connection
+
 import json
-import sqlite3
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -49,7 +53,7 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
 
 
-def _row(row: sqlite3.Row) -> PolicyRecord:
+def _row(row: dict) -> PolicyRecord:
     return PolicyRecord(
         policy_id=row["policy_id"],
         family=row["family"],
@@ -66,7 +70,7 @@ def _row(row: sqlite3.Row) -> PolicyRecord:
     )
 
 
-def next_version(conn: sqlite3.Connection, family: str = POLICY_FAMILY) -> int:
+def next_version(conn: "Connection", family: str = POLICY_FAMILY) -> int:
     row = conn.execute(
         "SELECT COALESCE(MAX(version), 0) AS v FROM policies WHERE family = ?", (family,)
     ).fetchone()
@@ -74,7 +78,7 @@ def next_version(conn: sqlite3.Connection, family: str = POLICY_FAMILY) -> int:
 
 
 def create_candidate(
-    conn: sqlite3.Connection,
+    conn: "Connection",
     *,
     payload: dict[str, Any],
     trace_id: str,
@@ -137,19 +141,19 @@ def create_candidate(
     return get(conn, policy_id)
 
 
-def get(conn: sqlite3.Connection, policy_id: str) -> PolicyRecord:
+def get(conn: "Connection", policy_id: str) -> PolicyRecord:
     row = conn.execute("SELECT * FROM policies WHERE policy_id = ?", (policy_id,)).fetchone()
     if row is None:
         raise KeyError(f"policy '{policy_id}' not found")
     return _row(row)
 
 
-def list_all(conn: sqlite3.Connection) -> list[PolicyRecord]:
+def list_all(conn: "Connection") -> list[PolicyRecord]:
     rows = conn.execute("SELECT * FROM policies ORDER BY version DESC").fetchall()
     return [_row(r) for r in rows]
 
 
-def list_active(conn: sqlite3.Connection) -> list[PolicyRecord]:
+def list_active(conn: "Connection") -> list[PolicyRecord]:
     rows = conn.execute(
         "SELECT * FROM policies WHERE status = ? ORDER BY version ASC", (PolicyStatus.ACTIVE,)
     ).fetchall()
@@ -157,7 +161,7 @@ def list_active(conn: sqlite3.Connection) -> list[PolicyRecord]:
 
 
 def attach_replay_report(
-    conn: sqlite3.Connection, policy_id: str, report: dict[str, Any], *, trace_id: str
+    conn: "Connection", policy_id: str, report: dict[str, Any], *, trace_id: str
 ) -> None:
     conn.execute(
         "UPDATE policies SET replay_report = ? WHERE policy_id = ?",
@@ -180,7 +184,7 @@ def attach_replay_report(
 
 
 def activate(
-    conn: sqlite3.Connection,
+    conn: "Connection",
     policy_id: str,
     *,
     approval_token: str,
@@ -259,7 +263,7 @@ def activate(
 
 
 def reject(
-    conn: sqlite3.Connection, policy_id: str, *, actor: str, trace_id: str, reason: str = ""
+    conn: "Connection", policy_id: str, *, actor: str, trace_id: str, reason: str = ""
 ) -> PolicyRecord:
     conn.execute(
         "UPDATE policies SET status = ? WHERE policy_id = ?", (PolicyStatus.REJECTED, policy_id)
@@ -275,7 +279,7 @@ def reject(
     return get(conn, policy_id)
 
 
-def cases_handled(conn: sqlite3.Connection, policy_id: str) -> list[str]:
+def cases_handled(conn: "Connection", policy_id: str) -> list[str]:
     rows = conn.execute(
         "SELECT case_id FROM exceptions WHERE applied_policy_id = ? ORDER BY updated_at",
         (policy_id,),

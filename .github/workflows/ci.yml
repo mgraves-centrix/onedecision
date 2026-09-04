@@ -14,6 +14,25 @@ jobs:
       # credentials, and cannot incur spend.
       ONEDECISION_MODEL_PROVIDER: scripted
       ONEDECISION_APPROVAL_TOKEN: ci-approval-token
+      # Runs the whole suite against the deployment target as well as the demo
+      # backend, so the two cannot drift.
+      ONEDECISION_TEST_DATABASE_URL: postgresql://onedecision:ci-local-password@127.0.0.1:5432/onedecision_test
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: onedecision
+          POSTGRES_PASSWORD: ci-local-password
+          POSTGRES_DB: onedecision_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U onedecision"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v4
 
@@ -25,10 +44,23 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,postgres]"
 
-      - name: Tests (hermetic; live-model tests are deselected)
+      - name: Tests on both backends (hermetic; live-model tests are deselected)
         run: pytest -q -m "not integration"
+
+      - name: Confirm the PostgreSQL half actually ran
+        run: |
+          pytest -q -m "not integration" --collect-only 2>/dev/null \
+            | grep -q "db=postgres" \
+            || { echo "PostgreSQL backend was not exercised"; exit 1; }
+
+      - name: Migrations apply cleanly to a fresh PostgreSQL
+        env:
+          ONEDECISION_DATABASE_URL: postgresql://onedecision:ci-local-password@127.0.0.1:5432/onedecision
+        run: |
+          python -m app.seed --reset
+          python -m app.evaluation
 
       - name: Seed the synthetic fixtures
         run: python -m app.seed --reset

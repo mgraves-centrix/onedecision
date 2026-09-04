@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import sqlite3
-
 import pytest
 
-from app import audit
+from app import audit, db
 from app.domain import CaseFacts, InvestigationReport, MissingComponent, Outcome
 from app.facts import derive_facts, reconcile
 from app.orchestrator import activate_policy, approve_and_teach, handle_event
@@ -189,15 +187,16 @@ def test_a_tool_outage_escalates(conn, taught):
 
 
 def test_the_audit_log_rejects_updates(conn):
+    """Enforced by the database on both backends, not by application convention."""
     handle_event("CASE-2001", conn=conn)
-    with pytest.raises(sqlite3.IntegrityError) as exc:
+    with pytest.raises(db.IntegrityError) as exc:
         conn.execute("UPDATE audit_log SET payload = '{}' WHERE seq = 1")
     assert "append-only" in str(exc.value)
 
 
 def test_the_audit_log_rejects_deletes(conn):
     handle_event("CASE-2001", conn=conn)
-    with pytest.raises(sqlite3.IntegrityError) as exc:
+    with pytest.raises(db.IntegrityError) as exc:
         conn.execute("DELETE FROM audit_log WHERE seq = 1")
     assert "append-only" in str(exc.value)
 
@@ -213,7 +212,10 @@ def test_the_hash_chain_verifies(conn, taught):
 def test_the_hash_chain_detects_tampering(conn):
     """Drop the triggers, rewrite an entry, and confirm the chain notices."""
     handle_event("CASE-2001", conn=conn)
-    conn.execute("DROP TRIGGER audit_log_no_update")
+    if db.backend_name() == "postgres":
+        conn.execute("DROP TRIGGER audit_log_no_update ON audit_log")
+    else:
+        conn.execute("DROP TRIGGER audit_log_no_update")
     conn.execute("UPDATE audit_log SET payload = '{\"tampered\":true}' WHERE seq = 2")
     chain = audit.verify_chain(conn)
     assert not chain.ok

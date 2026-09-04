@@ -32,7 +32,7 @@ def head(n: int, title: str) -> None:
 def main() -> int:
     seed.seed(reset=True)
     print(f"provider : {provider_label()}")
-    print(f"database : {db.db_path()}")
+    print(f"database : {db.describe()}")
 
     # ---------------------------------------------------------------- case 1
     head(1, "CASE-2001 arrives as an event. Nothing knows what to do with it.")

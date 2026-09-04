@@ -39,8 +39,10 @@ def invoke(payload: dict[str, Any]) -> dict[str, Any]:
     if not case_id:
         return {"error": "payload must include 'case_id'"}
 
-    if not db.db_path().exists():
-        seed.seed(reset=True)
+    db.init_db()
+    with db.read_only() as conn:
+        if conn.execute("SELECT COUNT(*) AS c FROM return_cases").fetchone()["c"] == 0:
+            seed.seed()
 
     result = handle_event(case_id, event_key=payload.get("event_key"))
     return {
@@ -56,6 +58,7 @@ def invoke(payload: dict[str, Any]) -> dict[str, Any]:
         "trace_id": result.trace_id,
         "duration_ms": result.duration_ms,
         "model_provider": settings.model_provider,
+        "database": db.backend_name(),
     }
 
 

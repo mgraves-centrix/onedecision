@@ -28,11 +28,13 @@ CASE_ID = "CASE-2001"
 
 
 def main() -> int:
-    if not db.db_path().exists():
-        seed.seed(reset=True)
+    db.init_db()
+    with db.read_only() as conn:
+        if conn.execute("SELECT COUNT(*) AS c FROM return_cases").fetchone()["c"] == 0:
+            seed.seed()
 
     print(f"provider : {provider_label()}")
-    print(f"database : {db.db_path()}")
+    print(f"database : {db.describe()}")
     print(f"case     : {CASE_ID}\n")
 
     with db.session() as conn:

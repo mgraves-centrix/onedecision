@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.db import Connection
+
 import json
-import sqlite3
 from typing import Any
 
 from app.adapters import SYNTHETIC_NOTICE
@@ -22,7 +26,7 @@ REQUIRED_EVIDENCE_FIELDS = (
 )
 
 
-def get_return_case(conn: sqlite3.Connection, case_id: str) -> dict[str, Any]:
+def get_return_case(conn: "Connection", case_id: str) -> dict[str, Any]:
     row = conn.execute("SELECT * FROM return_cases WHERE case_id = ?", (case_id,)).fetchone()
     if row is None:
         raise AdapterError(f"return case '{case_id}' not found in the returns system")
@@ -37,7 +41,7 @@ def get_return_case(conn: sqlite3.Connection, case_id: str) -> dict[str, Any]:
         "sku": row["sku"],
         "kit_name": kit["name"],
         "kit_category": kit["category"],
-        "declared_value_usd": kit["declared_value_usd"],
+        "declared_value_usd": float(kit["declared_value_usd"]),
         "expected_serial": row["expected_serial"],
         "received_serial": row["received_serial"],
         "received_components": json.loads(row["received_components"]),
@@ -48,7 +52,7 @@ def get_return_case(conn: sqlite3.Connection, case_id: str) -> dict[str, Any]:
     }
 
 
-def get_expected_components(conn: sqlite3.Connection, sku: str) -> list[dict[str, Any]]:
+def get_expected_components(conn: "Connection", sku: str) -> list[dict[str, Any]]:
     rows = conn.execute(
         "SELECT * FROM kit_components WHERE sku = ? ORDER BY component_id", (sku,)
     ).fetchall()

@@ -66,10 +66,13 @@ curl -s localhost:8080/invocations -H 'content-type: application/json' \
 3. **Container image.** AgentCore Runtime serves an ARM64 container listening on
    `:8080`, which is exactly what `python -m app.agentcore` provides. Build for
    `linux/arm64`.
-4. **Persistence.** The demo uses local SQLite (`var/onedecision.db`), which does not
-   survive a stateless runtime. Before any real deployment, move `app/db.py` behind a
-   durable store. This is the one genuine piece of work between here and production,
-   and it is deliberately not faked.
+4. **Persistence. Done.** This was the one genuine gap; it is now closed. The
+   application runs on PostgreSQL by setting `ONEDECISION_DATABASE_URL`, and the
+   full test suite passes against both backends. Porting it also fixed three
+   concurrency defects that a stateless, horizontally scaled runtime would have
+   hit immediately. See [database.md](database.md), including the production
+   hardening that is still outstanding — chiefly running as a non-owner role,
+   secrets from Secrets Manager, TLS, and RDS Proxy in front of the pool.
 5. **Deploy.** Follow the current AgentCore Runtime deployment procedure in the AWS
    documentation (<https://docs.aws.amazon.com/bedrock-agentcore/>) — this document does
    not reproduce commands that have not been run here.

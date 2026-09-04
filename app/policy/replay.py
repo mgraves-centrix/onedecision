@@ -10,7 +10,11 @@ zero false automatic actions, and the policy must actually automate something.
 
 from __future__ import annotations
 
-import sqlite3
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.db import Connection
+
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -56,15 +60,15 @@ class ReplayReport:
         return payload
 
 
-def historical_case_ids(conn: sqlite3.Connection) -> list[str]:
+def historical_case_ids(conn: "Connection") -> list[str]:
     rows = conn.execute(
-        "SELECT case_id FROM return_cases WHERE is_historical = 1 ORDER BY case_id"
+        "SELECT case_id FROM return_cases WHERE is_historical = ? ORDER BY case_id", (True,)
     ).fetchall()
     return [r["case_id"] for r in rows]
 
 
 def replay_candidate_policy(
-    conn: sqlite3.Connection, definition: PolicyDefinition, case_ids: list[str] | None = None
+    conn: "Connection", definition: PolicyDefinition, case_ids: list[str] | None = None
 ) -> ReplayReport:
     """Evaluate a candidate against history. Read-only."""
     ids = case_ids if case_ids is not None else historical_case_ids(conn)

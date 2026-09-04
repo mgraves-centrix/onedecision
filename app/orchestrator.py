@@ -11,9 +11,13 @@ that the model has no way to call.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.db import Connection
+
 import hashlib
 import json
-import sqlite3
 import time
 import uuid
 from dataclasses import dataclass
@@ -81,28 +85,38 @@ def _prepare_scripted_context(**values: Any) -> None:
 
 
 def _ensure_exception(
-    conn: sqlite3.Connection, case_id: str, trace_id: str, event_key: str
+    conn: "Connection", case_id: str, trace_id: str, event_key: str
 ) -> tuple[str, bool]:
-    """Create the exception row, or return the existing one for a duplicate event."""
+    """Create the exception row, or return the existing one for a duplicate event.
+
+    The insert is conditional rather than select-then-insert: two events with the
+    same key arriving at once would both pass a prior SELECT and one would then
+    fail on the unique index. `ON CONFLICT DO NOTHING RETURNING` decides the race
+    in the database, so the loser is reported as a duplicate rather than an error.
+    """
+    exception_id = f"exc_{uuid.uuid4().hex[:12]}"
+    now = _now()
+    inserted = conn.execute(
+        """INSERT INTO exceptions (exception_id, case_id, trace_id, status, event_key,
+                                   created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT (event_key) DO NOTHING
+           RETURNING exception_id""",
+        (exception_id, case_id, trace_id, ExceptionStatus.NEW, event_key, now, now),
+    ).fetchone()
+    if inserted is not None:
+        return inserted["exception_id"], False
+
     existing = conn.execute(
         "SELECT exception_id FROM exceptions WHERE event_key = ?", (event_key,)
     ).fetchone()
-    if existing is not None:
-        return existing["exception_id"], True
-
-    exception_id = f"exc_{uuid.uuid4().hex[:12]}"
-    now = _now()
-    conn.execute(
-        """INSERT INTO exceptions (exception_id, case_id, trace_id, status, event_key,
-                                   created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        (exception_id, case_id, trace_id, ExceptionStatus.NEW, event_key, now, now),
-    )
-    return exception_id, False
+    if existing is None:  # pragma: no cover - the row must exist to have conflicted
+        raise OrchestratorError(f"event key '{event_key}' conflicted but no row is present")
+    return existing["exception_id"], True
 
 
 def _set_status(
-    conn: sqlite3.Connection,
+    conn: "Connection",
     exception_id: str,
     status: ExceptionStatus,
     *,
@@ -133,7 +147,7 @@ def _set_status(
 
 
 def execute_approved_policy(
-    conn: sqlite3.Connection,
+    conn: "Connection",
     case_id: str,
     policy_id: str,
     idem_key: str,
@@ -254,7 +268,7 @@ def execute_approved_policy(
 
 
 def verify_action(
-    conn: sqlite3.Connection,
+    conn: "Connection",
     case_id: str,
     policy_id: str,
     *,
@@ -343,7 +357,7 @@ def handle_event(
     case_id: str,
     *,
     event_key: str | None = None,
-    conn: sqlite3.Connection | None = None,
+    conn: "Connection" | None = None,
     reuse_exception_id: str | None = None,
 ) -> HandlingResult:
     """Handle one inbound exception event, end to end.
@@ -359,7 +373,7 @@ def handle_event(
 
 
 def _handle_event(
-    conn: sqlite3.Connection,
+    conn: "Connection",
     case_id: str,
     event_key: str | None,
     reuse_exception_id: str | None = None,
@@ -673,7 +687,7 @@ def _outcome_for(status: ExceptionStatus) -> Outcome:
 
 def _build_decision_card(
     ctx: AgentContext,
-    conn: sqlite3.Connection,
+    conn: "Connection",
     case_id: str,
     exception_id: str,
     trace_id: str,
@@ -755,7 +769,7 @@ class TeachResult:
     blocking_reasons: list[str]
 
 
-def get_decision_card(conn: sqlite3.Connection, exception_id: str) -> tuple[str, DecisionCard] | None:
+def get_decision_card(conn: "Connection", exception_id: str) -> tuple[str, DecisionCard] | None:
     row = conn.execute(
         """SELECT decision_card_id, payload FROM decision_cards
             WHERE exception_id = ? ORDER BY created_at DESC LIMIT 1""",
@@ -767,7 +781,7 @@ def get_decision_card(conn: sqlite3.Connection, exception_id: str) -> tuple[str,
 
 
 def record_decision(
-    conn: sqlite3.Connection, exception_id: str, *, outcome: str, decided_by: str
+    conn: "Connection", exception_id: str, *, outcome: str, decided_by: str
 ) -> str:
     """Record the human's decision on a card. Does not itself change any policy."""
     found = get_decision_card(conn, exception_id)
@@ -799,7 +813,7 @@ def record_decision(
 
 
 def approve_and_teach(
-    conn: sqlite3.Connection, exception_id: str, *, decided_by: str
+    conn: "Connection", exception_id: str, *, decided_by: str
 ) -> TeachResult:
     """Human approved the recommendation. Ask the agent to propose a policy.
 
@@ -897,7 +911,7 @@ def _provisional_policy_payload(facts: CaseFacts) -> dict[str, Any]:
 
 
 def activate_policy(
-    conn: sqlite3.Connection, policy_id: str, *, approval_token: str, activated_by: str
+    conn: "Connection", policy_id: str, *, approval_token: str, activated_by: str
 ) -> policy_store.PolicyRecord:
     """Human activation. The only transition from candidate to active."""
     record = policy_store.get(conn, policy_id)
@@ -940,13 +954,13 @@ def activate_policy(
 
 
 def reject_policy(
-    conn: sqlite3.Connection, policy_id: str, *, actor: str, reason: str = ""
+    conn: "Connection", policy_id: str, *, actor: str, reason: str = ""
 ) -> policy_store.PolicyRecord:
     return policy_store.reject(conn, policy_id, actor=actor, trace_id=_trace_id(), reason=reason)
 
 
 def escalate_manually(
-    conn: sqlite3.Connection, exception_id: str, *, actor: str, reason: str
+    conn: "Connection", exception_id: str, *, actor: str, reason: str
 ) -> None:
     row = conn.execute(
         "SELECT case_id, trace_id FROM exceptions WHERE exception_id = ?", (exception_id,)

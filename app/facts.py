@@ -7,14 +7,18 @@ against these facts; it never replaces them. This is what stops a hallucination
 
 from __future__ import annotations
 
-import sqlite3
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.db import Connection
+
 
 from app.adapters import parts_catalog, returns_system
 from app.adapters.returns_system import AdapterError
 from app.domain import CaseFacts, InvestigationReport, MissingComponent
 
 
-def derive_facts(conn: sqlite3.Connection, case_id: str) -> CaseFacts:
+def derive_facts(conn: "Connection", case_id: str) -> CaseFacts:
     """Build the normalized, policy-testable view of a case."""
     tool_failures: list[str] = []
 
