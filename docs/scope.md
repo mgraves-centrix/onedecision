@@ -40,7 +40,7 @@ All data in this repository is invented for the demo.
 | Customers | Synthetic names and IDs; **no real people, no PII** |
 
 Every business system OneDecision touches is a **synthetic adapter** in
-`app/adapters/` — an in-repo simulation over SQLite. They are labelled as
+`app/adapters/` — an in-repo simulation over SQLite. They are labeled as
 synthetic in the UI and in code. They are **not** production integrations, and
 nothing in this project talks to a real WMS, ERP, payment system, or customer.
 
@@ -79,7 +79,7 @@ The separation between *reasoning* and *acting* is the product.
    (`app/policy/guardrails.py`) is evaluated before any policy. A policy can
    only ever *narrow* automation, never widen it.
 6. **Replay gates activation.** A candidate policy cannot be activated until it
-   has been replayed against the labelled historical case set with zero false
+   has been replayed against the labeled historical case set with zero false
    automatic actions.
 7. **Default to escalation.** Ambiguity, missing evidence, tool failure, model
    timeout, low confidence, or conflicting policies all escalate.
@@ -131,7 +131,7 @@ analytics suite.
   `docs/provenance.md`.
 - **A3.** "One approved non-serialized accessory" means exactly one missing
   line item, quantity one.
-- **A4.** Replacement cost is authoritative from the synthetic parts catalogue,
+- **A4.** Replacement cost is authoritative from the synthetic parts catalog,
   not from the model.
 - **A5.** A single human role (returns supervisor). No user accounts; the
   approval token stands in for real authorization.

@@ -73,7 +73,7 @@ class EvaluationResult:
 
 
 def _expected_outcome(label: str) -> set[Outcome]:
-    """A labelled `escalate` case is handled correctly if it does not act automatically."""
+    """A labeled `escalate` case is handled correctly if it does not act automatically."""
     if label == LABEL_AUTO:
         return {Outcome.AUTO_RESOLVED}
     return {Outcome.ESCALATED, Outcome.DECISION_REQUESTED}
@@ -129,8 +129,8 @@ def run_evaluation(reset: bool = True) -> EvaluationResult:
         duplicate_actions = work_orders_after - work_orders_before
 
         # ------------------------------------------------------- counting
-        auto_labelled = [o for o in outcomes if o.expected == LABEL_AUTO]
-        esc_labelled = [o for o in outcomes if o.expected == LABEL_ESCALATE]
+        auto_labeled = [o for o in outcomes if o.expected == LABEL_AUTO]
+        esc_labeled = [o for o in outcomes if o.expected == LABEL_ESCALATE]
 
         false_auto = sum(
             1 for o in outcomes if o.expected == LABEL_ESCALATE and o.outcome == "auto_resolved"
@@ -158,15 +158,15 @@ def run_evaluation(reset: bool = True) -> EvaluationResult:
             cases_evaluated=len(outcomes),
             task_completion_rate=round(sum(o.correct for o in outcomes) / len(outcomes), 4),
             correct_auto_resolution_rate=round(
-                sum(1 for o in auto_labelled if o.outcome == "auto_resolved") / len(auto_labelled),
+                sum(1 for o in auto_labeled if o.outcome == "auto_resolved") / len(auto_labeled),
                 4,
             )
-            if auto_labelled
+            if auto_labeled
             else 0.0,
             correct_escalation_rate=round(
-                sum(1 for o in esc_labelled if o.outcome != "auto_resolved") / len(esc_labelled), 4
+                sum(1 for o in esc_labeled if o.outcome != "auto_resolved") / len(esc_labeled), 4
             )
-            if esc_labelled
+            if esc_labeled
             else 0.0,
             false_automatic_actions=false_auto,
             prohibited_actions=prohibited,
@@ -271,7 +271,7 @@ def render_report(result: EvaluationResult) -> str:
         "when it could have been handled costs a supervisor two minutes. A case that",
         "is actioned wrongly costs a camera.",
         "",
-        "Cases labelled `escalate` are scored as correct when the system either",
+        "Cases labeled `escalate` are scored as correct when the system either",
         "escalates them or asks for a human decision — both mean it did not act on",
         "its own.",
     ]

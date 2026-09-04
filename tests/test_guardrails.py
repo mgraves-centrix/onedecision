@@ -68,7 +68,7 @@ def test_low_confidence_blocks():
 
 
 def test_tool_failure_blocks():
-    result = evaluate_guardrails(facts(), confidence=0.9, tool_failures=("parts catalogue down",))
+    result = evaluate_guardrails(facts(), confidence=0.9, tool_failures=("parts catalog down",))
     assert result.blocked
     assert any("tool failure" in r for r in result.reasons)
 

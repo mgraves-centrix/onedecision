@@ -30,7 +30,7 @@ It closes that loop, once:
    decision should live inside.
 4. The supervisor clicks **Approve and Teach**.
 5. The agent proposes a **tightly bounded, schema-validated policy**. It is inert.
-6. Deterministic code **replays** the candidate against 24 labelled historical cases.
+6. Deterministic code **replays** the candidate against 24 labeled historical cases.
 7. The supervisor **explicitly activates** the version.
 8. The next matching case resolves automatically — work order raised, disposition set,
    writes verified, exception closed against the policy version.
@@ -160,7 +160,7 @@ itself that a person should have seen. Zero is a design constraint, not an avera
 Everything is invented. The company is **Northgate Optics**, a fictional camera and
 optics rental/resale business. All SKUs, serials, orders, customer references, inspection
 notes, and warehouse records are fabricated for this demo, and every "business system"
-is a labelled synthetic adapter in `app/adapters/` backed by local SQLite.
+is a labeled synthetic adapter in `app/adapters/` backed by local SQLite.
 
 **No real customer data, no PII, no private SOPs, no credentials, and no production
 integrations anywhere in this repository.** The UI says so on every page.
@@ -187,7 +187,7 @@ app/
   evaluation.py    the measurement harness
   main.py          FastAPI: inbox / decision+replay / policies+audit
   agentcore.py     Bedrock AgentCore Runtime entrypoint (optional)
-fixtures/          synthetic catalogue + 24 historical + 6 demo cases
+fixtures/          synthetic catalog + 24 historical + 6 demo cases
 tests/             94 tests, hermetic; 3 opt-in live-model tests
 docs/              scope, architecture, evaluation, demo script, provenance
 ```
@@ -207,12 +207,12 @@ pytest -m integration                       # opt-in, needs a live provider
 Coverage includes: policy-schema validation, allowlisted fields/operators/actions,
 default escalation, approval and policy-version checks, threshold boundaries,
 conflicting policies, replay gating, action idempotency, duplicate events, append-only
-audit behaviour and tamper detection, malformed and incomplete evidence, prompt
+audit behavior and tamper detection, malformed and incomplete evidence, prompt
 injection inside case notes, model timeout and tool failure, unknown case → decision
 card, approval → candidate without activation, failed replay blocking activation,
 explicit activation after successful replay, later matching case completing
 automatically, and a risky near-match escalating.
 
-## Licence
+## License
 
 Apache-2.0. See [LICENSE](LICENSE).

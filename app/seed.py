@@ -28,29 +28,29 @@ def seed(reset: bool = False, path: Path | None = None) -> dict[str, int]:
         db.drop_all(path)
     db.init_db(path)
 
-    catalogue = _load("catalogue.json")
+    catalog = _load("catalog.json")
     cases = _load("cases.json")
     counts = {"kits": 0, "components": 0, "parts": 0, "historical_cases": 0, "demo_cases": 0}
 
     with db.session(path) as conn:
         conn.execute("DELETE FROM kit_components")
-        conn.execute("DELETE FROM parts_catalogue")
+        conn.execute("DELETE FROM parts_catalog")
         conn.execute("DELETE FROM work_orders")
         conn.execute("DELETE FROM dispositions")
         conn.execute("DELETE FROM decision_cards")
         conn.execute("DELETE FROM exceptions")
         conn.execute("DELETE FROM policies")
         conn.execute("DELETE FROM return_cases")
-        conn.execute("DELETE FROM kit_catalogue")
+        conn.execute("DELETE FROM kit_catalog")
 
-        for kit in catalogue["kits"]:
+        for kit in catalog["kits"]:
             conn.execute(
-                "INSERT INTO kit_catalogue (sku, name, category, declared_value_usd) VALUES (?,?,?,?)",
+                "INSERT INTO kit_catalog (sku, name, category, declared_value_usd) VALUES (?,?,?,?)",
                 (kit["sku"], kit["name"], kit["category"], kit["declared_value_usd"]),
             )
             counts["kits"] += 1
 
-        for comp in catalogue["components"]:
+        for comp in catalog["components"]:
             conn.execute(
                 """INSERT INTO kit_components (sku, component_id, name, serialized,
                        safety_critical, essential) VALUES (?,?,?,?,?,?)""",
@@ -65,9 +65,9 @@ def seed(reset: bool = False, path: Path | None = None) -> dict[str, int]:
             )
             counts["components"] += 1
 
-        for part in catalogue["parts"]:
+        for part in catalog["parts"]:
             conn.execute(
-                "INSERT INTO parts_catalogue (component_id, replacement_cost_usd, stock_status) VALUES (?,?,?)",
+                "INSERT INTO parts_catalog (component_id, replacement_cost_usd, stock_status) VALUES (?,?,?)",
                 (part["component_id"], part["replacement_cost_usd"], part["stock_status"]),
             )
             counts["parts"] += 1

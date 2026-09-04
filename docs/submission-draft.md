@@ -1,7 +1,7 @@
 # Devpost submission draft
 
 > Draft copy for the Devpost form. Nothing here has been submitted. Fields marked
-> **[OWNER]** need information or authorisation only the submitter can supply.
+> **[OWNER]** need information or authorization only the submitter can supply.
 
 ---
 
@@ -53,7 +53,7 @@ came back missing an accessory — and closes the learning loop exactly once.
    the **boundaries** the decision should live inside, and why a person has to decide.
 4. The supervisor clicks **Approve and Teach**.
 5. The agent proposes a **tightly bounded policy** in a constrained language. It is inert.
-6. Deterministic code **replays** the candidate against 24 labelled historical cases and
+6. Deterministic code **replays** the candidate against 24 labeled historical cases and
    reports exactly what it would have automated, escalated, and got wrong.
 7. The supervisor **explicitly activates** the version.
 8. The next matching case resolves by itself: work order raised, disposition set, both

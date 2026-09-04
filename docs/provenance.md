@@ -37,7 +37,7 @@ and the synthetic dataset were specified and reviewed by the author.
   identifiers, customer references, inspection notes, and parts prices are invented.
 - No real customer records, PII, private SOPs, credentials, confidential business data,
   or proprietary information appears anywhere in the repository or in the demo.
-- Every "business system" the agent touches is a labelled synthetic adapter in
+- Every "business system" the agent touches is a labeled synthetic adapter in
   `app/adapters/` backed by local SQLite. None is a production integration, and the UI
   states this on every page.
 
@@ -82,4 +82,4 @@ language; a working activation gate; replay-gated learning; measured evaluation 
 an append-only audit log with tamper detection.
 
 **Not claimed:** a live Bedrock deployment; a running AgentCore Runtime; production
-integrations; any evaluation of a hosted model's behaviour on this task.
+integrations; any evaluation of a hosted model's behavior on this task.

@@ -412,7 +412,7 @@ def build_structured_payload(model_name: str, observations: dict[str, Any]) -> d
                 },
                 {
                     "description": "Replacement cost is $25.00 or less",
-                    "reason": "Caps the spend this decision can authorise without another human look.",
+                    "reason": "Caps the spend this decision can authorize without another human look.",
                 },
                 {
                     "description": "All required inspection evidence is present",
@@ -420,7 +420,7 @@ def build_structured_payload(model_name: str, observations: dict[str, Any]) -> d
                 },
             ],
             "why_human_must_decide": (
-                "This is the first time this exception has been seen. Nobody has authorised "
+                "This is the first time this exception has been seen. Nobody has authorized "
                 "spending money on replacement parts without a person looking, and the boundary "
                 "for when that is acceptable has not been set."
             ),

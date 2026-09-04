@@ -75,7 +75,7 @@ def create_work_order(
     if cost_usd > max_cost_usd:
         # Second enforcement of the spend cap, at the point of action.
         raise AdapterError(
-            f"work order cost ${cost_usd:.2f} exceeds the authorised cap ${max_cost_usd:.2f}"
+            f"work order cost ${cost_usd:.2f} exceeds the authorized cap ${max_cost_usd:.2f}"
         )
     existing = conn.execute(
         "SELECT * FROM work_orders WHERE idempotency_key = ?", (idempotency_key,)

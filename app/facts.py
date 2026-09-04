@@ -9,13 +9,13 @@ from __future__ import annotations
 
 import sqlite3
 
-from app.adapters import parts_catalogue, returns_system
+from app.adapters import parts_catalog, returns_system
 from app.adapters.returns_system import AdapterError
 from app.domain import CaseFacts, InvestigationReport, MissingComponent
 
 
 def derive_facts(conn: sqlite3.Connection, case_id: str) -> CaseFacts:
-    """Build the normalised, policy-testable view of a case."""
+    """Build the normalized, policy-testable view of a case."""
     tool_failures: list[str] = []
 
     case = returns_system.get_return_case(conn, case_id)
@@ -33,7 +33,7 @@ def derive_facts(conn: sqlite3.Connection, case_id: str) -> CaseFacts:
         cost: float | None = None
         stock = "unknown"
         try:
-            priced = parts_catalogue.lookup_replacement_cost(conn, component_id)
+            priced = parts_catalog.lookup_replacement_cost(conn, component_id)
             cost = priced["replacement_cost_usd"]
             stock = priced["stock_status"]
         except AdapterError as exc:

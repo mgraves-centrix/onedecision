@@ -26,9 +26,9 @@ def get_return_case(conn: sqlite3.Connection, case_id: str) -> dict[str, Any]:
     row = conn.execute("SELECT * FROM return_cases WHERE case_id = ?", (case_id,)).fetchone()
     if row is None:
         raise AdapterError(f"return case '{case_id}' not found in the returns system")
-    kit = conn.execute("SELECT * FROM kit_catalogue WHERE sku = ?", (row["sku"],)).fetchone()
+    kit = conn.execute("SELECT * FROM kit_catalog WHERE sku = ?", (row["sku"],)).fetchone()
     if kit is None:
-        raise AdapterError(f"kit '{row['sku']}' not found in the catalogue")
+        raise AdapterError(f"kit '{row['sku']}' not found in the catalog")
     return {
         "_source": SYNTHETIC_NOTICE,
         "case_id": row["case_id"],

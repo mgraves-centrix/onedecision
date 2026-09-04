@@ -71,7 +71,7 @@ Every case needs a person."*]
 [Point at the replay stats: 11 / 13 / 0 / 100%.]
 
 > Eleven it would have correctly automated. Thirteen it would have correctly escalated.
-> **Zero it would have got wrong.** If that last number were anything but zero, the
+> **Zero it would have gotten wrong.** If that last number were anything but zero, the
 > activate button would not be there.
 
 ---
@@ -134,7 +134,7 @@ Every case needs a person."*]
 > append-only log. It's hash-chained, and the database rejects `UPDATE` and `DELETE`
 > outright.
 >
-> Twenty-four evaluation cases. A hundred per cent correct escalation. **Zero false
+> Twenty-four evaluation cases. One hundred percent correct escalation. **Zero false
 > automatic actions, zero prohibited actions, zero duplicates.**
 >
 > Teach the agent once; it safely handles the next hundred.
@@ -149,6 +149,6 @@ Every case needs a person."*]
 - **If a take runs long,** cut the CASE-2005 / CASE-2006 boundary cases at 3:40; the
   serial-mismatch refusal alone carries the point.
 - **Do not** show a terminal full of passing tests as filler; if there is spare time, show
-  the audit timeline on CASE-2002 instead — it is the more convincing artefact.
+  the audit timeline on CASE-2002 instead — it is the more convincing artifact.
 - **Say "synthetic" once, early.** The banner is on screen the whole time; do not spend
   narration on it twice.

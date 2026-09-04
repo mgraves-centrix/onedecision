@@ -1,4 +1,4 @@
-"""Replay a candidate policy against labelled historical cases.
+"""Replay a candidate policy against labeled historical cases.
 
 Replay is a **dry run**: it derives facts, evaluates the guardrails and the
 candidate policy, and compares the predicted outcome against the recorded
@@ -133,8 +133,8 @@ def replay_candidate_policy(
             )
         )
 
-    auto_labelled = sum(1 for r in results if r.expected == LABEL_AUTO)
-    coverage = (correct_auto / auto_labelled) if auto_labelled else 0.0
+    auto_labeled = sum(1 for r in results if r.expected == LABEL_AUTO)
+    coverage = (correct_auto / auto_labeled) if auto_labeled else 0.0
 
     blocking: list[str] = []
     if false_auto > 0:
@@ -143,7 +143,7 @@ def replay_candidate_policy(
         )
     if correct_auto == 0:
         blocking.append("policy automates nothing on the historical set")
-    if auto_labelled and coverage < MIN_AUTOMATION_COVERAGE:
+    if auto_labeled and coverage < MIN_AUTOMATION_COVERAGE:
         blocking.append(
             f"automation coverage {coverage:.0%} is below the required "
             f"{MIN_AUTOMATION_COVERAGE:.0%}"

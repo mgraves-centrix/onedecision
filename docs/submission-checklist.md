@@ -10,10 +10,10 @@ Target: submit by **noon Pacific on September 14**.
 | 1 | Project newly created during the submission period | **Done** | Started 2026-09-04 from an empty repository. See `docs/provenance.md`. |
 | 2 | Strands Agents SDK central to the working product | **Done** | One `strands.Agent`, real `@tool` calls, typed structured output. `make smoke` prints it. |
 | 3 | Agent performs real work end to end | **Done** | `make demo` runs event → investigation → decision → policy → replay → activation → automatic resolution → verification. |
-| 4 | Public source repository | **Blocked — needs owner action** | Repository is private. Making it public requires explicit authorisation. |
+| 4 | Public source repository | **Blocked — needs owner action** | Repository is private. Making it public requires explicit authorization. |
 | 5 | All source, assets, reproducible setup instructions | **Done** | `make setup && make seed && make run`. |
 | 6 | README | **Done** | `README.md`. |
-| 7 | MIT or Apache licence visible in the repository | **Done** | `LICENSE` (Apache-2.0). |
+| 7 | MIT or Apache license visible in the repository | **Done** | `LICENSE` (Apache-2.0). |
 | 8 | Architecture diagram | **Done** | `docs/architecture.mmd` (source) + `docs/architecture.svg` / `.png` (rendered). |
 | 9 | AWS Builder ID | **Blocked — needs owner action** | Must be supplied by the submitter. |
 | 10 | Public YouTube or Vimeo demo, ≤ 5 minutes | **Not started** | Script ready at `docs/demo-script.md` (4:15). Record 2026-09-13. |
@@ -45,11 +45,11 @@ Target: submit by **noon Pacific on September 14**.
 
 ## Blockers requiring the owner
 
-1. **Make the repository public** — needs explicit authorisation.
+1. **Make the repository public** — needs explicit authorization.
 2. **AWS Builder ID** — must be provided by the submitter.
-3. **Record and publish the demo video** — needs an account and explicit authorisation.
+3. **Record and publish the demo video** — needs an account and explicit authorization.
 4. **Bedrock / AgentCore access** — needs valid AWS credentials and model access.
-5. **Devpost submission itself** — needs explicit authorisation.
+5. **Devpost submission itself** — needs explicit authorization.
 
 ## Pre-submission verification
 

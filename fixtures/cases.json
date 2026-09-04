@@ -490,7 +490,7 @@
       "inspector_notes": "",
       "received_at": "2026-08-18T10:15:00Z",
       "expected_label": "escalate",
-      "scenario_note": "Two components missing; policy authorises one",
+      "scenario_note": "Two components missing; policy authorizes one",
       "is_historical": 1
     },
     {
@@ -599,7 +599,7 @@
       "inspector_notes": "",
       "received_at": "2026-08-22T14:15:00Z",
       "expected_label": "escalate",
-      "scenario_note": "Parts catalogue outage during lookup: tool failure must escalate",
+      "scenario_note": "Parts catalog outage during lookup: tool failure must escalate",
       "is_historical": 1
     },
     {
@@ -629,7 +629,7 @@
       "inspector_notes": "",
       "received_at": "2026-08-23T15:15:00Z",
       "expected_label": "escalate",
-      "scenario_note": "Replacement cost unavailable: component not in the parts catalogue",
+      "scenario_note": "Replacement cost unavailable: component not in the parts catalog",
       "is_historical": 1
     },
     {
@@ -858,7 +858,7 @@
       "inspector_notes": "",
       "received_at": "2026-08-26T11:15:00Z",
       "expected_label": "escalate",
-      "scenario_note": "DEMO 3d - boundary: parts catalogue outage (tool failure)",
+      "scenario_note": "DEMO 3d - boundary: parts catalog outage (tool failure)",
       "is_historical": 0
     }
   ]

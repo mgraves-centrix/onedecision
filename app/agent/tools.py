@@ -24,7 +24,7 @@ from typing import Any
 from strands import tool
 
 from app import audit
-from app.adapters import parts_catalogue, returns_system
+from app.adapters import parts_catalog, returns_system
 from app.adapters.returns_system import AdapterError
 from app.audit import AuditEventType
 from app.facts import derive_facts
@@ -167,10 +167,10 @@ def build_tools(ctx: AgentContext) -> list[Any]:
 
         Returns:
             JSON with the replacement cost in USD and the stock status, or an
-            error if the parts catalogue could not be reached.
+            error if the parts catalog could not be reached.
         """
         try:
-            priced = parts_catalogue.lookup_replacement_cost(ctx.conn, component_id)
+            priced = parts_catalog.lookup_replacement_cost(ctx.conn, component_id)
         except AdapterError as exc:
             ctx.record("lookup_replacement_cost", {"component_id": component_id}, False, str(exc))
             return _dumps({"error": str(exc), "component_id": component_id})

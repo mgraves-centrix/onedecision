@@ -112,7 +112,7 @@
   <text x="74" y="736" fill="#e6e9ef" font-size="12.5">returns system</text>
   <text x="74" y="755" fill="#6b7488" font-size="10.5">cases · bill of materials · evidence</text>
   <rect x="330" y="714" width="256" height="56" rx="9" fill="#1e232e" stroke="#2a3140"/>
-  <text x="346" y="736" fill="#e6e9ef" font-size="12.5">parts catalogue</text>
+  <text x="346" y="736" fill="#e6e9ef" font-size="12.5">parts catalog</text>
   <text x="346" y="755" fill="#6b7488" font-size="10.5">replacement cost · stock status</text>
   <rect x="602" y="714" width="256" height="56" rx="9" fill="#1e232e" stroke="#5eead4"/>
   <text x="618" y="736" fill="#5eead4" font-size="12.5">warehouse WMS (writes)</text>

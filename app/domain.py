@@ -1,6 +1,6 @@
 """Core domain types.
 
-`CaseFacts` is the single normalised view of a return case. It is derived
+`CaseFacts` is the single normalized view of a return case. It is derived
 **deterministically from the synthetic adapters**, never from model output.
 The agent's `InvestigationReport` is reconciled against it; a disagreement is
 an escalation, not a tie-break.
@@ -122,7 +122,7 @@ class InvestigationReport(BaseModel):
         description="Whether every required inspection evidence field was present."
     )
     observed_replacement_cost_usd: float | None = Field(
-        default=None, description="Replacement cost the agent read from the parts catalogue."
+        default=None, description="Replacement cost the agent read from the parts catalog."
     )
     matching_policy_id: str | None = Field(
         default=None, description="Active policy the agent believes applies, or null."
@@ -197,7 +197,7 @@ class PolicyProposal(BaseModel):
     )
     max_cost_usd: float = Field(
         gt=0,
-        description="Spend cap for the replacement-parts work order this policy authorises.",
+        description="Spend cap for the replacement-parts work order this policy authorizes.",
     )
     min_confidence: float = Field(default=0.75, ge=0.5, le=1.0)
     justification: str = Field(

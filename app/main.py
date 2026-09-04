@@ -86,7 +86,7 @@ def _exception_rows(conn) -> list[dict[str, Any]]:
         """SELECT e.*, c.sku, c.scenario_note, k.name AS kit_name
              FROM exceptions e
              JOIN return_cases c ON c.case_id = e.case_id
-             JOIN kit_catalogue k ON k.sku = c.sku
+             JOIN kit_catalog k ON k.sku = c.sku
             ORDER BY e.created_at DESC"""
     ).fetchall()
     out = []
@@ -101,7 +101,7 @@ def _pending_cases(conn) -> list[dict[str, Any]]:
     rows = conn.execute(
         """SELECT c.case_id, c.scenario_note, k.name AS kit_name
              FROM return_cases c
-             JOIN kit_catalogue k ON k.sku = c.sku
+             JOIN kit_catalog k ON k.sku = c.sku
             WHERE c.is_historical = 0
               AND c.case_id NOT IN (SELECT case_id FROM exceptions)
             ORDER BY c.case_id"""
@@ -148,7 +148,7 @@ def exception_detail(request: Request, exception_id: str) -> HTMLResponse:
             """SELECT e.*, c.sku, c.scenario_note, c.inspector_notes, k.name AS kit_name
                  FROM exceptions e
                  JOIN return_cases c ON c.case_id = e.case_id
-                 JOIN kit_catalogue k ON k.sku = c.sku
+                 JOIN kit_catalog k ON k.sku = c.sku
                 WHERE e.exception_id = ?""",
             (exception_id,),
         ).fetchone()

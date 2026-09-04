@@ -21,7 +21,7 @@ FACILITY_ID = "NGO-WH-1"
 # $25; this is the outer wall.
 MAX_REPLACEMENT_COST_CEILING_USD = 50.0
 
-# A policy may never authorise more than this many missing components.
+# A policy may never authorize more than this many missing components.
 MAX_MISSING_COMPONENTS_CEILING = 1
 
 

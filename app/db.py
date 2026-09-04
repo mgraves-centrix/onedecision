@@ -20,7 +20,7 @@ PRAGMA foreign_keys = ON;
 -- ---------------------------------------------------------------- synthetic
 -- Synthetic business systems. See app/adapters/. Not production data.
 
-CREATE TABLE IF NOT EXISTS kit_catalogue (
+CREATE TABLE IF NOT EXISTS kit_catalog (
     sku                 TEXT PRIMARY KEY,
     name                TEXT NOT NULL,
     category            TEXT NOT NULL,
@@ -35,10 +35,10 @@ CREATE TABLE IF NOT EXISTS kit_components (
     safety_critical     INTEGER NOT NULL,
     essential           INTEGER NOT NULL,
     PRIMARY KEY (sku, component_id),
-    FOREIGN KEY (sku) REFERENCES kit_catalogue(sku)
+    FOREIGN KEY (sku) REFERENCES kit_catalog(sku)
 );
 
-CREATE TABLE IF NOT EXISTS parts_catalogue (
+CREATE TABLE IF NOT EXISTS parts_catalog (
     component_id        TEXT PRIMARY KEY,
     replacement_cost_usd REAL,
     stock_status        TEXT NOT NULL
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS return_cases (
     expected_label      TEXT NOT NULL,   -- ground truth for evaluation
     scenario_note       TEXT NOT NULL DEFAULT '',
     is_historical       INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY (sku) REFERENCES kit_catalogue(sku)
+    FOREIGN KEY (sku) REFERENCES kit_catalog(sku)
 );
 
 CREATE TABLE IF NOT EXISTS work_orders (
