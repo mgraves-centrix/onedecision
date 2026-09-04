@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 940" width="1440" height="940" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#9aa4b6"/></marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#4ade80"/></marker>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#f87171"/></marker>
+    <marker id="at" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#5eead4"/></marker>
+    <marker id="ay" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#fbbf24"/></marker>
+  </defs>
+
+  <rect width="1440" height="940" fill="#10131a"/>
+  <text x="40" y="46" fill="#e6e9ef" font-size="22" font-weight="650">OneDecision — architecture</text>
+  <text x="40" y="70" fill="#6b7488" font-size="13">The model may propose. Only deterministic code, after an explicit human activation, may act.</text>
+
+  <!-- ============================== MODEL REASONING ============================== -->
+  <rect x="40" y="100" width="360" height="352" rx="12" fill="#171b24" stroke="#3b4256" stroke-dasharray="5 4"/>
+  <text x="58" y="126" fill="#9aa4b6" font-size="11.5" font-weight="700" letter-spacing="1.2">MODEL REASONING</text>
+  <text x="58" y="144" fill="#6b7488" font-size="11.5">may propose · may never act</text>
+
+  <rect x="58" y="158" width="324" height="54" rx="9" fill="#1e232e" stroke="#5eead4"/>
+  <text x="74" y="181" fill="#5eead4" font-size="14" font-weight="650">One Strands Agent</text>
+  <text x="74" y="200" fill="#9aa4b6" font-size="11.5">investigate · decision card · propose policy</text>
+
+  <rect x="58" y="222" width="324" height="52" rx="9" fill="#1e232e" stroke="#2a3140"/>
+  <text x="74" y="244" fill="#e6e9ef" font-size="12.5">model provider adapter</text>
+  <text x="74" y="262" fill="#6b7488" font-size="11">bedrock · anthropic · scripted (offline)</text>
+
+  <rect x="58" y="284" width="324" height="150" rx="9" fill="#1e232e" stroke="#2a3140"/>
+  <text x="74" y="305" fill="#e6e9ef" font-size="12.5" font-weight="650">READ-ONLY TOOLS</text>
+  <text x="74" y="325" fill="#9aa4b6" font-size="11.5" font-family="ui-monospace, monospace">get_return_case</text>
+  <text x="74" y="343" fill="#9aa4b6" font-size="11.5" font-family="ui-monospace, monospace">compare_expected_and_received</text>
+  <text x="74" y="361" fill="#9aa4b6" font-size="11.5" font-family="ui-monospace, monospace">lookup_replacement_cost</text>
+  <text x="74" y="379" fill="#9aa4b6" font-size="11.5" font-family="ui-monospace, monospace">find_approved_policy</text>
+  <text x="74" y="397" fill="#9aa4b6" font-size="11.5" font-family="ui-monospace, monospace">replay_candidate_policy</text>
+  <text x="74" y="419" fill="#6b7488" font-size="11">no tool writes to a business system</text>
+
+  <!-- ========================= DETERMINISTIC CONTROL PLANE ======================= -->
+  <rect x="452" y="100" width="424" height="512" rx="12" fill="#171b24" stroke="#3b4256" stroke-dasharray="5 4"/>
+  <text x="470" y="126" fill="#9aa4b6" font-size="11.5" font-weight="700" letter-spacing="1.2">DETERMINISTIC CONTROL PLANE</text>
+  <text x="470" y="144" fill="#6b7488" font-size="11.5">the only thing in the system that can act</text>
+
+  <rect x="470" y="158" width="388" height="38" rx="9" fill="#1e232e" stroke="#2a3140"/>
+  <text x="486" y="182" fill="#e6e9ef" font-size="12.5" font-weight="650">orchestrator</text>
+
+  <rect x="470" y="212" width="388" height="56" rx="9" fill="#1e232e" stroke="#2a3140"/>
+  <text x="486" y="233" fill="#e6e9ef" font-size="12.5" font-weight="650">fact derivation + reconciliation</text>
+  <text x="486" y="250" fill="#6b7488" font-size="10.5">facts come from the systems; the agent's report is</text>
+  <text x="486" y="263" fill="#6b7488" font-size="10.5">checked against them, and loses any disagreement</text>
+
+  <rect x="470" y="284" width="388" height="56" rx="9" fill="#1e232e" stroke="#fbbf24"/>
+  <text x="486" y="305" fill="#fbbf24" font-size="12.5" font-weight="650">hard guardrails — non-overridable</text>
+  <text x="486" y="322" fill="#9aa4b6" font-size="10.5">serial · evidence · damage · cost · serialized part ·</text>
+  <text x="486" y="335" fill="#9aa4b6" font-size="10.5">safety-critical · confidence · policy conflict · tool failure</text>
+
+  <rect x="470" y="356" width="388" height="56" rx="9" fill="#1e232e" stroke="#2a3140"/>
+  <text x="486" y="377" fill="#e6e9ef" font-size="12.5" font-weight="650">policy engine</text>
+  <text x="486" y="394" fill="#6b7488" font-size="10.5">allowlisted fields, operators and values —</text>
+  <text x="486" y="407" fill="#6b7488" font-size="10.5">data, never generated code. No eval anywhere.</text>
+
+  <rect x="470" y="428" width="186" height="66" rx="9" fill="#1e232e" stroke="#5eead4"/>
+  <text x="486" y="449" fill="#5eead4" font-size="12.5" font-weight="650">execute</text>
+  <text x="486" y="467" fill="#9aa4b6" font-size="10.5">active policy only</text>
+  <text x="486" y="482" fill="#9aa4b6" font-size="10.5">+ idempotency key</text>
+
+  <rect x="672" y="428" width="186" height="66" rx="9" fill="#1e232e" stroke="#4ade80"/>
+  <text x="688" y="449" fill="#4ade80" font-size="12.5" font-weight="650">verify</text>
+  <text x="688" y="467" fill="#9aa4b6" font-size="10.5">read the writes back</text>
+  <text x="688" y="482" fill="#9aa4b6" font-size="10.5">out of the systems</text>
+
+  <rect x="470" y="512" width="186" height="36" rx="9" fill="#1e232e" stroke="#4ade80"/>
+  <text x="563" y="535" fill="#4ade80" font-size="12.5" font-weight="650" text-anchor="middle">RESOLVED</text>
+  <rect x="672" y="512" width="186" height="36" rx="9" fill="#1e232e" stroke="#f87171"/>
+  <text x="765" y="535" fill="#f87171" font-size="12.5" font-weight="650" text-anchor="middle">ESCALATED</text>
+  <text x="470" y="572" fill="#6b7488" font-size="10.5">Any guardrail hit, any tool failure, any verification</text>
+  <text x="470" y="587" fill="#6b7488" font-size="10.5">failure, anything ambiguous at all → escalate.</text>
+
+  <!-- ================================ GOVERNANCE ================================ -->
+  <rect x="928" y="100" width="472" height="512" rx="12" fill="#171b24" stroke="#3b4256" stroke-dasharray="5 4"/>
+  <text x="946" y="126" fill="#9aa4b6" font-size="11.5" font-weight="700" letter-spacing="1.2">GOVERNANCE</text>
+  <text x="946" y="144" fill="#6b7488" font-size="11.5">where a human turns one decision into a bounded rule</text>
+
+  <rect x="946" y="158" width="436" height="50" rx="9" fill="#1e232e" stroke="#fbbf24"/>
+  <text x="962" y="179" fill="#fbbf24" font-size="12.5" font-weight="650">decision card</text>
+  <text x="962" y="197" fill="#9aa4b6" font-size="10.5">evidence · recommendation · uncertainty · proposed boundaries</text>
+
+  <rect x="946" y="224" width="436" height="50" rx="9" fill="#1e232e" stroke="#e6e9ef"/>
+  <text x="962" y="245" fill="#e6e9ef" font-size="12.5" font-weight="650">HUMAN — "Approve and Teach"</text>
+  <text x="962" y="263" fill="#6b7488" font-size="10.5">records a decision; activates nothing</text>
+
+  <rect x="946" y="290" width="436" height="50" rx="9" fill="#1e232e" stroke="#2a3140"/>
+  <text x="962" y="311" fill="#e6e9ef" font-size="12.5" font-weight="650">candidate policy — inert</text>
+  <text x="962" y="329" fill="#6b7488" font-size="10.5">schema-validated; the action set is fixed by the system, not the model</text>
+
+  <rect x="946" y="356" width="436" height="50" rx="9" fill="#1e232e" stroke="#fbbf24"/>
+  <text x="962" y="377" fill="#fbbf24" font-size="12.5" font-weight="650">replay gate — 24 historical cases</text>
+  <text x="962" y="395" fill="#9aa4b6" font-size="10.5">one false automatic action blocks activation outright</text>
+
+  <rect x="946" y="422" width="436" height="50" rx="9" fill="#1e232e" stroke="#e6e9ef"/>
+  <text x="962" y="443" fill="#e6e9ef" font-size="12.5" font-weight="650">HUMAN — explicit activation + token</text>
+  <text x="962" y="461" fill="#6b7488" font-size="10.5">the only transition from candidate to active</text>
+
+  <rect x="946" y="488" width="436" height="38" rx="9" fill="#1e232e" stroke="#5eead4"/>
+  <text x="962" y="512" fill="#5eead4" font-size="12.5" font-weight="650">active policy version</text>
+
+  <rect x="946" y="542" width="436" height="50" rx="9" fill="#1e232e" stroke="#2a3140"/>
+  <text x="962" y="563" fill="#e6e9ef" font-size="12.5" font-weight="650">append-only audit log</text>
+  <text x="962" y="581" fill="#6b7488" font-size="10.5">hash-chained · UPDATE and DELETE rejected by database triggers</text>
+
+  <!-- ================================ BOTTOM ROW ================================ -->
+  <rect x="40" y="676" width="836" height="112" rx="12" fill="#171b24" stroke="#d8b45a" stroke-dasharray="5 4"/>
+  <text x="58" y="702" fill="#d8b45a" font-size="11.5" font-weight="700" letter-spacing="1">SYNTHETIC BUSINESS SYSTEMS — simulated adapters, not production integrations</text>
+  <rect x="58" y="714" width="256" height="56" rx="9" fill="#1e232e" stroke="#2a3140"/>
+  <text x="74" y="736" fill="#e6e9ef" font-size="12.5">returns system</text>
+  <text x="74" y="755" fill="#6b7488" font-size="10.5">cases · bill of materials · evidence</text>
+  <rect x="330" y="714" width="256" height="56" rx="9" fill="#1e232e" stroke="#2a3140"/>
+  <text x="346" y="736" fill="#e6e9ef" font-size="12.5">parts catalogue</text>
+  <text x="346" y="755" fill="#6b7488" font-size="10.5">replacement cost · stock status</text>
+  <rect x="602" y="714" width="256" height="56" rx="9" fill="#1e232e" stroke="#5eead4"/>
+  <text x="618" y="736" fill="#5eead4" font-size="12.5">warehouse WMS (writes)</text>
+  <text x="618" y="755" fill="#6b7488" font-size="10.5">dispositions · replacement work orders</text>
+
+  <rect x="928" y="676" width="472" height="112" rx="12" fill="#1e232e" stroke="#3b4256"/>
+  <text x="946" y="702" fill="#e6e9ef" font-size="12.5" font-weight="650">returns-dock check-in event</text>
+  <text x="946" y="721" fill="#6b7488" font-size="10.5">an event, not a chat prompt — nobody typed a request</text>
+  <text x="946" y="748" fill="#9aa4b6" font-size="11.5" font-family="ui-monospace, monospace">POST /events/{case_id}</text>
+  <text x="946" y="768" fill="#9aa4b6" font-size="11.5" font-family="ui-monospace, monospace">AgentCore POST /invocations</text>
+
+  <!-- ================================== EDGES =================================== -->
+  <!-- event in: bottom-right box up the far right, across the top, into orchestrator -->
+  <path d="M1164 676 L1164 664 L902 664 L902 177 L858 177" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="1020" y="658" fill="#6b7488" font-size="11" text-anchor="middle">event in — nobody typed a request</text>
+
+  <!-- orchestrator -> agent -->
+  <path d="M470 172 L416 172 L416 176 L382 176" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="420" y="164" fill="#6b7488" font-size="10.5" text-anchor="middle">investigate</text>
+  <!-- agent -> facts (typed report) -->
+  <path d="M382 200 L424 200 L424 232 L470 232" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="424" y="252" fill="#6b7488" font-size="10.5" text-anchor="middle">typed report</text>
+  <text x="424" y="265" fill="#6b7488" font-size="10.5" text-anchor="middle">(advisory)</text>
+
+  <!-- tools read the synthetic systems -->
+  <path d="M186 434 L186 706" fill="none" stroke="#6b7488" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#a)"/>
+  <text x="196" y="560" fill="#6b7488" font-size="10.5">reads only</text>
+
+  <!-- vertical spine of the control plane -->
+  <path d="M664 196 L664 212" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M664 268 L664 284" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M664 340 L664 356" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M563 412 L563 428" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M656 461 L672 461" fill="none" stroke="#5eead4" stroke-width="1.6" marker-end="url(#at)"/>
+  <path d="M563 494 L563 512" fill="none" stroke="#4ade80" stroke-width="1.6" marker-end="url(#ag)"/>
+
+  <!-- guardrail hit -> escalated (right gutter inside the control plane) -->
+  <path d="M858 312 L890 312 L890 530 L858 530" fill="none" stroke="#f87171" stroke-width="1.6" marker-end="url(#ar)"/>
+  <text x="884" y="392" fill="#f87171" font-size="10.5" text-anchor="middle" transform="rotate(90 884 392)">guardrail hit · tool failure · verification failure</text>
+
+  <!-- execute writes to the WMS -->
+  <path d="M470 470 L436 470 L436 656 L730 656 L730 714" fill="none" stroke="#5eead4" stroke-width="1.6" marker-end="url(#at)"/>
+  <text x="428" y="560" fill="#5eead4" font-size="10.5" text-anchor="middle" transform="rotate(-90 428 560)">the only writes in the whole system</text>
+
+  <!-- no policy applies -> decision card -->
+  <path d="M858 384 L912 384 L912 88 L1164 88 L1164 158" fill="none" stroke="#fbbf24" stroke-width="1.6" marker-end="url(#ay)"/>
+  <text x="1038" y="82" fill="#fbbf24" font-size="10.5" text-anchor="middle">no approved policy applies — put one decision to a person</text>
+
+  <!-- governance spine -->
+  <path d="M1164 208 L1164 224" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M1164 274 L1164 290" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M1164 340 L1164 356" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M1164 406 L1164 422" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M1164 472 L1164 488" fill="none" stroke="#9aa4b6" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <!-- human "approve and teach" -> agent proposes: routed under the whole canvas -->
+  <path d="M946 249 L922 249 L922 636 L300 636 L300 434" fill="none" stroke="#fbbf24" stroke-width="1.6" marker-end="url(#ay)"/>
+  <text x="640" y="630" fill="#fbbf24" font-size="10.5" text-anchor="middle">"Approve and Teach" → the agent proposes a constrained policy</text>
+
+  <!-- active policy feeds the engine -->
+  <path d="M946 507 L920 507 L920 398 L858 398" fill="none" stroke="#5eead4" stroke-width="1.6" marker-end="url(#at)"/>
+  <text x="930" y="446" fill="#5eead4" font-size="10.5" text-anchor="middle" transform="rotate(90 930 446)">only an active version may act</text>
+
+  <text x="40" y="830" fill="#6b7488" font-size="11.5">Every box in the deterministic and governance zones writes to the append-only audit log: event and trace id, tool calls, the agent's rationale, the guardrail</text>
+  <text x="40" y="848" fill="#6b7488" font-size="11.5">result, the policy version, the approval event, the action result, the verification result, and any escalation. Nothing acts without leaving an entry behind it.</text>
+  <text x="40" y="880" fill="#5eead4" font-size="12.5" font-weight="650">The line that matters: the agent's output crosses into the deterministic zone as data. It never crosses as authority.</text>
+</svg>

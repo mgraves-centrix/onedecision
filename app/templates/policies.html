@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Policies &amp; Audit · OneDecision{% endblock %}
+{% block content %}
+
+<h1>Policies &amp; audit</h1>
+<p class="lede">
+  Every version of every policy, who activated it, what it is allowed to do, and every
+  case it has handled since.
+</p>
+
+<section class="card">
+  <h2>Policy versions</h2>
+  {% for p in policies %}
+  <article class="policy-version status-{{ p.status }}">
+    <header>
+      <code>{{ p.family }}@v{{ p.version }}</code>
+      <span class="pill status-{{ p.status }}">{{ p.status }}</span>
+      <strong>{{ p.definition.name }}</strong>
+    </header>
+    <p>{{ p.definition.description }}</p>
+    <div class="split">
+      <div>
+        <h4>Conditions</h4>
+        <ul class="conditions">
+          {% for c in p.definition.condition_summary() %}<li><code>{{ c }}</code></li>{% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h4>Actions</h4>
+        <ul class="actions-list">
+          {% for a in p.definition.action_summary() %}<li>{{ a }}</li>{% endfor %}
+        </ul>
+        <h4>Activation</h4>
+        {% if p.activated_at %}
+          <p class="muted">Activated by {{ p.activated_by }}<br>{{ p.activated_at }}</p>
+        {% else %}
+          <p class="muted">Never activated.</p>
+        {% endif %}
+        {% if p.retired_at %}<p class="muted">Retired {{ p.retired_at }}</p>{% endif %}
+      </div>
+    </div>
+
+    {% if p.replay_report %}
+    <p class="muted small">
+      Replay: {{ p.replay_report.correct_auto_resolutions }} automated,
+      {{ p.replay_report.correct_escalations }} escalated,
+      <strong>{{ p.replay_report.false_automatic_actions }}</strong> wrongly actioned across
+      {{ p.replay_report.cases_replayed }} historical cases &middot;
+      passed: {{ p.replay_report.passed }}
+    </p>
+    {% endif %}
+
+    <h4>Cases handled by this version ({{ handled[p.policy_id]|length }})</h4>
+    {% if handled[p.policy_id] %}
+    <p class="case-chips">
+      {% for c in handled[p.policy_id] %}<code>{{ c }}</code>{% endfor %}
+    </p>
+    {% else %}
+    <p class="muted small">None yet.</p>
+    {% endif %}
+
+    {% if p.status == 'candidate' and p.replay_report and p.replay_report.passed %}
+    <div class="activation">
+      <form method="post" action="/policies/{{ p.policy_id }}/activate" class="inline">
+        <input type="password" name="approval_token" placeholder="Approval token" required>
+        <button type="submit" class="btn primary">Activate</button>
+      </form>
+    </div>
+    {% endif %}
+  </article>
+  {% else %}
+  <p class="empty">No policies yet. Teach one from a decision card.</p>
+  {% endfor %}
+</section>
+
+<section class="card">
+  <h2>
+    Audit log
+    <span class="pill {{ 'ok' if chain.ok else 'bad' }}">
+      hash chain {{ 'intact' if chain.ok else 'BROKEN at #' ~ chain.broken_at }}
+      ({{ chain.entries_checked }} entries)
+    </span>
+  </h2>
+  <p class="muted small">
+    Append-only. <code>UPDATE</code> and <code>DELETE</code> are rejected by database
+    triggers, and each entry carries the hash of the one before it.
+  </p>
+  {% include "partials/timeline.html" %}
+</section>
+{% endblock %}

@@ -1,0 +1,85 @@
+# Provenance and disclosures
+
+## Origin
+
+OneDecision was created from scratch during the Agents for Humans submission period,
+starting 2026-09-04. The repository began empty apart from an `Apache-2.0` LICENSE and a
+one-line `README.md`; every other file in it was written for this hackathon.
+
+## Pre-existing work incorporated
+
+None. No pre-existing non-standard codebase, template, private library, or prior project
+was incorporated.
+
+Standard, publicly available third-party dependencies are used and pinned in
+`pyproject.toml`:
+
+| Package | Version | Role |
+| --- | --- | --- |
+| `strands-agents` | 1.54.0 | the agent framework — central to the product |
+| `fastapi` / `starlette` | 0.141.1 | HTTP + server-rendered views |
+| `pydantic` | 2.13.5 | typed structured output and the policy schema |
+| `jinja2` | 3.1.6 | templates |
+| `uvicorn` | 0.52.4 | ASGI server |
+| `boto3` | 1.43.88 | pulled in by the Bedrock provider |
+| `bedrock-agentcore` | 1.22.0 | **optional extra**, AgentCore Runtime entrypoint only |
+| `pytest`, `pytest-asyncio`, `httpx` | dev | tests |
+
+AI coding assistance was used during development, which the hackathon rules permit. All
+architectural decisions, the safety model, the policy language, the evaluation design,
+and the synthetic dataset were specified and reviewed by the author.
+
+## Data
+
+**All data in this repository is synthetic and fabricated for the demo.**
+
+- The company (Northgate Optics), facility, personas, SKUs, serial numbers, order
+  identifiers, customer references, inspection notes, and parts prices are invented.
+- No real customer records, PII, private SOPs, credentials, confidential business data,
+  or proprietary information appears anywhere in the repository or in the demo.
+- Every "business system" the agent touches is a labelled synthetic adapter in
+  `app/adapters/` backed by local SQLite. None is a production integration, and the UI
+  states this on every page.
+
+## Verified environment claims
+
+Claims in this repository were checked, not assumed:
+
+| Claim | How it was verified |
+| --- | --- |
+| Strands `Agent` runs with real tool calls and typed structured output | `make smoke` — prints the tool calls and the parsed `InvestigationReport` |
+| `ScriptedModel` is a valid Strands `Model` implementation | it implements the four abstract methods of `strands.models.model.Model` and drives the unmodified Strands event loop |
+| AgentCore entrypoint matches the real SDK | `bedrock-agentcore==1.22.0` installed in a scratch environment; `BedrockAgentCoreApp`, `@app.entrypoint`, and `app.run(port=…)` confirmed by introspection, and `build_app()` was constructed successfully, exposing `/invocations` and `/ping` |
+| The evaluation numbers | produced by `python -m app.evaluation`, counted from the database after a real run |
+
+## Known blocker: AWS access
+
+The build environment has AWS environment variables set, but they are **not valid AWS
+credentials**:
+
+```
+$ sts:GetCallerIdentity
+ClientError: An error occurred (InvalidClientTokenId) when calling the
+GetCallerIdentity operation: The security token included in the request is invalid.
+```
+
+Consequence:
+
+- The **Bedrock** model provider (`app/agent/providers/__init__.py`) is implemented and
+  documented but has **not** been exercised against a live Bedrock endpoint.
+- The **AgentCore Runtime** entrypoint (`app/agentcore.py`) builds against the real SDK
+  and serves the correct contract locally, but has **not** been deployed to AgentCore.
+- No billable AWS infrastructure was created, and no deployment was attempted.
+
+The local golden path is complete, tested, and reproducible without any cloud account.
+See [deployment-agentcore.md](deployment-agentcore.md) for what remains, written against
+the SDK that is actually installed rather than from memory.
+
+## What is claimed, and what is not
+
+**Claimed:** a real Strands agent doing real work end to end; a constrained policy
+language; a working activation gate; replay-gated learning; measured evaluation results;
+an append-only audit log with tamper detection.
+
+**Not claimed:** a live Bedrock deployment; a running AgentCore Runtime; production
+integrations; any evaluation of a hosted model's behaviour on this task.

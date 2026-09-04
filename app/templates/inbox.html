@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Exception Inbox · OneDecision{% endblock %}
+{% block content %}
+
+<h1>Exception inbox</h1>
+<p class="lede">
+  Missing-accessory exceptions from the returns dock. Cases with an approved policy
+  resolve themselves and never appear as work; everything else waits for you.
+</p>
+
+{% if pending %}
+<section class="card dock">
+  <h2>Returns dock — cases not yet checked in</h2>
+  <p class="muted">Each button simulates a check-in event arriving from the warehouse.</p>
+  <ul class="dock-list">
+    {% for case in pending %}
+    <li>
+      <div>
+        <code>{{ case.case_id }}</code>
+        <span class="kit">{{ case.kit_name }}</span>
+        <span class="muted note">{{ case.scenario_note }}</span>
+      </div>
+      <form method="post" action="/events/{{ case.case_id }}" class="inline">
+        <button type="submit" class="btn">Check in</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if active_policies %}
+<p class="policy-strip">
+  Active policy:
+  {% for p in active_policies %}
+    <code>{{ p.family }}@v{{ p.version }}</code> — {{ p.definition.name }}
+  {% endfor %}
+</p>
+{% else %}
+<p class="policy-strip empty">No approved policy exists yet. Every case needs a person.</p>
+{% endif %}
+
+<div class="columns">
+  {% for status in status_order %}
+  <section class="column status-{{ status }}">
+    <h2>{{ status_labels[status] }} <span class="count">{{ buckets[status]|length }}</span></h2>
+    {% for e in buckets[status] %}
+    <a class="case" href="/exceptions/{{ e.exception_id }}">
+      <div class="case-head">
+        <code>{{ e.case_id }}</code>
+        {% if e.applied_policy_id %}<span class="pill auto">auto</span>{% endif %}
+      </div>
+      <div class="kit">{{ e.kit_name }}</div>
+      <div class="summary">{{ e.summary or e.scenario_note }}</div>
+      {% if e.escalation_reasons %}
+      <ul class="reasons">
+        {% for r in e.escalation_reasons[:2] %}<li>{{ r }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+    </a>
+    {% else %}
+    <p class="empty">Nothing here.</p>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

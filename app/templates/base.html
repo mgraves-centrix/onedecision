@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}OneDecision{% endblock %}</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <a href="/"><span class="mark">One</span>Decision</a>
+    <span class="tagline">Teach the agent once; it safely handles the next hundred.</span>
+  </div>
+  <nav>
+    <a href="/">Inbox</a>
+    <a href="/policies">Policies &amp; Audit</a>
+    <form method="post" action="/demo/reset" class="inline"
+          onsubmit="return confirm('Reset the demo and restore the synthetic fixtures?')">
+      <button type="submit" class="btn ghost">Reset demo</button>
+    </form>
+  </nav>
+</header>
+
+<div class="synthetic-banner">
+  Synthetic demo environment &middot; {{ company }} ({{ facility }}) is a fictional company.
+  All orders, customers, serials, and warehouse systems below are simulated adapters, not
+  production integrations. Model provider: <strong>{{ provider }}</strong>.
+</div>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  <span>OneDecision &middot; Agents for Humans &middot; Professional Agents track</span>
+  <span>Signed in as {{ operator }}</span>
+</footer>
+</body>
+</html>

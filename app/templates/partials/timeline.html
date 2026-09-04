@@ -1,0 +1,22 @@
+<ol class="timeline">
+  {% for e in timeline %}
+  <li class="ev ev-{{ e.event_type.split('.')[0] }}">
+    <span class="ts">{{ e.created_at[11:23] }}</span>
+    <span class="type">{{ e.event_type }}</span>
+    <span class="actor">{{ e.actor }}</span>
+    <span class="detail">
+      {%- if e.payload.tool %}<code>{{ e.payload.tool }}</code> — {{ e.payload.summary }}
+      {%- elif e.payload.action %}{{ e.payload.action }} — {{ e.payload.detail }}
+      {%- elif e.payload.reasons %}{{ e.payload.reasons|join('; ') }}
+      {%- elif e.payload.headline %}{{ e.payload.headline }}
+      {%- elif e.payload.rationale %}{{ e.payload.rationale }}
+      {%- elif e.payload.checks %}{{ e.payload.checks|join('; ') }}
+      {%- elif e.payload.name %}{{ e.payload.name }}
+      {%- elif e.payload.detail %}{{ e.payload.detail }}
+      {%- elif e.payload.reason %}{{ e.payload.reason }}
+      {%- endif -%}
+    </span>
+    {% if e.policy_id %}<span class="pol"><code>{{ e.policy_id }}</code></span>{% endif %}
+  </li>
+  {% endfor %}
+</ol>

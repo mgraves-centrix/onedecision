@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}{{ exception.case_id }} · OneDecision{% endblock %}
+{% block content %}
+
+<a class="back" href="/">&larr; Inbox</a>
+
+<h1>{{ exception.case_id }} <span class="pill status-{{ exception.status }}">{{ status_labels[exception.status] }}</span></h1>
+<p class="lede">{{ exception.kit_name }} ({{ exception.sku }}) &middot; trace <code>{{ exception.trace_id }}</code></p>
+
+{% if exception.escalation_reasons %}
+<section class="card danger">
+  <h2>Escalated — no automatic action was taken</h2>
+  <ul>
+    {% for r in exception.escalation_reasons %}<li>{{ r }}</li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if card %}
+<section class="card decision">
+  <h2>Decision card</h2>
+  <p class="headline">{{ card.headline }}</p>
+
+  <h3>Evidence the agent gathered</h3>
+  <table class="evidence">
+    <tbody>
+    {% for item in card.evidence %}
+      <tr>
+        <th>{{ item.label }}</th>
+        <td>{{ item.value }}</td>
+        <td class="tool"><code>{{ item.source_tool }}</code></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>Recommended action</h3>
+  <p class="recommend">{{ card.recommended_action }}</p>
+  {% if card.estimated_cost_usd is not none %}
+  <p class="muted">Estimated cost: ${{ '%.2f'|format(card.estimated_cost_usd) }}</p>
+  {% endif %}
+
+  <div class="split">
+    <div>
+      <h3>Uncertainty</h3>
+      <ul>{% for u in card.uncertainty %}<li>{{ u }}</li>{% endfor %}</ul>
+    </div>
+    <div>
+      <h3>Proposed boundaries</h3>
+      <ul class="boundaries">
+        {% for b in card.proposed_boundaries %}
+        <li><strong>{{ b.description }}</strong><span class="muted">{{ b.reason }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <h3>Why a person has to decide this</h3>
+  <p>{{ card.why_human_must_decide }}</p>
+
+  {% if decision and decision.outcome %}
+    <p class="decided">Decided <strong>{{ decision.outcome }}</strong> by {{ decision.decided_by }} at {{ decision.decided_at }}.</p>
+  {% else %}
+  <div class="actions">
+    <form method="post" action="/exceptions/{{ exception.exception_id }}/approve" class="inline">
+      <button type="submit" class="btn primary">Approve and teach</button>
+    </form>
+    <form method="post" action="/exceptions/{{ exception.exception_id }}/reject" class="inline">
+      <input type="hidden" name="reason" value="rejected by the supervisor; handled by hand">
+      <button type="submit" class="btn ghost">Reject and handle by hand</button>
+    </form>
+  </div>
+  <p class="muted small">
+    Approving records your decision and asks the agent to propose a policy. It does not
+    activate anything.
+  </p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if candidate %}
+<section class="card policy">
+  <h2>
+    Proposed policy
+    <span class="pill status-{{ candidate.status }}">{{ candidate.status }}</span>
+    <code>{{ candidate.family }}@v{{ candidate.version }}</code>
+  </h2>
+  <p>{{ candidate.definition.description }}</p>
+
+  <div class="split">
+    <div>
+      <h3>It may act only when all of these hold</h3>
+      <ul class="conditions">
+        {% for c in candidate.definition.condition_summary() %}<li><code>{{ c }}</code></li>{% endfor %}
+      </ul>
+    </div>
+    <div>
+      <h3>And it may only do this</h3>
+      <ul class="actions-list">
+        {% for a in candidate.definition.action_summary() %}<li>{{ a }}</li>{% endfor %}
+      </ul>
+      <p class="muted small">
+        The action set is fixed by the system. The agent proposes conditions and a spend
+        cap; it cannot propose an action that is not already allowlisted.
+      </p>
+    </div>
+  </div>
+
+  {% if candidate.replay_report %}
+  {% set r = candidate.replay_report %}
+  <h3>Replay against {{ r.cases_replayed }} historical cases</h3>
+  <div class="replay-grid">
+    <div class="stat good"><span class="n">{{ r.correct_auto_resolutions }}</span>correctly automated</div>
+    <div class="stat good"><span class="n">{{ r.correct_escalations }}</span>correctly escalated</div>
+    <div class="stat {{ 'bad' if r.false_automatic_actions else 'good' }}">
+      <span class="n">{{ r.false_automatic_actions }}</span>wrongly actioned
+    </div>
+    <div class="stat"><span class="n">{{ (r.automation_coverage * 100)|round|int }}%</span>coverage</div>
+  </div>
+
+  {% if r.failures %}
+  <h4>Cases the candidate would have got wrong</h4>
+  <table class="replay">
+    <thead><tr><th>Case</th><th>Expected</th><th>Would have</th><th>Why</th></tr></thead>
+    <tbody>
+      {% for f in r.failures %}
+      <tr><td><code>{{ f.case_id }}</code></td><td>{{ f.expected }}</td><td>{{ f.predicted }}</td>
+          <td>{{ f.scenario_note }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if candidate.status == 'candidate' %}
+    {% if r.passed %}
+    <div class="activation">
+      <p><strong>Replay passed.</strong> This policy version can now be activated. Until you
+      activate it, it does nothing.</p>
+      <form method="post" action="/policies/{{ candidate.policy_id }}/activate" class="inline">
+        <input type="password" name="approval_token" placeholder="Approval token" required>
+        <button type="submit" class="btn primary">Activate this policy version</button>
+      </form>
+      <form method="post" action="/policies/{{ candidate.policy_id }}/reject" class="inline">
+        <input type="hidden" name="reason" value="candidate rejected at review">
+        <button type="submit" class="btn ghost">Reject</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="activation blocked">
+      <p><strong>Activation blocked.</strong> Replay did not pass:</p>
+      <ul>{% for b in r.blocking_reasons %}<li>{{ b }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+  {% elif candidate.status == 'active' %}
+    <p class="decided">Activated by {{ candidate.activated_by }} at {{ candidate.activated_at }}.</p>
+  {% endif %}
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>Timeline</h2>
+  {% include "partials/timeline.html" %}
+</section>
+
+<section class="card muted-card">
+  <h3>Inspector note as received (untrusted free text)</h3>
+  <pre class="note">{{ exception.inspector_notes or '(none)' }}</pre>
+  <p class="muted small">
+    Notes are shown to you and reported as evidence. They are never treated as
+    instructions to the agent, and nothing in them can reach the policy language.
+  </p>
+</section>
+{% endblock %}

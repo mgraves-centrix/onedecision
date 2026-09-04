@@ -1,0 +1,368 @@
+{
+  "_notice": "SYNTHETIC FIXTURE DATA. Fictional company (Northgate Optics), invented SKUs, serials, and parts. No real products, customers, or business data.",
+  "kits": [
+    {
+      "sku": "NGO-KIT-4100",
+      "name": "Meridian 4100 Mirrorless Body Kit",
+      "category": "camera_kit",
+      "declared_value_usd": 2400.0
+    },
+    {
+      "sku": "NGO-KIT-7200",
+      "name": "Meridian 7200 Cine Lens Kit",
+      "category": "lens_kit",
+      "declared_value_usd": 3800.0
+    },
+    {
+      "sku": "NGO-KIT-A310",
+      "name": "Halyard A310 Field Audio Kit",
+      "category": "audio_kit",
+      "declared_value_usd": 1600.0
+    },
+    {
+      "sku": "NGO-KIT-D500",
+      "name": "Kestrel D500 Survey Drone Kit",
+      "category": "drone_kit",
+      "declared_value_usd": 5200.0
+    },
+    {
+      "sku": "NGO-KIT-9000",
+      "name": "Meridian 9000 Expedition Kit",
+      "category": "camera_kit",
+      "declared_value_usd": 4100.0
+    }
+  ],
+  "components": [
+    {
+      "sku": "NGO-KIT-4100",
+      "component_id": "CMP-BODY-4100",
+      "name": "Meridian 4100 camera body",
+      "serialized": 1,
+      "safety_critical": 0,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-4100",
+      "component_id": "CMP-BAT-STD",
+      "name": "Standard lithium battery",
+      "serialized": 0,
+      "safety_critical": 1,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-4100",
+      "component_id": "CMP-CHG-USB",
+      "name": "USB-C charger",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-4100",
+      "component_id": "CMP-STRAP-NEO",
+      "name": "Neoprene shoulder strap",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-4100",
+      "component_id": "CMP-CAP-BODY",
+      "name": "Body cap",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-4100",
+      "component_id": "CMP-CABLE-USBC",
+      "name": "USB-C data cable",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-4100",
+      "component_id": "CMP-CASE-FOAM",
+      "name": "Foam case insert",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-4100",
+      "component_id": "CMP-CLIP-RAIL",
+      "name": "Accessory rail clip",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-7200",
+      "component_id": "CMP-LENS-7200",
+      "name": "Meridian 7200 cine lens",
+      "serialized": 1,
+      "safety_critical": 0,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-7200",
+      "component_id": "CMP-HOOD-7200",
+      "name": "Lens hood",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-7200",
+      "component_id": "CMP-CAP-FRONT",
+      "name": "Front lens cap",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-7200",
+      "component_id": "CMP-CAP-REAR",
+      "name": "Rear lens cap",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-7200",
+      "component_id": "CMP-FILTER-UV",
+      "name": "UV filter",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-7200",
+      "component_id": "CMP-CASE-FOAM",
+      "name": "Foam case insert",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-A310",
+      "component_id": "CMP-REC-A310",
+      "name": "Halyard A310 field recorder",
+      "serialized": 1,
+      "safety_critical": 0,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-A310",
+      "component_id": "CMP-MIC-SHOT",
+      "name": "Shotgun microphone",
+      "serialized": 1,
+      "safety_critical": 0,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-A310",
+      "component_id": "CMP-WIND-FUR",
+      "name": "Windshield fur cover",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-A310",
+      "component_id": "CMP-CABLE-XLR",
+      "name": "XLR cable",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-A310",
+      "component_id": "CMP-BAT-STD",
+      "name": "Standard lithium battery",
+      "serialized": 0,
+      "safety_critical": 1,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-D500",
+      "component_id": "CMP-DRONE-D500",
+      "name": "Kestrel D500 airframe",
+      "serialized": 1,
+      "safety_critical": 0,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-D500",
+      "component_id": "CMP-CTRL-D500",
+      "name": "Kestrel D500 controller",
+      "serialized": 1,
+      "safety_critical": 0,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-D500",
+      "component_id": "CMP-PROP-GUARD",
+      "name": "Propeller guard set",
+      "serialized": 0,
+      "safety_critical": 1,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-D500",
+      "component_id": "CMP-BAT-LIPO",
+      "name": "LiPo flight battery",
+      "serialized": 0,
+      "safety_critical": 1,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-D500",
+      "component_id": "CMP-CABLE-USBC",
+      "name": "USB-C data cable",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-9000",
+      "component_id": "CMP-BODY-9000",
+      "name": "Meridian 9000 camera body",
+      "serialized": 1,
+      "safety_critical": 0,
+      "essential": 1
+    },
+    {
+      "sku": "NGO-KIT-9000",
+      "component_id": "CMP-CAP-BODY",
+      "name": "Body cap",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-9000",
+      "component_id": "CMP-FAULT-SIM",
+      "name": "Expedition accessory pouch",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    },
+    {
+      "sku": "NGO-KIT-9000",
+      "component_id": "CMP-CABLE-USBC",
+      "name": "USB-C data cable",
+      "serialized": 0,
+      "safety_critical": 0,
+      "essential": 0
+    }
+  ],
+  "parts": [
+    {
+      "component_id": "CMP-BAT-LIPO",
+      "replacement_cost_usd": 129.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-BAT-STD",
+      "replacement_cost_usd": 48.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-BODY-4100",
+      "replacement_cost_usd": 1450.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-BODY-9000",
+      "replacement_cost_usd": 2100.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-CABLE-USBC",
+      "replacement_cost_usd": 9.75,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-CABLE-XLR",
+      "replacement_cost_usd": 12.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-CAP-BODY",
+      "replacement_cost_usd": 6.5,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-CAP-FRONT",
+      "replacement_cost_usd": 11.25,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-CAP-REAR",
+      "replacement_cost_usd": 8.4,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-CASE-FOAM",
+      "replacement_cost_usd": 18.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-CHG-USB",
+      "replacement_cost_usd": 22.5,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-CTRL-D500",
+      "replacement_cost_usd": 520.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-DRONE-D500",
+      "replacement_cost_usd": 3100.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-FILTER-UV",
+      "replacement_cost_usd": 31.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-HOOD-7200",
+      "replacement_cost_usd": 24.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-LENS-7200",
+      "replacement_cost_usd": 2600.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-MIC-SHOT",
+      "replacement_cost_usd": 410.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-PROP-GUARD",
+      "replacement_cost_usd": 37.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-REC-A310",
+      "replacement_cost_usd": 740.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-STRAP-NEO",
+      "replacement_cost_usd": 14.0,
+      "stock_status": "in_stock"
+    },
+    {
+      "component_id": "CMP-WIND-FUR",
+      "replacement_cost_usd": 19.5,
+      "stock_status": "backordered"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+%% OneDecision — architecture
+%% Render: mmdc -i docs/architecture.mmd -o docs/architecture.png -t dark -b '#10131a'
+%% A hand-authored SVG of the same diagram is checked in at docs/architecture.svg
+
+flowchart TB
+    subgraph SYN["SYNTHETIC BUSINESS SYSTEMS (simulated adapters, not production)"]
+        RS[["returns system<br/>cases, BOM, evidence"]]
+        PC[["parts catalogue<br/>replacement cost, stock"]]
+        WMS[["warehouse WMS<br/>dispositions, work orders"]]
+    end
+
+    EV(["returns-dock check-in event<br/>not a chat prompt"]) --> ORCH
+
+    subgraph REASON["MODEL REASONING — may propose, may never act"]
+        AGENT{{"one Strands Agent<br/>investigate · card · propose"}}
+        MP["model provider adapter<br/>bedrock | anthropic | scripted"]
+        TOOLS["READ-ONLY TOOLS<br/>get_return_case<br/>compare_expected_and_received<br/>lookup_replacement_cost<br/>find_approved_policy<br/>replay_candidate_policy (dry run)"]
+        AGENT --- MP
+        AGENT --> TOOLS
+    end
+
+    subgraph DET["DETERMINISTIC CONTROL PLANE — the only thing that acts"]
+        ORCH["orchestrator"]
+        FACTS["fact derivation<br/>+ reconciliation"]
+        GUARD["hard guardrails<br/>non-overridable"]
+        ENGINE["policy engine<br/>data, never code"]
+        EXEC["execute_approved_policy<br/>idempotency key"]
+        VERIFY["verify_action<br/>read the writes back"]
+    end
+
+    subgraph GOV["GOVERNANCE"]
+        CARD["decision card"]
+        HUMAN(["HUMAN<br/>approve · activate"])
+        CAND["candidate policy<br/>schema-validated, inert"]
+        REPLAY["replay gate<br/>24 historical cases"]
+        ACTIVE[("active policy version")]
+        AUDIT[("append-only audit log<br/>hash-chained")]
+    end
+
+    ORCH --> AGENT
+    TOOLS -.reads.-> RS
+    TOOLS -.reads.-> PC
+    ORCH --> FACTS
+    FACTS -.reads.-> RS
+    FACTS -.reads.-> PC
+    AGENT -- "typed report (advisory)" --> FACTS
+    FACTS --> GUARD
+    GUARD -- "blocked" --> ESC(["ESCALATE"])
+    GUARD -- "clear" --> ENGINE
+    ACTIVE --> ENGINE
+    ENGINE -- "no policy applies" --> CARD
+    ENGINE -- "match" --> EXEC
+    EXEC --> WMS
+    EXEC --> VERIFY
+    VERIFY -- "fail" --> ESC
+    VERIFY -- "pass" --> DONE(["RESOLVED"])
+
+    CARD --> HUMAN
+    HUMAN -- "Approve and Teach" --> AGENT
+    AGENT -- "typed proposal" --> CAND
+    CAND --> REPLAY
+    REPLAY -- "any false action" --> BLOCK(["ACTIVATION BLOCKED"])
+    REPLAY -- "clean" --> HUMAN
+    HUMAN -- "explicit activation + token" --> ACTIVE
+
+    ORCH -.-> AUDIT
+    TOOLS -.-> AUDIT
+    GUARD -.-> AUDIT
+    EXEC -.-> AUDIT
+    VERIFY -.-> AUDIT
+    HUMAN -.-> AUDIT
+    ACTIVE -.-> AUDIT

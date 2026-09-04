@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environments
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Local state (regenerate with `make seed`)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+var/
+data/local/
+
+# Cloud / deployment scratch
+.bedrock_agentcore.yaml
+Dockerfile.agentcore
+.aws-sam/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
