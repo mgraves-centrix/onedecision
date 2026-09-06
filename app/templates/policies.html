@@ -40,6 +40,17 @@
       </div>
     </div>
 
+    {% if p.revised_from_policy_id %}
+    <p class="lineage">
+      Revised from <code>{{ p.revised_from_policy_id }}</code>
+      {% if p.revision_note %}&middot; &ldquo;{{ p.revision_note }}&rdquo;{% endif %}
+    </p>
+    {% endif %}
+
+    {% if diffs[p.policy_id] %}
+    {% with diff = diffs[p.policy_id] %}{% include "partials/policy_diff.html" %}{% endwith %}
+    {% endif %}
+
     {% if p.replay_report %}
     <p class="muted small">
       Replay: {{ p.replay_report.correct_auto_resolutions }} automated,
@@ -57,6 +68,12 @@
     </p>
     {% else %}
     <p class="muted small">None yet.</p>
+    {% endif %}
+
+    {% if p.status == 'candidate' %}
+    {% with candidate = p, redirect_to = '/policies' %}
+      {% include "partials/revise_form.html" %}
+    {% endwith %}
     {% endif %}
 
     {% if p.status == 'candidate' and p.replay_report and p.replay_report.passed %}

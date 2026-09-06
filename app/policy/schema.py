@@ -240,6 +240,20 @@ class PolicyDefinition(BaseModel):
             )
         return self
 
+    def spend_cap(self) -> float:
+        """The most this policy may authorize on one work order."""
+        for action in self.actions:
+            if action.type == "create_work_order":
+                return float(action.max_cost_usd)
+        return 0.0
+
+    def kit_category_restriction(self) -> str | None:
+        """The kit category this policy is limited to, if any."""
+        for condition in self.conditions:
+            if condition.field == "kit_category" and condition.operator == Operator.EQ:
+                return str(condition.value)
+        return None
+
     def condition_summary(self) -> list[str]:
         return [c.describe() for c in self.conditions]
 

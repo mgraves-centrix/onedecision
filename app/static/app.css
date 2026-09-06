@@ -236,3 +236,60 @@ pre.note {
   background: rgba(251, 191, 36, .07); border: 1px solid rgba(251, 191, 36, .22);
 }
 .token-hint code { color: var(--warn); }
+
+/* ----------------------------------------------------------------- diff */
+table.diff { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 6px; }
+table.diff th, table.diff td {
+  text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+table.diff thead th { color: var(--ink-dim); font-weight: 500; font-size: 12px;
+                      text-transform: uppercase; letter-spacing: .05em; }
+table.diff tbody th { font-weight: 500; width: 210px; }
+table.diff .before { color: var(--ink-faint); text-decoration: line-through; }
+table.diff .after { color: var(--ink); }
+table.diff tr.kind-widened, table.diff tr.kind-removed { background: rgba(248, 113, 113, .05); }
+table.diff tr.kind-narrowed, table.diff tr.kind-added { background: rgba(74, 222, 128, .05); }
+table.diff td .muted { display: block; margin-top: 2px; }
+
+.pill.kind-narrowed, .pill.kind-added {
+  background: rgba(74, 222, 128, .12); color: var(--good); border-color: rgba(74, 222, 128, .3);
+}
+.pill.kind-widened, .pill.kind-removed {
+  background: rgba(248, 113, 113, .12); color: var(--danger); border-color: rgba(248, 113, 113, .3);
+}
+.pill.kind-changed {
+  background: rgba(251, 191, 36, .12); color: var(--warn); border-color: rgba(251, 191, 36, .3);
+}
+
+.lineage {
+  font-size: 12.5px; color: var(--ink-dim); padding: 8px 12px; margin: 10px 0;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px;
+}
+
+/* --------------------------------------------------------------- revise */
+details.revise {
+  margin: 16px 0; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel-2); padding: 12px 14px;
+}
+details.revise > summary {
+  cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--ink);
+  list-style: none;
+}
+details.revise > summary::before { content: "▸ "; color: var(--ink-faint); }
+details.revise[open] > summary::before { content: "▾ "; }
+details.revise > summary::-webkit-details-marker { display: none; }
+details.revise > p { margin: 10px 0 14px; }
+
+.revise-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 900px) { .revise-form { grid-template-columns: 1fr; } }
+.revise-form label { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px;
+                     color: var(--ink-dim); }
+.revise-form label.wide { grid-column: 1 / -1; }
+.revise-form input, .revise-form select {
+  font: inherit; font-size: 13.5px; padding: 7px 11px; border-radius: 7px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.revise-form button { grid-column: 1 / -1; justify-self: start; }
+
+h4.danger-heading { color: var(--danger); }

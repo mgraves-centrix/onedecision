@@ -15,7 +15,7 @@ Target: submit by **noon Pacific on September 14**.
 | 6 | README | **Done** | `README.md`. |
 | 7 | MIT or Apache license visible in the repository | **Done** | `LICENSE` (Apache-2.0). |
 | 8 | Architecture diagram | **Done** | `docs/architecture.mmd` (source) + `docs/architecture.svg` / `.png` (rendered). |
-| 9 | AWS Builder ID | **Blocked — needs owner action** | Must be supplied by the submitter. |
+| 9 | AWS Builder ID | **Done** | `@cloudyai` |
 | 10 | Public YouTube or Vimeo demo, ≤ 5 minutes | **Not started** | Script ready at `docs/demo-script.md` (4:15). Record 2026-09-13. |
 | 11 | Working product demonstration | **Done** | Local app; judges can run it with no cloud account. |
 | 12 | Problem / audience / why it matters explained | **Done** | `README.md` and `docs/submission-draft.md`. |
@@ -48,8 +48,8 @@ is the part that distinguishes this from an agent that merely acts.
 
 | Category | Where this project makes its case |
 | --- | --- |
-| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 105 hermetic tests run against both PostgreSQL and SQLite (201 runs); swappable model provider; AgentCore-ready entrypoint. |
-| Design | Three coherent views; the decision card is the product surface; every claim on screen is traceable to a tool call. |
+| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 133 hermetic tests run against both PostgreSQL and SQLite (257 runs); swappable model provider; AgentCore-ready entrypoint. |
+| Design | Three coherent views; the decision card is the product surface; every claim on screen is traceable to a tool call; the policy diff makes a widened boundary impossible to approve by accident. |
 | Potential Impact | Any recurring human judgment call with a bounded action space — returns, claims, refunds, exceptions, approvals. |
 | Creativity & Originality | Not "an agent that writes SOPs". It converts one human decision into governed, replay-tested automation, and proves what it *would have done* before anyone trusts it. |
 | Presentation | 4:15 script that proves the whole workflow, including the refusal. |
@@ -57,10 +57,9 @@ is the part that distinguishes this from an agent that merely acts.
 ## Blockers requiring the owner
 
 1. **Make the repository public** — needs explicit authorization.
-2. **AWS Builder ID** — must be provided by the submitter.
-3. **Record and publish the demo video** — needs an account and explicit authorization.
-4. **Bedrock / AgentCore access** — needs valid AWS credentials and model access.
-5. **Devpost submission itself** — needs explicit authorization.
+2. **Record and publish the demo video** — needs an account and explicit authorization.
+3. **Bedrock / AgentCore access** — needs valid AWS credentials and model access.
+4. **Devpost submission itself** — needs explicit authorization.
 
 ## Pre-submission verification
 

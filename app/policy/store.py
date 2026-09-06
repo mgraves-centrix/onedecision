@@ -43,6 +43,8 @@ class PolicyRecord:
     activated_at: str | None
     activated_by: str | None
     retired_at: str | None
+    revised_from_policy_id: str | None = None
+    revision_note: str | None = None
 
     @property
     def label(self) -> str:
@@ -67,6 +69,8 @@ def _row(row: dict) -> PolicyRecord:
         activated_at=row["activated_at"],
         activated_by=row["activated_by"],
         retired_at=row["retired_at"],
+        revised_from_policy_id=row["revised_from_policy_id"],
+        revision_note=row["revision_note"],
     )
 
 
@@ -85,6 +89,8 @@ def create_candidate(
     origin_case_id: str | None = None,
     origin_decision_id: str | None = None,
     actor: str = "agent",
+    revised_from_policy_id: str | None = None,
+    revision_note: str | None = None,
 ) -> PolicyRecord:
     """Validate an untrusted proposal and store it as a **candidate**.
 
@@ -109,8 +115,9 @@ def create_candidate(
     conn.execute(
         """
         INSERT INTO policies (policy_id, family, version, status, definition,
-                              origin_case_id, origin_decision_id, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                              origin_case_id, origin_decision_id, created_at,
+                              revised_from_policy_id, revision_note)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             policy_id,
@@ -121,12 +128,17 @@ def create_candidate(
             origin_case_id,
             origin_decision_id,
             _now(),
+            revised_from_policy_id,
+            revision_note,
         ),
     )
     audit.record(
         conn,
         trace_id=trace_id,
-        event_type=AuditEventType.POLICY_PROPOSED,
+        event_type=(
+            AuditEventType.POLICY_REVISED if revised_from_policy_id
+            else AuditEventType.POLICY_PROPOSED
+        ),
         actor=actor,
         case_id=origin_case_id,
         policy_id=policy_id,
@@ -136,6 +148,8 @@ def create_candidate(
             "conditions": definition.condition_summary(),
             "actions": definition.action_summary(),
             "status": PolicyStatus.CANDIDATE.value,
+            "revised_from": revised_from_policy_id,
+            "revision_note": revision_note,
         },
     )
     return get(conn, policy_id)
@@ -285,3 +299,42 @@ def cases_handled(conn: "Connection", policy_id: str) -> list[str]:
         (policy_id,),
     ).fetchall()
     return [r["case_id"] for r in rows]
+
+
+def supersede(
+    conn: "Connection", policy_id: str, *, replaced_by: str, actor: str, trace_id: str
+) -> None:
+    """Mark a candidate as replaced by a revision.
+
+    The original is never edited or deleted. It stays on file with its own
+    replay report, so the record shows exactly what the agent proposed and
+    exactly what the human changed before activating.
+    """
+    conn.execute(
+        "UPDATE policies SET status = ? WHERE policy_id = ? AND status = ?",
+        (PolicyStatus.SUPERSEDED, policy_id, PolicyStatus.CANDIDATE),
+    )
+    audit.record(
+        conn,
+        trace_id=trace_id,
+        event_type=AuditEventType.POLICY_SUPERSEDED,
+        actor=actor,
+        policy_id=policy_id,
+        payload={"replaced_by": replaced_by},
+    )
+
+
+def revision_lineage(conn: "Connection", policy_id: str) -> list[PolicyRecord]:
+    """Every version leading to this one, oldest first."""
+    chain: list[PolicyRecord] = []
+    seen: set[str] = set()
+    current: str | None = policy_id
+    while current and current not in seen:
+        seen.add(current)
+        try:
+            record = get(conn, current)
+        except KeyError:
+            break
+        chain.append(record)
+        current = record.revised_from_policy_id
+    return list(reversed(chain))

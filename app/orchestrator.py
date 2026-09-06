@@ -40,13 +40,15 @@ from app.domain import (
     InvestigationReport,
     Outcome,
     PolicyProposal,
+    PolicyStatus,
     VerificationResult,
 )
 from app.facts import derive_facts, reconcile
 from app.policy import store as policy_store
+from app.policy.diff import diff_policies
 from app.policy.engine import select_matching_policies
 from app.policy.guardrails import evaluate_guardrails
-from app.policy.proposal import proposal_to_payload
+from app.policy.proposal import proposal_to_payload, revised_payload
 from app.policy.replay import replay_candidate_policy
 from app.policy.schema import PolicyDefinition, PolicyValidationError
 
@@ -764,7 +766,7 @@ class TeachResult:
     policy_id: str
     definition: PolicyDefinition
     replay: dict[str, Any]
-    proposal: PolicyProposal
+    proposal: PolicyProposal | None
     ready_to_activate: bool
     blocking_reasons: list[str]
 
@@ -982,4 +984,129 @@ def escalate_manually(
         case_id=row["case_id"],
         exception_id=exception_id,
         payload={"reasons": [reason], "manual": True},
+    )
+
+
+def revise_candidate(
+    conn: "Connection",
+    policy_id: str,
+    *,
+    max_cost_usd: float,
+    min_confidence: float,
+    kit_category: str | None,
+    revised_by: str,
+    note: str = "",
+) -> TeachResult:
+    """A human adjusts a proposed policy before deciding whether to activate it.
+
+    The original candidate is superseded, never edited: the record keeps what the
+    agent proposed alongside what the person changed. The revision then goes
+    through exactly the same gate as the original — schema validation, then
+    replay — so a revised policy that would have actioned a case wrongly is just
+    as un-activatable as a proposed one.
+    """
+    original = policy_store.get(conn, policy_id)
+    if original.status != PolicyStatus.CANDIDATE:
+        raise OrchestratorError(
+            f"only a candidate may be revised; policy {policy_id} is '{original.status}'"
+        )
+
+    trace_id = _trace_id()
+    if original.origin_case_id:
+        row = conn.execute(
+            "SELECT trace_id FROM exceptions WHERE case_id = ? ORDER BY created_at LIMIT 1",
+            (original.origin_case_id,),
+        ).fetchone()
+        if row:
+            trace_id = row["trace_id"]
+
+    payload = revised_payload(
+        original.definition,
+        max_cost_usd=max_cost_usd,
+        min_confidence=min_confidence,
+        kit_category=kit_category or None,
+    )
+
+    revision = policy_store.create_candidate(
+        conn,
+        payload=payload,
+        trace_id=trace_id,
+        origin_case_id=original.origin_case_id,
+        origin_decision_id=original.origin_decision_id,
+        actor=revised_by,
+        revised_from_policy_id=policy_id,
+        revision_note=note or None,
+    )
+    policy_store.supersede(
+        conn, policy_id, replaced_by=revision.policy_id, actor=revised_by, trace_id=trace_id
+    )
+
+    change = diff_policies(
+        original.definition,
+        revision.definition,
+        baseline_label=f"proposed v{original.version}",
+        candidate_label=f"revised v{revision.version}",
+    )
+
+    # A person tightening the agent's proposal is not held to the coverage floor;
+    # a person loosening it is. Neither is ever exempt from zero false actions.
+    report = replay_candidate_policy(
+        conn, revision.definition, enforce_coverage=change.widens
+    )
+    policy_store.attach_replay_report(conn, revision.policy_id, report.to_dict(), trace_id=trace_id)
+    audit.record(
+        conn,
+        trace_id=trace_id,
+        event_type=AuditEventType.POLICY_REVISED,
+        actor=revised_by,
+        case_id=original.origin_case_id,
+        policy_id=revision.policy_id,
+        payload={
+            "revised_from": policy_id,
+            "note": note,
+            "summary": change.summary,
+            "widens": change.widens,
+            "changes": [
+                {"field": r.label, "before": r.before, "after": r.after, "kind": r.kind.value}
+                for r in change.changed_rows
+            ],
+        },
+    )
+
+    return TeachResult(
+        policy_id=revision.policy_id,
+        definition=revision.definition,
+        replay=report.to_dict(),
+        proposal=None,
+        ready_to_activate=report.passed,
+        blocking_reasons=report.blocking_reasons,
+    )
+
+
+def policy_diff_for(conn: "Connection", record: policy_store.PolicyRecord):
+    """Diff a policy version against whatever it should be read against.
+
+    A revision is most usefully compared to the version it revised. Anything else
+    is compared to the active policy it would replace — or to nothing, when it
+    would be the first.
+    """
+    if record.revised_from_policy_id:
+        try:
+            previous = policy_store.get(conn, record.revised_from_policy_id)
+            return diff_policies(
+                previous.definition,
+                record.definition,
+                baseline_label=f"proposed v{previous.version}",
+                candidate_label=f"revised v{record.version}",
+            )
+        except KeyError:
+            pass
+
+    active = [p for p in policy_store.list_active(conn) if p.policy_id != record.policy_id]
+    baseline = active[0] if active else None
+    return diff_policies(
+        baseline.definition if baseline else None,
+        record.definition,
+        baseline_label=f"active v{baseline.version}" if baseline else "no active policy",
+        candidate_label=f"v{record.version}",
     )

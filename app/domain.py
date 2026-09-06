@@ -27,6 +27,9 @@ class PolicyStatus(StrEnum):
     ACTIVE = "active"
     RETIRED = "retired"
     REJECTED = "rejected"
+    # Replaced by a human revision before it was ever activated. Distinct from
+    # RETIRED (was live, superseded) and REJECTED (a person turned it down).
+    SUPERSEDED = "superseded"
 
 
 class Outcome(StrEnum):

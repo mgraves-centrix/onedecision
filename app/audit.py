@@ -35,6 +35,8 @@ class AuditEventType:
     DECISION_CARD_CREATED = "decision.card_created"
     DECISION_RECORDED = "decision.recorded"
     POLICY_PROPOSED = "policy.proposed"
+    POLICY_REVISED = "policy.revised"
+    POLICY_SUPERSEDED = "policy.superseded"
     POLICY_REJECTED_SCHEMA = "policy.rejected_schema"
     POLICY_REPLAY_RUN = "policy.replay_run"
     POLICY_ACTIVATION_BLOCKED = "policy.activation_blocked"

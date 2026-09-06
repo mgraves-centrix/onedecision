@@ -87,6 +87,19 @@
   </h2>
   <p>{{ candidate.definition.description }}</p>
 
+  {% if lineage|length > 1 %}
+  <p class="lineage">
+    Revision history:
+    {% for step in lineage %}
+      <code>v{{ step.version }}</code>{% if not loop.last %} &rarr; {% endif %}
+    {% endfor %}
+    &middot; the agent proposed <code>v{{ lineage[0].version }}</code>, a person revised it.
+  </p>
+  {% endif %}
+  {% if candidate.revision_note %}
+  <p class="muted small">Revision note: &ldquo;{{ candidate.revision_note }}&rdquo;</p>
+  {% endif %}
+
   <div class="split">
     <div>
       <h3>It may act only when all of these hold</h3>
@@ -106,6 +119,16 @@
     </div>
   </div>
 
+  {% if candidate_diff %}
+  {% with diff = candidate_diff %}{% include "partials/policy_diff.html" %}{% endwith %}
+  {% endif %}
+
+  {% if candidate.status == 'candidate' %}
+  {% with redirect_to = '/exceptions/' ~ exception.exception_id %}
+    {% include "partials/revise_form.html" %}
+  {% endwith %}
+  {% endif %}
+
   {% if candidate.replay_report %}
   {% set r = candidate.replay_report %}
   <h3>Replay against {{ r.cases_replayed }} historical cases</h3>
@@ -118,17 +141,47 @@
     <div class="stat"><span class="n">{{ (r.automation_coverage * 100)|round|int }}%</span>coverage</div>
   </div>
 
-  {% if r.failures %}
-  <h4>Cases the candidate would have gotten wrong</h4>
+  {% set wrong = r.failures | selectattr('predicted', 'equalto', 'auto_resolve') | list %}
+  {% set missed = r.failures | rejectattr('predicted', 'equalto', 'auto_resolve') | list %}
+
+  {% if wrong %}
+  <h4 class="danger-heading">Cases this version would have actioned wrongly</h4>
+  <p class="muted small">These block activation outright.</p>
   <table class="replay">
-    <thead><tr><th>Case</th><th>Expected</th><th>Would have</th><th>Why</th></tr></thead>
+    <thead><tr><th>Case</th><th>Should have</th><th>Would have</th><th>Why it matters</th></tr></thead>
     <tbody>
-      {% for f in r.failures %}
+      {% for f in wrong %}
       <tr><td><code>{{ f.case_id }}</code></td><td>{{ f.expected }}</td><td>{{ f.predicted }}</td>
           <td>{{ f.scenario_note }}</td></tr>
       {% endfor %}
     </tbody>
   </table>
+  {% endif %}
+
+  {% if missed %}
+  <h4>Cases this version sends to a person instead of automating</h4>
+  <p class="muted small">
+    Not errors. Each one costs a supervisor a couple of minutes; a wrong automatic
+    action costs a camera. Tightening the boundary deliberately trades the first
+    for the second.
+  </p>
+  <table class="replay">
+    <thead><tr><th>Case</th><th>Could have been</th><th>Will be</th><th>Case</th></tr></thead>
+    <tbody>
+      {% for f in missed %}
+      <tr><td><code>{{ f.case_id }}</code></td><td>{{ f.expected }}</td><td>{{ f.predicted }}</td>
+          <td>{{ f.scenario_note }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if not r.coverage_floor_enforced %}
+  <p class="muted small">
+    The automation-coverage floor does not apply here: this version is no wider
+    than the one it revises, and a person choosing to automate less is always
+    allowed. Zero wrong automatic actions is still required, and still met.
+  </p>
   {% endif %}
 
   {% if candidate.status == 'candidate' %}

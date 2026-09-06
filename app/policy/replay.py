@@ -49,6 +49,7 @@ class ReplayReport:
     false_automatic_actions: int
     missed_automations: int
     automation_coverage: float
+    coverage_floor_enforced: bool
     passed: bool
     blocking_reasons: list[str] = field(default_factory=list)
     failures: list[dict[str, Any]] = field(default_factory=list)
@@ -68,9 +69,24 @@ def historical_case_ids(conn: "Connection") -> list[str]:
 
 
 def replay_candidate_policy(
-    conn: "Connection", definition: PolicyDefinition, case_ids: list[str] | None = None
+    conn: "Connection",
+    definition: PolicyDefinition,
+    case_ids: list[str] | None = None,
+    *,
+    enforce_coverage: bool = True,
 ) -> ReplayReport:
-    """Evaluate a candidate against history. Read-only."""
+    """Evaluate a candidate against history. Read-only.
+
+    `enforce_coverage` is the one part of this gate that is about quality rather
+    than safety. A coverage floor stops the *agent* proposing a policy that looks
+    safe because it does nothing. It must not stop a *person* deciding to
+    automate less than the agent suggested — refusing a human who wants to be
+    more conservative is exactly backwards. So a human revision that is no wider
+    than the version it revises is exempt from the floor.
+
+    Nothing exempts anything from the rules that matter: zero false automatic
+    actions, and a policy that automates nothing at all is still not activatable.
+    """
     ids = case_ids if case_ids is not None else historical_case_ids(conn)
 
     results: list[ReplayCaseResult] = []
@@ -147,7 +163,7 @@ def replay_candidate_policy(
         )
     if correct_auto == 0:
         blocking.append("policy automates nothing on the historical set")
-    if auto_labeled and coverage < MIN_AUTOMATION_COVERAGE:
+    if enforce_coverage and auto_labeled and coverage < MIN_AUTOMATION_COVERAGE:
         blocking.append(
             f"automation coverage {coverage:.0%} is below the required "
             f"{MIN_AUTOMATION_COVERAGE:.0%}"
@@ -161,6 +177,7 @@ def replay_candidate_policy(
         false_automatic_actions=false_auto,
         missed_automations=missed,
         automation_coverage=round(coverage, 4),
+        coverage_floor_enforced=enforce_coverage,
         passed=not blocking,
         blocking_reasons=blocking,
         failures=[

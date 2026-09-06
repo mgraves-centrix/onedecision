@@ -80,15 +80,24 @@ The separation between *reasoning* and *acting* is the product.
    only ever *narrow* automation, never widen it.
 6. **Replay gates activation.** A candidate policy cannot be activated until it
    has been replayed against the labeled historical case set with zero false
-   automatic actions.
-7. **Default to escalation.** Ambiguity, missing evidence, tool failure, model
+   automatic actions. A **human revision** goes through the identical gate — a
+   person can tighten what the agent proposed, or loosen it within the hard
+   guardrails, but cannot activate either without re-proving it against history.
+   The one part of the gate that is about quality rather than safety — the
+   automation-coverage floor — is waived for a revision that is no *wider* than
+   what it revises, because refusing someone who wants to be more conservative
+   is exactly backwards. Zero false automatic actions is never waived.
+7. **A revision cannot remove a safety condition.** It adjusts a spend cap, a
+   confidence floor, and an optional category restriction. There is no field in
+   which to express removing a condition or adding an action.
+8. **Default to escalation.** Ambiguity, missing evidence, tool failure, model
    timeout, low confidence, or conflicting policies all escalate.
-8. **Idempotency everywhere.** Every state-changing action carries an
+9. **Idempotency everywhere.** Every state-changing action carries an
    idempotency key; replays are no-ops that return the original result.
-9. **Append-only audit.** The audit log is hash-chained and protected by database
+10. **Append-only audit.** The audit log is hash-chained and protected by database
    triggers that reject `UPDATE` and `DELETE` — and, on PostgreSQL, by a `REVOKE`
    so a non-owner application role cannot rewrite history at all.
-10. **No hidden chain-of-thought.** The agent returns a short, structured
+11. **No hidden chain-of-thought.** The agent returns a short, structured
     rationale intended for a human reader. Raw reasoning is never surfaced or
     stored.
 
@@ -120,6 +129,7 @@ analytics suite.
 | 6 | Facts re-derived deterministically, agent report reconciled | Prevents a hallucinated or injected fact from driving an action | Hard to reverse (core) |
 | 7 | Hash-chained append-only audit, serialized by an advisory lock and guarded by `UNIQUE(prev_hash)` | Tamper-evidence that survives more than one writer | Yes |
 | 8 | AgentCore compatibility kept as a thin entrypoint, not a dependency | Local golden path first, per the brief | Yes |
+| 9 | A revision creates a new candidate rather than editing one | The record keeps what the agent proposed alongside what the human changed; lineage is auditable | Hard to reverse (core) |
 
 ## 8. Assumptions
 

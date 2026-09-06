@@ -19,13 +19,34 @@ from app.orchestrator import handle_event
 
 
 def test_both_backends_run_the_same_migrations(temp_db):
+    """Every migration on disk for this dialect has been applied, and no more.
+
+    Derived from the files rather than hard-coded, so adding a migration cannot
+    leave this test asserting yesterday's schema.
+    """
+    from app.db import MIGRATIONS_DIR
+    from app.db.base import migration_files
+
     applied = db.init_db()
     assert applied == []  # already applied by the seed fixture
+
+    on_disk = [version for version, _ in migration_files(MIGRATIONS_DIR, db.backend_name())]
     with db.read_only() as conn:
-        versions = [r["version"] for r in conn.execute(
+        recorded = [r["version"] for r in conn.execute(
             "SELECT version FROM schema_migrations ORDER BY version"
         ).fetchall()]
-    assert versions == ["0001"]
+    assert recorded == on_disk
+    assert on_disk, "no migrations found for this dialect"
+
+
+def test_both_dialects_define_the_same_migration_versions(temp_db):
+    """A migration added for one backend but not the other is a silent drift."""
+    from app.db import MIGRATIONS_DIR
+    from app.db.base import migration_files
+
+    sqlite = [v for v, _ in migration_files(MIGRATIONS_DIR, "sqlite")]
+    postgres = [v for v, _ in migration_files(MIGRATIONS_DIR, "postgres")]
+    assert sqlite == postgres
 
 
 def test_backend_is_reported_and_never_leaks_the_password(temp_db):

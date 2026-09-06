@@ -1,0 +1,43 @@
+{# Expects: candidate (PolicyRecord), kit_categories, redirect_to #}
+<details class="revise">
+  <summary>Revise before deciding</summary>
+  <p class="muted small">
+    Tighten what the agent proposed, or loosen it within the hard guardrails.
+    A revision creates a <strong>new candidate</strong> &mdash; the original stays on
+    file with its own replay report &mdash; and it is replayed again before it can
+    be activated. A revision cannot remove a safety condition or add an action:
+    there is nowhere in this form to express either.
+  </p>
+  <form method="post" action="/policies/{{ candidate.policy_id }}/revise" class="revise-form">
+    <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
+    <label>
+      Spend cap (USD)
+      <input type="number" name="max_cost_usd" step="0.01" min="0.01"
+             max="{{ max_cost_ceiling }}"
+             value="{{ '%.2f'|format(candidate.definition.spend_cap()) }}" required>
+      <span class="muted small">Hard ceiling ${{ '%.2f'|format(max_cost_ceiling) }}</span>
+    </label>
+    <label>
+      Minimum confidence
+      <input type="number" name="min_confidence" step="0.01" min="0.5" max="1.0"
+             value="{{ '%.2f'|format(candidate.definition.min_confidence) }}" required>
+      <span class="muted small">Higher means fewer cases qualify</span>
+    </label>
+    <label>
+      Restrict to kit category
+      <select name="kit_category">
+        <option value="">Any category</option>
+        {% for c in kit_categories %}
+        <option value="{{ c }}" {% if candidate.definition.kit_category_restriction() == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+      <span class="muted small">Adding one only ever removes cases</span>
+    </label>
+    <label class="wide">
+      Why (recorded in the audit log)
+      <input type="text" name="note" maxlength="200"
+             placeholder="e.g. the $25 cap is higher than I want for drone kits">
+    </label>
+    <button type="submit" class="btn">Revise and re-run replay</button>
+  </form>
+</details>

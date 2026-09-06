@@ -1,0 +1,39 @@
+{# Expects: diff (PolicyDiff) #}
+<h3>
+  What changes &mdash; {{ diff.candidate_label }} vs {{ diff.baseline_label }}
+  {% if diff.widens %}
+    <span class="pill bad">widens the boundary</span>
+  {% elif diff.has_changes %}
+    <span class="pill ok">narrower or equal</span>
+  {% endif %}
+</h3>
+
+{% if diff.has_changes %}
+<table class="diff">
+  <thead>
+    <tr><th>What</th><th>Before</th><th>After</th><th>Effect</th></tr>
+  </thead>
+  <tbody>
+    {% for row in diff.changed_rows %}
+    <tr class="kind-{{ row.kind }}">
+      <th><code>{{ row.label }}</code></th>
+      <td class="before">{{ row.before or '—' }}</td>
+      <td class="after">{{ row.after or '—' }}</td>
+      <td>
+        <span class="pill kind-{{ row.kind }}">{{ row.kind }}</span>
+        {% if row.note %}<span class="muted small">{{ row.note }}</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if diff.widens %}
+<p class="muted small">
+  A wider boundary means this version would act on cases the previous one would
+  have sent to a person. It is still inside the hard guardrails, which no policy
+  can cross, and it still has to pass replay before it can be activated.
+</p>
+{% endif %}
+{% else %}
+<p class="muted small">No difference from {{ diff.baseline_label }}.</p>
+{% endif %}

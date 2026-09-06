@@ -90,6 +90,14 @@ The interesting engineering is the line between reasoning and acting:
 - **Hard guardrails outrank policies** and run before any policy is consulted. A policy
   can only ever narrow automation.
 - **Replay gates activation.** One false automatic action against history blocks it.
+- **A human can revise the boundary, and the diff says which way it moved.** The
+  supervisor can tighten the agent's proposal or loosen it within the guardrails;
+  the diff labels every change narrower or wider, and a revision is replayed from
+  scratch before it can be activated. Building this surfaced a real flaw: the
+  coverage floor in the replay gate was refusing revisions that automated *less*
+  than the agent proposed — the system was declining to let a person be more
+  careful. The floor now applies to proposals and to widening revisions only.
+  Zero false automatic actions is never waived.
 - **The audit log is append-only** and hash-chained; `UPDATE` and `DELETE` are rejected by
   database triggers, and a test drops the triggers, tampers with a row, and asserts the
   chain notices.
@@ -125,8 +133,8 @@ confirmed, and `docs/deployment-agentcore.md` states plainly which steps have no
 - **Zero** false automatic actions, **zero** prohibited actions, and **zero** duplicate
   actions across 24 evaluation cases — measured by a harness that counts from the
   database, not asserted.
-- 105 hermetic tests, run against both PostgreSQL and SQLite for 201 total runs in
-  under twenty seconds, including prompt injection inside case notes,
+- 133 hermetic tests, run against both PostgreSQL and SQLite for 257 total runs in
+  under thirty seconds, including prompt injection inside case notes,
   audit tampering, model timeouts, tool outages, and duplicate events.
 - A replay gate that shows a supervisor what a proposed policy *would have done* to their
   own history before they trust it.
@@ -159,4 +167,4 @@ whether the policy language generalises or was quietly fitted to the first one.
 
 ## AWS Builder ID
 
-**[OWNER]**
+`@cloudyai`

@@ -31,7 +31,11 @@ It closes that loop, once:
 4. The supervisor clicks **Approve and Teach**.
 5. The agent proposes a **tightly bounded, schema-validated policy**. It is inert.
 6. Deterministic code **replays** the candidate against 24 labeled historical cases.
-7. The supervisor **explicitly activates** the version.
+7. A **policy diff** shows exactly what changes, and flags anything that gets
+   *wider*. The supervisor can **revise** the boundary — tighten the spend cap,
+   raise the confidence floor, restrict it to one kit category — which creates a
+   new candidate that is replayed again from scratch.
+8. The supervisor **explicitly activates** the version.
 8. The next matching case resolves automatically — work order raised, disposition set,
    writes verified, exception closed against the policy version.
 9. A risky near-match still escalates.
@@ -87,7 +91,7 @@ Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 105 hermetic tests, ~5 seconds
+make test      # 133 hermetic tests, ~6 seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
@@ -143,7 +147,8 @@ The separation between *reasoning* and *acting* is the product.
 | 3 | Policies are **data**, not code — allowlisted fields, operators, value types, thresholds and actions. | `app/policy/schema.py` |
 | 4 | No generated Python, SQL, shell, or natural-language conditions. No `eval` anywhere. | `app/policy/engine.py` |
 | 5 | Hard invariants outrank policies. A policy can only ever *narrow* automation. | `app/policy/guardrails.py` |
-| 6 | Replay gates activation: one false automatic action blocks it outright. | `app/policy/replay.py` |
+| 6 | Replay gates activation: one false automatic action blocks it outright — for a human revision exactly as for an agent proposal. | `app/policy/replay.py` |
+| 6b | A revision can tighten or loosen a boundary within the guardrails, but has no way to remove a safety condition or add an action. | `app/policy/proposal.py` |
 | 7 | Default to escalation on anything ambiguous. | throughout |
 | 8 | Every state-changing action carries an idempotency key. | `app/adapters/warehouse.py` |
 | 9 | Append-only, hash-chained audit log; `UPDATE`/`DELETE` rejected by database triggers, and by `REVOKE` on PostgreSQL. | `app/audit.py`, `app/db/` |
@@ -206,6 +211,7 @@ app/
   adapters/        SYNTHETIC business systems (returns, parts, warehouse)
   policy/
     schema.py      the allowlist: fields, operators, values, actions
+    diff.py        policy-version diff, classified narrower / wider
     guardrails.py  non-overridable invariants
     engine.py      deterministic evaluation, no dynamic execution
     replay.py      the replay gate
@@ -258,7 +264,7 @@ to run the demo. **Never commit a real `.env`.**
 
 ```bash
 make test        # hermetic. No network, no model calls. SQLite, plus PostgreSQL if it is up.
-make test-pg     # the whole suite against BOTH backends (188 tests)
+make test-pg     # the whole suite against BOTH backends (257 runs)
 pytest -m integration    # opt-in, needs a live model provider
 ```
 

@@ -21,7 +21,13 @@ from fastapi import FastAPI
 
 from app import audit, db, seed
 from app.agent.providers import provider_label
-from app.config import COMPANY_NAME, FACILITY_ID, REPO_ROOT, settings
+from app.config import (
+    COMPANY_NAME,
+    FACILITY_ID,
+    MAX_REPLACEMENT_COST_CEILING_USD,
+    REPO_ROOT,
+    settings,
+)
 from app.domain import DecisionCard, ExceptionStatus
 from app.orchestrator import (
     OrchestratorError,
@@ -30,10 +36,15 @@ from app.orchestrator import (
     escalate_manually,
     get_decision_card,
     handle_event,
+    policy_diff_for,
     record_decision,
     reject_policy,
+    revise_candidate,
 )
+from app.policy.proposal import RevisionError
+from app.policy.schema import ENUM_FIELDS
 from app.policy import store as policy_store
+from app.policy.schema import PolicyValidationError
 from app.policy.store import ActivationDenied
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -82,6 +93,7 @@ def _base_context(request: Request) -> dict[str, Any]:
         "offline": settings.is_offline_provider,
         "operator": OPERATOR,
         "status_labels": STATUS_LABELS,
+        "max_cost_ceiling": MAX_REPLACEMENT_COST_CEILING_USD,
         # Shown beside the activation control only while the shipped placeholder
         # is in use, so anyone evaluating this can complete the flow without
         # reading the source. It disappears the moment a real token is set.
@@ -185,12 +197,21 @@ def exception_detail(request: Request, exception_id: str) -> HTMLResponse:
         candidate_record = policy_store.get(conn, candidate["policy_id"]) if candidate else None
         active = policy_store.list_active(conn)
         timeline = audit.read_for_case(conn, row["case_id"])
+        candidate_diff = policy_diff_for(conn, candidate_record) if candidate_record else None
+        lineage = (
+            policy_store.revision_lineage(conn, candidate_record.policy_id)
+            if candidate_record
+            else []
+        )
 
     context = _base_context(request) | {
         "exception": exception,
         "card": card,
         "decision": dict(decision_row) if decision_row else None,
         "candidate": candidate_record,
+        "candidate_diff": candidate_diff,
+        "lineage": lineage,
+        "kit_categories": sorted(ENUM_FIELDS["kit_category"]),
         "active_policies": active,
         "timeline": timeline,
     }
@@ -223,11 +244,13 @@ def policies(request: Request) -> HTMLResponse:
     with db.read_only() as conn:
         records = policy_store.list_all(conn)
         handled = {p.policy_id: policy_store.cases_handled(conn, p.policy_id) for p in records}
+        diffs = {p.policy_id: policy_diff_for(conn, p) for p in records}
         entries = audit.read_all(conn, limit=400)
         chain = audit.verify_chain(conn)
     context = _base_context(request) | {
         "policies": records,
         "handled": handled,
+        "diffs": diffs,
         "timeline": entries,
         "chain": chain,
     }
@@ -245,6 +268,41 @@ def activate(policy_id: str, approval_token: str = Form(...)):
         except ActivationDenied as exc:
             raise HTTPException(status_code=403, detail=f"activation denied: {exc}") from exc
     return RedirectResponse("/policies", status_code=303)
+
+
+@app.post("/policies/{policy_id}/revise")
+def revise(
+    policy_id: str,
+    max_cost_usd: float = Form(...),
+    min_confidence: float = Form(...),
+    kit_category: str = Form(""),
+    note: str = Form(""),
+    redirect_to: str = Form("/policies"),
+):
+    """Adjust a proposed policy before deciding on it.
+
+    The revision is a new candidate, re-validated and re-replayed. It activates
+    nothing; the activation gate is unchanged and still requires a human, a
+    token, and a passing replay.
+    """
+    with db.session() as conn:
+        try:
+            revise_candidate(
+                conn,
+                policy_id,
+                max_cost_usd=max_cost_usd,
+                min_confidence=min_confidence,
+                kit_category=kit_category or None,
+                revised_by=OPERATOR,
+                note=note,
+            )
+        except (OrchestratorError, RevisionError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except PolicyValidationError as exc:
+            raise HTTPException(
+                status_code=400, detail=f"revision rejected: {'; '.join(exc.errors)}"
+            ) from exc
+    return RedirectResponse(redirect_to, status_code=303)
 
 
 @app.post("/policies/{policy_id}/reject")
