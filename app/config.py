@@ -144,10 +144,12 @@ def load_settings() -> Settings:
         model_provider=os.environ.get("ONEDECISION_MODEL_PROVIDER", "scripted").strip().lower(),
         bedrock_model_id=os.environ.get(
             "ONEDECISION_BEDROCK_MODEL_ID",
-            # Bedrock IDs carry an "anthropic." prefix. Unverified against a live
-            # endpoint (see docs/provenance.md); confirm against
-            # `aws bedrock list-foundation-models` for the target account.
-            "anthropic.claude-opus-5",
+            # Opus 5 has no in-Region support on bedrock-runtime, the endpoint
+            # Strands' Converse calls use, so it must be addressed through a
+            # cross-Region inference profile: "us." keeps traffic in US and
+            # Canada Regions, "global." routes anywhere. Still unverified
+            # against a live endpoint (see docs/provenance.md).
+            "us.anthropic.claude-opus-5",
         ),
         anthropic_model_id=os.environ.get(
             # Current model IDs carry no date suffix.
