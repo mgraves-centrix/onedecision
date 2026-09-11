@@ -42,13 +42,19 @@ def resolve_model(settings: Settings | None = None, **overrides: Any) -> Model:
     if provider == "bedrock":
         try:
             from strands.models import BedrockModel
+            from strands.models.model import CacheConfig
         except ImportError as exc:  # pragma: no cover - dependency is pinned
             raise ModelProviderUnavailable(f"BedrockModel unavailable: {exc}") from exc
         # No default temperature, for the same reason as the Anthropic provider
         # below: current Claude models reject it as deprecated.
+        # Prompt caching: every model call in an agent loop resends the system
+        # prompt, the tool schemas, and the conversation so far, and cached input
+        # is billed at a fraction of the normal rate.
         return BedrockModel(
             model_id=overrides.pop("model_id", cfg.bedrock_model_id),
             region_name=overrides.pop("region_name", cfg.aws_region),
+            cache_config=overrides.pop("cache_config", CacheConfig(strategy="auto")),
+            cache_tools=overrides.pop("cache_tools", "default"),
             **overrides,
         )
 

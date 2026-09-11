@@ -25,17 +25,24 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
+from pydantic import ValidationError
 from strands import tool
 
 from app import audit
 from app.adapters import parts_catalog, returns_system
 from app.adapters.returns_system import AdapterError
 from app.audit import AuditEventType
+from app.domain import PolicyProposal
 from app.facts import derive_facts
 from app.policy import store as policy_store
 from app.policy.engine import match_policy
+from app.policy.proposal import proposal_to_payload
 from app.policy.replay import replay_candidate_policy as _replay
 from app.policy.schema import PolicyValidationError, validate_policy_payload
+
+
+# What replay_candidate_policy accepts: the fields of a PolicyProposal that decide behavior.
+PROPOSAL_FIELDS = ["name", "description", "conditions", "max_cost_usd", "min_confidence (optional)"]
 
 
 @dataclass
@@ -237,10 +244,18 @@ def build_tools(ctx: AgentContext) -> list[Any]:
     def replay_candidate_policy(policy_json: str) -> str:
         """Dry-run a candidate policy against the historical case set.
 
-        Writes nothing. Use it to check a proposal before offering it.
+        Writes nothing. Pass the candidate in the same shape you will propose it:
+
+            {"name": "...", "description": "...",
+             "conditions": [{"field": "serial_match", "operator": "eq", "value": true}],
+             "max_cost_usd": 25, "min_confidence": 0.75}
+
+        Leave actions out. The system adds its fixed action set, with the work order
+        capped at max_cost_usd, exactly as it will for the proposal itself.
 
         Args:
-            policy_json: The candidate policy as a JSON object.
+            policy_json: The candidate as a JSON object with name, description,
+                conditions, and max_cost_usd, and optionally min_confidence.
 
         Returns:
             JSON with how many historical cases the candidate would have
@@ -252,9 +267,29 @@ def build_tools(ctx: AgentContext) -> list[Any]:
         except ValueError as exc:
             ctx.record("replay_candidate_policy", {}, False, f"invalid JSON: {exc}")
             return _dumps({"error": f"policy_json is not valid JSON: {exc}"})
+        if not isinstance(payload, dict):
+            ctx.record("replay_candidate_policy", {}, False, "policy_json is not a JSON object")
+            return _dumps({"error": "policy_json must be a JSON object", "expected_fields": PROPOSAL_FIELDS})
+
+        # A proposal never carries actions (see PolicyProposal), so a dry run doesn't
+        # either: anything sent is dropped, and proposal_to_payload adds the fixed set.
+        ignored = [key for key in ("actions", "family") if key in payload]
+        for key in ignored:
+            payload.pop(key)
+        # Only the proposal itself needs these explanations; a dry run can skip them.
+        payload.setdefault("justification", "")
+        payload.setdefault("expected_effect", "")
 
         try:
-            definition = validate_policy_payload(payload)
+            proposal = PolicyProposal.model_validate(payload)
+        except ValidationError as exc:
+            details = [f"{'.'.join(str(p) for p in e['loc']) or 'candidate'}: {e['msg']}" for e in exc.errors()]
+            ctx.record("replay_candidate_policy", {}, False, "; ".join(details[:3]))
+            return _dumps(
+                {"error": "candidate failed validation", "details": details, "expected_fields": PROPOSAL_FIELDS}
+            )
+        try:
+            definition = validate_policy_payload(proposal_to_payload(proposal))
         except PolicyValidationError as exc:
             ctx.record("replay_candidate_policy", {}, False, "; ".join(exc.errors[:3]))
             return _dumps({"error": "policy failed schema validation", "details": exc.errors})
@@ -274,6 +309,7 @@ def build_tools(ctx: AgentContext) -> list[Any]:
                 "automation_coverage": report.automation_coverage,
                 "passed": report.passed,
                 "blocking_reasons": report.blocking_reasons,
+                **({"ignored_fields": ignored} if ignored else {}),
             }
         )
 

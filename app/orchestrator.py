@@ -362,6 +362,9 @@ def _record_agent_run(
             "input_tokens": int(usage.get("inputTokens") or 0),
             "output_tokens": int(usage.get("outputTokens") or 0),
             "total_tokens": int(usage.get("totalTokens") or 0),
+            # Prompt-cache traffic, when the provider caches; Bedrock reports it in its own fields.
+            "cache_read_input_tokens": int(usage.get("cacheReadInputTokens") or 0),
+            "cache_write_input_tokens": int(usage.get("cacheWriteInputTokens") or 0),
             "model_latency_ms": int(latency.get("latencyMs") or 0),
             "duration_ms": int((time.perf_counter() - started) * 1000),
             "cycles": int(getattr(metrics, "cycle_count", 0) or 0),
@@ -915,16 +918,17 @@ def approve_and_teach(
 
 
 def _provisional_policy_payload(facts: CaseFacts) -> dict[str, Any]:
-    """The payload the agent dry-runs through `replay_candidate_policy`.
+    """The candidate the scripted agent dry-runs through `replay_candidate_policy`.
 
     Derived from the case that was just approved, so the agent's own replay call
-    exercises the real evaluator rather than a hypothetical.
+    exercises the real evaluator rather than a hypothetical. It has the shape of a
+    `PolicyProposal`, the same as a hosted model's replay call: conditions and a
+    spend cap, with the fixed actions added by the tool.
     """
     threshold = 25.0
     if facts.replacement_cost_usd is not None and facts.replacement_cost_usd > threshold:
         threshold = min(50.0, round(facts.replacement_cost_usd + 1.0, 2))
     return {
-        "family": "returns.missing_accessory",
         "name": "Single low-cost accessory replacement",
         "description": (
             "Exactly one missing non-serialized accessory, clean evidence, matching serial, "
@@ -940,15 +944,7 @@ def _provisional_policy_payload(facts: CaseFacts) -> dict[str, Any]:
             {"field": "evidence_complete", "operator": "eq", "value": True},
             {"field": "replacement_cost_usd", "operator": "lte", "value": threshold},
         ],
-        "actions": [
-            {"type": "set_disposition", "disposition": "PARTS_HOLD"},
-            {
-                "type": "create_work_order",
-                "work_order_type": "REPLACEMENT_PARTS",
-                "max_cost_usd": threshold,
-            },
-            {"type": "close_exception", "resolution_code": "RESOLVED_PARTS_REPLACEMENT"},
-        ],
+        "max_cost_usd": threshold,
         "min_confidence": 0.75,
     }
 

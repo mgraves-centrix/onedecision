@@ -96,8 +96,9 @@ with these operators: eq, neq, lt, lte, gt, gte, in, not_in.
 Anything outside that list will be rejected by the validator, so do not try.
 
 Use replay_candidate_policy to dry-run your proposal against historical cases before you
-offer it. If the replay shows the policy would have wrongly actioned any case, tighten it
-and try again. A candidate that automates fewer cases safely beats one that automates
+offer it. Pass it the same name, description, conditions, and spend cap you are about to
+propose, and leave the actions out, because the system adds its fixed set. If the replay
+shows the policy would have wrongly actioned any case, tighten it and try again. A candidate that automates fewer cases safely beats one that automates
 more cases wrongly.
 
 Your proposal is a candidate. It does nothing until a person activates it.
