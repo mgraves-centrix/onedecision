@@ -10,7 +10,7 @@ Target: submit by **noon Pacific on September 14**.
 | 1 | Project newly created during the submission period | **Done** | Started 2026-09-04 from an empty repository. See `docs/provenance.md`. |
 | 2 | Strands Agents SDK central to the working product | **Done** | One `strands.Agent`, real `@tool` calls, typed structured output. `make smoke` prints it. |
 | 3 | Agent performs real work end to end | **Done** | `make demo` runs event → investigation → decision → policy → replay → activation → automatic resolution → verification. |
-| 4 | Public source repository | **Blocked — needs owner action** | Repository is private. Making it public requires explicit authorization. |
+| 4 | Public source repository | **Done** | Public at https://github.com/mgraves-centrix/onedecision. GitHub detects the Apache-2.0 license in the About sidebar. |
 | 5 | All source, assets, reproducible setup instructions | **Done** | `make setup && make seed && make run`. |
 | 6 | README | **Done** | `README.md`. |
 | 7 | MIT or Apache license visible in the repository | **Done** | `LICENSE` (Apache-2.0). |
@@ -28,11 +28,11 @@ Target: submit by **noon Pacific on September 14**.
 | Requirement | Status | Notes |
 | --- | --- | --- |
 | Live demo link | **Not started** | Explicitly optional: *"(Optional) Include a live demo link"*, which strengthens Technical Implementation. Requires a deploy; blocked on the same AWS access as below. The local build already satisfies the mandatory access rule. |
-| AgentCore Runtime deployment | **Blocked** | Entrypoint implemented and verified against the SDK; not deployed. AWS credentials in the build environment are invalid. `docs/deployment-agentcore.md`. |
-| Live hosted-model demo | **Blocked** | Same blocker. Provider adapter and opt-in integration tests are ready. |
+| AgentCore Runtime deployment | **Blocked** | Entrypoint implemented and verified against the SDK; not deployed. Needs valid AWS credentials. AWS now points to the AgentCore CLI (`@aws/agentcore`) for deployment. `docs/deployment-agentcore.md`. |
+| Live hosted-model demo | **Partial** | The Anthropic API path passes `make smoke` live with `claude-opus-5`. Bedrock has not been run live, and the opt-in integration tests have not been run against any hosted model. |
 | Tracing / observability | **Partial** | Strands emits OTEL spans; wiring is documented, exporter not configured. |
 | Builder.aws posts (0.2 each, max 0.6) | **Not started** | Stage Two only. Title must include "Agents for Humans". Publish before the deadline. |
-| AWS promotional credits | **Deadline 2026-09-11 noon Pacific** | Requires owner action, while supplies last. |
+| AWS promotional credits | **Unavailable** | The resources page says all credits for this hackathon have been disbursed. |
 
 ## How judges will actually evaluate this
 
@@ -48,7 +48,7 @@ is the part that distinguishes this from an agent that merely acts.
 
 | Category | Where this project makes its case |
 | --- | --- |
-| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 133 hermetic tests run against both PostgreSQL and SQLite (257 runs); swappable model provider; AgentCore-ready entrypoint. |
+| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 135 hermetic tests run against both PostgreSQL and SQLite (270 runs); swappable model provider; AgentCore-ready entrypoint. |
 | Design | Three coherent views; the decision card is the product surface; every claim on screen is traceable to a tool call; the policy diff makes a widened boundary impossible to approve by accident. |
 | Potential Impact | Any recurring human judgment call with a bounded action space — returns, claims, refunds, exceptions, approvals. |
 | Creativity & Originality | Not "an agent that writes SOPs". It converts one human decision into governed, replay-tested automation, and proves what it *would have done* before anyone trusts it. |
@@ -56,10 +56,9 @@ is the part that distinguishes this from an agent that merely acts.
 
 ## Blockers requiring the owner
 
-1. **Make the repository public** — needs explicit authorization.
-2. **Record and publish the demo video** — needs an account and explicit authorization.
-3. **Bedrock / AgentCore access** — needs valid AWS credentials and model access.
-4. **Devpost submission itself** — needs explicit authorization.
+1. **Record and publish the demo video** — needs an account and explicit authorization.
+2. **Bedrock / AgentCore access** — needs valid AWS credentials and model access.
+3. **Devpost submission itself** — needs explicit authorization.
 
 ## Pre-submission verification
 

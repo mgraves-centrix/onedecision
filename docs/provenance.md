@@ -51,6 +51,7 @@ Claims in this repository were checked, not assumed:
 | `ScriptedModel` is a valid Strands `Model` implementation | it implements the four abstract methods of `strands.models.model.Model` and drives the unmodified Strands event loop |
 | AgentCore entrypoint matches the real SDK | `bedrock-agentcore==1.22.0` installed in a scratch environment; `BedrockAgentCoreApp`, `@app.entrypoint`, and `app.run(port=…)` confirmed by introspection, and `build_app()` was constructed successfully, exposing `/invocations` and `/ping` |
 | The evaluation numbers | produced by `python -m app.evaluation`, counted from the database after a real run |
+| The Anthropic API provider works end to end | `make smoke` run against the live Anthropic API with `claude-opus-5` on 2026-09-10: four real tool calls and a parsed `InvestigationReport` |
 
 ## Known blocker: AWS access
 
@@ -82,4 +83,6 @@ language; a working activation gate; replay-gated learning; measured evaluation 
 an append-only audit log with tamper detection.
 
 **Not claimed:** a live Bedrock deployment; a running AgentCore Runtime; production
-integrations; any evaluation of a hosted model's behavior on this task.
+integrations; a systematic evaluation of a hosted model on this task. A live model has
+been run through the smoke test, but the opt-in integration tests have not been run
+against one.

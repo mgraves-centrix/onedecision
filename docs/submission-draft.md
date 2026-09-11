@@ -15,7 +15,7 @@
 > approved human judgment call into a replay-tested, human-activated policy — and
 > escalates everything outside it.
 
-*(197 characters)*
+*(192 characters)*
 
 ## Track
 
@@ -63,8 +63,9 @@ came back missing an accessory — and closes the learning loop exactly once.
 
 ## How we built it
 
-**Python 3.11 · Strands Agents SDK · FastAPI · Pydantic · SQLite · server-rendered
-HTML.** One process, no build step, no client framework.
+**Python 3.11 · Strands Agents SDK · FastAPI · Pydantic · PostgreSQL, with SQLite as the
+zero-setup demo backend · server-rendered HTML.** One process, no build step, no client
+framework.
 
 There is exactly **one** Strands agent. It is invoked three times along the path —
 investigate, produce the decision card, propose the policy — with the same tools and a
@@ -125,6 +126,11 @@ fresh decision card.
 invalid (`InvalidClientTokenId`). Rather than write deployment instructions from memory,
 the AgentCore SDK was installed and introspected, the entrypoint was built and its routes
 confirmed, and `docs/deployment-agentcore.md` states plainly which steps have not been run.
+The hosted-model path was then run against the live Anthropic API with Claude Opus 5: the
+smoke test passes with real tool calls and typed output. Running it live surfaced two bugs
+in how requests were built that the offline suite could not see, and both are fixed with
+regression tests. The Bedrock provider is implemented and configured for Opus 5's
+cross-Region inference profile, but has not yet been run against a live Bedrock endpoint.
 
 ## Accomplishments
 
@@ -133,9 +139,10 @@ confirmed, and `docs/deployment-agentcore.md` states plainly which steps have no
 - **Zero** false automatic actions, **zero** prohibited actions, and **zero** duplicate
   actions across 24 evaluation cases — measured by a harness that counts from the
   database, not asserted.
-- 133 hermetic tests, run against both PostgreSQL and SQLite for 257 total runs in
+- 135 hermetic tests, run against both PostgreSQL and SQLite for 270 total runs in
   under thirty seconds, including prompt injection inside case notes,
-  audit tampering, model timeouts, tool outages, and duplicate events.
+  audit tampering, model timeouts, tool outages, and duplicate events. CI runs the
+  whole suite, the smoke test, the golden path, and the safety gate on every push.
 - A replay gate that shows a supervisor what a proposed policy *would have done* to their
   own history before they trust it.
 
@@ -148,20 +155,20 @@ that boundary that a non-engineer can read in thirty seconds.
 
 ## What's next
 
-Durable storage behind the SQLite layer, AgentCore Runtime deployment, policy expiry and
-periodic re-replay against newer history, and a second exception family — chosen to test
-whether the policy language generalises or was quietly fitted to the first one.
+A live Bedrock run and an AgentCore Runtime deployment, policy expiry and periodic
+re-replay against newer history, and a second exception family, chosen to test whether
+the policy language generalizes or was quietly fitted to the first one.
 
 ---
 
 ## Built with
 
 `python` · `strands-agents` · `amazon-bedrock-agentcore` · `fastapi` · `pydantic` ·
-`sqlite` · `jinja2` · `pytest`
+`postgresql` · `sqlite` · `jinja2` · `pytest`
 
 ## Try it out
 
-- **[OWNER]** public repository link
+- Repository: https://github.com/mgraves-centrix/onedecision
 - Run locally: `make setup && make seed && make run` — no AWS account, no credentials
 - **[OWNER]** demo video link
 

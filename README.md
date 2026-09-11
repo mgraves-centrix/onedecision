@@ -2,7 +2,7 @@
 
 **Teach the agent once; it safely handles the next hundred.**
 
-Built for **Agents for Humans** · Professional Agents track · Amazon Bedrock AgentCore + Strands Agents
+Built for **Agents for Humans** · Professional Agents track · Strands Agents, with an Amazon Bedrock AgentCore Runtime entrypoint (not yet deployed)
 
 ![OneDecision architecture](docs/architecture.png)
 
@@ -91,7 +91,7 @@ Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 133 hermetic tests, ~6 seconds
+make test      # 135 hermetic tests, a few seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
@@ -126,6 +126,8 @@ The `scripted` provider exists so that tests, CI, and a judge with no AWS accoun
 exercise the **real** Strands agent loop with **zero** credentials and zero spend. It is
 not a bypass: it produces proposals like any other model, and every proposal goes
 through the same schema validation, guardrails, replay, and human activation gate.
+
+**Anthropic API status:** verified against the live API. `make smoke` passes with `claude-opus-5`.
 
 **Bedrock status:** implemented and documented, **not verified against a live endpoint**.
 The AWS credentials in the environment where this was built are not valid for AWS
@@ -268,7 +270,7 @@ by a stray `.env` on disk. `.env` is gitignored and a test asserts it stays that
 
 ```bash
 make test        # hermetic. No network, no model calls. SQLite, plus PostgreSQL if it is up.
-make test-pg     # the whole suite against BOTH backends (257 runs)
+make test-pg     # the whole suite against BOTH backends (270 runs)
 pytest -m integration    # opt-in, needs a live model provider
 ```
 
