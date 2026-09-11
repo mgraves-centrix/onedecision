@@ -1,6 +1,6 @@
-%% OneDecision — architecture
-%% Render: mmdc -i docs/architecture.mmd -o docs/architecture.png -t dark -b '#10131a'
-%% A hand-authored SVG of the same diagram is checked in at docs/architecture.svg
+%% OneDecision — architecture (reviewable source of the same structure)
+%% The README image, docs/architecture.png, is rendered at 2x from the hand-authored
+%% docs/architecture.svg with headless Chrome. Keep the two in step when either changes.
 
 flowchart TB
     subgraph SYN["SYNTHETIC BUSINESS SYSTEMS (simulated adapters, not production)"]
@@ -9,7 +9,8 @@ flowchart TB
         WMS[["warehouse WMS<br/>dispositions, work orders"]]
     end
 
-    EV(["returns-dock check-in event<br/>not a chat prompt"]) --> ORCH
+    EV(["returns-dock check-in event<br/>not a chat prompt<br/>POST /events from the web app"]) --> ORCH
+    AC(["Amazon Bedrock AgentCore Runtime<br/>POST /invocations (deployed)"]) --> ORCH
 
     subgraph REASON["MODEL REASONING — may propose, may never act"]
         AGENT{{"one Strands Agent<br/>investigate · card · propose"}}
@@ -70,3 +71,14 @@ flowchart TB
     VERIFY -.-> AUDIT
     HUMAN -.-> AUDIT
     ACTIVE -.-> AUDIT
+
+    subgraph RUN["RUNS ON — same agent and control plane; only provider and transport change"]
+        BR[("Amazon Bedrock<br/>Claude Opus 5, us. inference profile")]
+        UI["web app<br/>Inbox · Decision · Policies & Audit · Dashboard<br/>phone, tablet, desktop"]
+        OFF["offline scripted model<br/>no credentials: tests, CI, judges"]
+    end
+
+    MP -.-> BR
+    MP -.-> OFF
+    HUMAN --- UI
+    AUDIT -.->|"agent.run usage: tokens, time, tool calls"| UI

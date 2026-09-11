@@ -1,158 +1,197 @@
-# Demo script — target 4:15
+# Demo script — target 4:45 (hard limit 5:00)
 
-Recorded against the local app with the offline provider, so it reproduces exactly.
-
-**Before recording:** `make seed && make run`, browser at `http://127.0.0.1:8000`,
-window at 1500×1000, terminal ready in a second tab. The approval token on a
-fresh clone is `replace-me-local-demo-token`; the activation screen shows it.
+Recorded against the live app on **Amazon Bedrock** (Claude Opus 5), so the banner reads
+`bedrock · us.anthropic.claude-opus-5` and the Dashboard shows real token counts. The
+offline `scripted` provider is the fallback: it reproduces exactly, costs nothing, and
+the script works the same except for the tokens tile.
 
 Timings are cumulative. Everything in brackets is on-screen action; everything else is
-narration.
+narration. Numbers marked *(read from screen)* come from the model's proposal and can
+differ slightly between takes on Bedrock; the reference values are the offline run's.
+
+---
+
+## Before recording
+
+1. `aws sso login --profile onedecision`
+2. Start the app for the desktop browser and the phone (from the repo root):
+   `AWS_PROFILE=onedecision ONEDECISION_MODEL_PROVIDER=bedrock .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000`
+3. Browser at `http://127.0.0.1:8000`, window 1500×1000. Press **Reset demo**, so the
+   Dashboard at the end counts only this take.
+4. Phone on the same Wi-Fi or on Tailscale, with the Inbox open at
+   `http://matts-macbook-air.onedecision.local:8000`.
+5. A terminal tab with the AgentCore commands ready. **Pre-warm the runtime** by running
+   the invoke once just before the take; a cold start took 46 seconds.
+6. The approval token on a fresh clone is `replace-me-local-demo-token`; the activation
+   screen prints it.
 
 ---
 
 ## 0:00 — 0:25 · The problem (Inbox view)
 
-> Dana runs returns for a camera rental company. Twenty times a week, a kit comes back
-> missing something small, and someone walks over to ask her what to do. She answers in
-> thirty seconds. She has never had an hour spare to write it down.
+> This is OneDecision, a Strands Agents agent running on Claude Opus 5 through Amazon
+> Bedrock.
 >
-> Rule-based automation can't help — nobody wrote the rule. That's the gap OneDecision
-> fills.
+> Dana runs returns for a camera rental company. Twenty times a week a kit comes back
+> missing something small, and someone asks her what to do. She answers in thirty
+> seconds, and she has never had an hour to write it down. Rule-based automation can't
+> help: nobody wrote the rule. Everything you'll see is synthetic data.
 
 [Inbox on screen. Point at the empty policy strip: *"No approved policy exists yet.
 Every case needs a person."*]
 
 ---
 
-## 0:25 — 1:15 · An unfamiliar exception arrives (Decision view)
+## 0:25 — 1:10 · An unfamiliar exception arrives (Decision view)
 
-> A kit gets checked in at the dock. This is an **event**, not somebody typing a prompt
-> at a chatbot.
+> A kit is checked in at the dock. That's an **event**, not somebody typing a prompt at a
+> chatbot.
 
-[Click **Check in** on CASE-2001. The decision-card view loads.]
+[Click **Check in** on CASE-2001. The decision card loads.]
 
-> A real Strands agent just investigated it. Four tool calls: pull the case, reconcile
-> the bill of materials against what physically arrived, price the missing part, and
-> check whether any approved policy already covers this.
+> The Strands agent just investigated it with four read-only tool calls: pull the case,
+> reconcile what arrived against the bill of materials, price the missing part, and check
+> for an approved policy.
 
-[Scroll the evidence table. Point at the `source_tool` column.]
+[Scroll the evidence table. Point at the source-tool column.]
 
 > Every line of evidence names the tool that produced it. One neoprene strap missing,
-> fourteen dollars, serial matches, evidence complete, no damage — and **no approved
-> policy exists**.
->
-> So it does not act. It asks. Once.
+> fourteen dollars, serial matches, no damage, and **no approved policy exists**. So it
+> doesn't act. It asks, once, and it proposes the **boundary** the answer should live
+> inside.
 
 [Scroll to Proposed boundaries.]
 
-> This is the part that matters. It isn't just asking "yes or no" — it's proposing the
-> **boundary** the answer should live inside, and saying why each limit is there.
+---
+
+## 1:10 — 1:25 · Dana decides from her phone
+
+[Cut to the phone. Open CASE-2001 and tap **Approve and teach**.]
+
+> Dana isn't at her desk. She approves from her phone, between two other jobs. That's
+> the whole interruption.
+
+[Cut back to the desktop and refresh the case.]
 
 ---
 
-## 1:15 — 2:10 · Approve and Teach (Replay)
+## 1:25 — 2:10 · Teach, then replay
 
-[Click **Approve and teach**.]
-
-> Approving records the decision. It activates nothing.
+> Approving records her decision. It activates nothing.
 >
-> The agent now proposes a policy — and it can only propose in a constrained language.
-> Eight conditions, all from an allowlist of nine fields.
+> The agent now proposes a policy, and it can only propose in a constrained language:
+> every condition comes from an allowlist of nine fields.
 
-[Point at the conditions list.]
+[Point at the conditions list *(read from screen)*.]
 
-> And look at the actions: hold for parts, raise a replacement-parts work order capped at
-> twenty-five dollars, close the exception. **The agent didn't choose those.** The action
-> set is fixed by the system. There is no field anywhere in the proposal into which a
-> model could write "issue a refund".
+> And look at the actions: hold for parts, a replacement-parts work order under the spend
+> cap, close the exception. **The agent didn't choose those.** The action set is fixed by
+> the system; there is no field in the proposal where a model could write "issue a
+> refund".
 >
 > Then deterministic code replays the candidate against twenty-four historical cases.
 
-[Point at the replay stats: 11 / 13 / 0 / 100%.]
+[Point at the replay stats *(read from screen; offline reference 11 / 13 / 0 / 100%)*.]
 
-> Eleven it would have correctly automated. Thirteen it would have correctly escalated.
-> **Zero it would have gotten wrong.** If that last number were anything but zero, the
-> activate button would not be there.
+> It would have automated these, escalated these, and gotten **zero** wrong. If that
+> number were anything but zero, the activate button would not be here.
 
 ---
 
-## 2:10 — 2:35 · Explicit activation
+## 2:10 — 2:30 · Explicit activation
 
 [Type the approval token, click **Activate this policy version**.]
 
-> A human activates it. That is the only path from candidate to active, it needs a token,
-> and it's refused without a passing replay. The model has no way to do this — not a tool
-> it's missing, a function it cannot reach.
+> A human activates it. That's the only path from candidate to active: it needs a token,
+> and it's refused without a passing replay. The model can't do this; it's not a tool the
+> agent has.
 
 [Land on Policies & Audit. Point at `returns.missing_accessory@v1`, activated by Dana.]
 
 ---
 
-## 2:35 — 3:10 · The next hundred (Inbox)
+## 2:30 — 3:00 · The next hundred (Inbox)
 
 [Back to Inbox. Click **Check in** on CASE-2002.]
 
-> Another kit, missing a body cap. Same investigation, same tools — but this time an
-> approved policy matches.
+> Another kit, missing a body cap. Same investigation, but this time an approved policy
+> matches.
 
 [Open the resolved case. Scroll the timeline.]
 
-> Work order raised. Disposition set to PARTS_HOLD. Both writes read back out of the
-> systems and verified. Exception closed against policy version one.
->
-> Dana was never interrupted. She never saw this case.
+> Work order raised, disposition set, both writes read back and verified, exception
+> closed against policy version one. Dana never saw this case.
 
 ---
 
-## 3:10 — 3:50 · The boundary holds
+## 3:00 — 3:40 · The boundary holds
 
 [Back to Inbox. Check in CASE-2003.]
 
-> Now a case that looks almost identical: same kit, one cheap accessory missing, under
-> twenty-five dollars.
->
-> **The serial doesn't match.** Wrong body came back.
+> Now one that looks almost identical: same kit, one cheap accessory missing. **The
+> serial doesn't match.** The wrong body came back.
 
 [Open the escalated case. Point at the red escalation reasons.]
 
-> It refuses. Not because a prompt told it to be careful — because a hard guardrail runs
-> before any policy is even consulted, and a policy can only ever *narrow* what's allowed,
-> never widen it.
+> It refuses. Not because a prompt told it to be careful: a hard guardrail runs before
+> any policy is consulted, and a policy can only ever narrow what's allowed.
 
-[Optionally: check in CASE-2005 — new damage, and CASE-2006 — a tool outage. Both refuse.]
+[Optionally check in CASE-2005 (new damage) and CASE-2006 (a tool outage). Both refuse.]
 
-> Damage escalates. A failed tool escalates. Anything ambiguous escalates. The system's
-> preferred answer is always "ask a person".
+> Damage escalates. A failed tool escalates. The preferred answer is always "ask a
+> person".
 
 ---
 
-## 3:50 — 4:15 · The receipts
+## 3:40 — 4:00 · The same agent on AgentCore Runtime (terminal)
 
-[Policies & Audit view. Point at the hash-chain badge.]
+[Terminal. Run `agentcore invoke "Investigate CASE-2001"`; the runtime is pre-warmed.]
 
-> Every event, tool call, guardrail result, approval, action, and verification is in an
-> append-only log. It's hash-chained, and the database rejects `UPDATE` and `DELETE`
-> outright.
->
-> Twenty-four evaluation cases. One hundred percent correct escalation. **Zero false
-> automatic actions, zero prohibited actions, zero duplicates.**
+> The same agent is deployed to Amazon Bedrock AgentCore Runtime. An invocation from AWS
+> runs the same four tools on Bedrock and returns the same decision card: nothing
+> executed until a person approves.
+
+[Point at `"outcome": "decision_requested"` and the tool calls in the response.]
+
+---
+
+## 4:00 — 4:30 · The Dashboard
+
+[Open **Dashboard**.]
+
+> Everything this take did, counted from the product's own records: cases by outcome, the
+> share handled automatically, the escalations, every agent run and tool call, and the
+> tokens Bedrock reported.
+
+[Point at the outcome bars, the tool-call bars, the tokens tile, and **Audit chain:
+Intact**.]
+
+---
+
+## 4:30 — 4:45 · The receipts
+
+> Every event, tool call, approval, and action is in an append-only, hash-chained log the
+> database refuses to edit. Across twenty-four evaluation cases: one hundred percent
+> correct escalation, **zero false automatic actions, zero prohibited actions, zero
+> duplicates**.
 >
 > Teach the agent once; it safely handles the next hundred.
 
-**[END — 4:15]**
+**[END — 4:45]**
 
 ---
 
 ## Notes for the recording
 
 - **Reset between takes:** the **Reset demo** button, or `make seed`.
-- **If a take runs long,** cut the CASE-2005 / CASE-2006 boundary cases at 3:40; the
-  serial-mismatch refusal alone carries the point.
+- **Rehearse once on Bedrock first.** The model's proposal can differ slightly between
+  takes; read the conditions, spend cap, and replay numbers from the screen rather than
+  from this script. Each take costs a few cents of Bedrock inference.
+- **Fallback:** if a Bedrock take misbehaves, restart the app with
+  `ONEDECISION_MODEL_PROVIDER=scripted` and record the same script; drop the tokens line
+  at 4:00.
+- **If a take runs long,** cut CASE-2005 / CASE-2006 at 3:30 first, then shorten the
+  AgentCore beat to the invoke line alone. The serial-mismatch refusal carries the point.
 - **Do not** show a terminal full of passing tests as filler; if there is spare time, show
-  the audit timeline on CASE-2002 instead — it is the more convincing artifact.
-- **Say "synthetic" once, early.** The banner is on screen the whole time; do not spend
-  narration on it twice.
-- **Optional close on the Dashboard** if a take has a few seconds spare. It counts what
-  the take just did: cases by outcome, the share handled automatically, the escalations,
-  tool calls, and the audit chain status. Reset before the take so the numbers are its own.
+  the audit timeline on CASE-2002 instead.
+- **Say "synthetic" once, early.** The banner is on screen the whole time.
