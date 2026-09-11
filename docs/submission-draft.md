@@ -126,11 +126,14 @@ fresh decision card.
 invalid (`InvalidClientTokenId`). Rather than write deployment instructions from memory,
 the AgentCore SDK was installed and introspected, the entrypoint was built and its routes
 confirmed, and `docs/deployment-agentcore.md` states plainly which steps have not been run.
-The hosted-model path was then run against the live Anthropic API with Claude Opus 5: the
-smoke test passes with real tool calls and typed output. Running it live surfaced two bugs
-in how requests were built that the offline suite could not see, and both are fixed with
-regression tests. The Bedrock provider is implemented and configured for Opus 5's
-cross-Region inference profile, but has not yet been run against a live Bedrock endpoint.
+The hosted-model path was then run live with Claude Opus 5, first on the Anthropic API and
+then on Amazon Bedrock through Opus 5's cross-Region inference profile. The smoke test
+passes on both, with real tool calls and typed output. Each live run found something the
+offline suite could not: two bugs in how Anthropic requests were built, and on Bedrock, a
+concurrency bug where the model requested several tools at once and they collided on the
+shared database connection. The agent escalated rather than act on the bad data, which is
+the design working, and tools now run one at a time. All three fixes have regression tests.
+AgentCore Runtime is not yet deployed.
 
 ## Accomplishments
 
@@ -139,10 +142,12 @@ cross-Region inference profile, but has not yet been run against a live Bedrock 
 - **Zero** false automatic actions, **zero** prohibited actions, and **zero** duplicate
   actions across 24 evaluation cases — measured by a harness that counts from the
   database, not asserted.
-- 135 hermetic tests, run against both PostgreSQL and SQLite for 270 total runs in
+- 138 hermetic tests, run against both PostgreSQL and SQLite for 276 total runs in
   under thirty seconds, including prompt injection inside case notes,
   audit tampering, model timeouts, tool outages, and duplicate events. CI runs the
   whole suite, the smoke test, the golden path, and the safety gate on every push.
+- The same Strands agent runs live on Claude Opus 5 through both the Anthropic API and
+  Amazon Bedrock, and fully offline with no credentials.
 - A replay gate that shows a supervisor what a proposed policy *would have done* to their
   own history before they trust it.
 
@@ -155,16 +160,17 @@ that boundary that a non-engineer can read in thirty seconds.
 
 ## What's next
 
-A live Bedrock run and an AgentCore Runtime deployment, policy expiry and periodic
-re-replay against newer history, and a second exception family, chosen to test whether
-the policy language generalizes or was quietly fitted to the first one.
+An AgentCore Runtime deployment, the opt-in integration tests against both hosted
+providers, policy expiry and periodic re-replay against newer history, and a second
+exception family, chosen to test whether the policy language generalizes or was quietly
+fitted to the first one.
 
 ---
 
 ## Built with
 
-`python` · `strands-agents` · `amazon-bedrock-agentcore` · `fastapi` · `pydantic` ·
-`postgresql` · `sqlite` · `jinja2` · `pytest`
+`python` · `strands-agents` · `amazon-bedrock` · `amazon-bedrock-agentcore` · `fastapi` ·
+`pydantic` · `postgresql` · `sqlite` · `jinja2` · `pytest`
 
 ## Try it out
 

@@ -147,8 +147,8 @@ def load_settings() -> Settings:
             # Opus 5 has no in-Region support on bedrock-runtime, the endpoint
             # Strands' Converse calls use, so it must be addressed through a
             # cross-Region inference profile: "us." keeps traffic in US and
-            # Canada Regions, "global." routes anywhere. Still unverified
-            # against a live endpoint (see docs/provenance.md).
+            # Canada Regions, "global." routes anywhere. Verified live with
+            # `make smoke` (see docs/provenance.md).
             "us.anthropic.claude-opus-5",
         ),
         anthropic_model_id=os.environ.get(

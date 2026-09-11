@@ -91,7 +91,7 @@ Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 135 hermetic tests, a few seconds
+make test      # 138 hermetic tests, a few seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
@@ -127,14 +127,17 @@ exercise the **real** Strands agent loop with **zero** credentials and zero spen
 not a bypass: it produces proposals like any other model, and every proposal goes
 through the same schema validation, guardrails, replay, and human activation gate.
 
-**Anthropic API status:** verified against the live API. `make smoke` passes with `claude-opus-5`.
+**Hosted-model status:** both hosted providers pass `make smoke` against the live service
+with Claude Opus 5: the Anthropic API (`claude-opus-5`) and Amazon Bedrock
+(`us.anthropic.claude-opus-5`, the cross-Region inference profile). The first Bedrock run
+exposed a concurrency bug: the model requested several tools in one turn, Strands ran them
+concurrently, and they collided on the shared database connection. The agent escalated
+rather than act on the bad data, and tools now run one at a time, with a regression test.
+The opt-in integration tests have not yet been run against either provider.
 
-**Bedrock status:** implemented and documented, **not verified against a live endpoint**.
-The AWS credentials in the environment where this was built are not valid for AWS
-(`sts:GetCallerIdentity` → `InvalidClientTokenId`), so Bedrock and AgentCore Runtime
-could not be exercised. See [docs/provenance.md](docs/provenance.md) and
-[docs/deployment-agentcore.md](docs/deployment-agentcore.md) — the exact blocker, and
-the exact steps, with no invented CLI flags.
+**AgentCore Runtime status:** the entrypoint builds against the real SDK and serves the
+AgentCore contract locally, but it has **not been deployed**. See
+[docs/deployment-agentcore.md](docs/deployment-agentcore.md) for the remaining steps.
 
 ---
 
@@ -270,7 +273,7 @@ by a stray `.env` on disk. `.env` is gitignored and a test asserts it stays that
 
 ```bash
 make test        # hermetic. No network, no model calls. SQLite, plus PostgreSQL if it is up.
-make test-pg     # the whole suite against BOTH backends (270 runs)
+make test-pg     # the whole suite against BOTH backends (276 runs)
 pytest -m integration    # opt-in, needs a live model provider
 ```
 

@@ -52,10 +52,11 @@ Claims in this repository were checked, not assumed:
 | AgentCore entrypoint matches the real SDK | `bedrock-agentcore==1.22.0` installed in a scratch environment; `BedrockAgentCoreApp`, `@app.entrypoint`, and `app.run(port=…)` confirmed by introspection, and `build_app()` was constructed successfully, exposing `/invocations` and `/ping` |
 | The evaluation numbers | produced by `python -m app.evaluation`, counted from the database after a real run |
 | The Anthropic API provider works end to end | `make smoke` run against the live Anthropic API with `claude-opus-5` on 2026-09-10: four real tool calls and a parsed `InvestigationReport` |
+| The Bedrock provider works end to end | `make smoke` run against Amazon Bedrock with `us.anthropic.claude-opus-5` in `us-west-2` on 2026-09-10: four real tool calls and a parsed `InvestigationReport`, after the concurrency fix described below |
 
-## Known blocker: AWS access
+## AWS access
 
-The build environment has AWS environment variables set, but they are **not valid AWS
+For most of the build, the environment's AWS environment variables were **not valid AWS
 credentials**:
 
 ```
@@ -64,13 +65,19 @@ ClientError: An error occurred (InvalidClientTokenId) when calling the
 GetCallerIdentity operation: The security token included in the request is invalid.
 ```
 
-Consequence:
+On 2026-09-10 the project was connected to an AWS account through IAM Identity Center.
+Current state:
 
-- The **Bedrock** model provider (`app/agent/providers/__init__.py`) is implemented and
-  documented but has **not** been exercised against a live Bedrock endpoint.
+- The **Bedrock** model provider (`app/agent/providers/__init__.py`) has been exercised
+  against a live Bedrock endpoint: `make smoke` passes with `us.anthropic.claude-opus-5`
+  in `us-west-2`. The first live run found a real defect: the model requested several
+  tools in one turn, Strands ran them concurrently, and they collided on the shared
+  database connection. Tools now run one at a time (`app/agent/build.py`,
+  `tests/test_agent_build.py`).
 - The **AgentCore Runtime** entrypoint (`app/agentcore.py`) builds against the real SDK
   and serves the correct contract locally, but has **not** been deployed to AgentCore.
-- No billable AWS infrastructure was created, and no deployment was attempted.
+- The only billable AWS usage is Bedrock inference for smoke tests. No compute, storage,
+  or database resources were created, and no deployment was attempted.
 
 The local golden path is complete, tested, and reproducible without any cloud account.
 See [deployment-agentcore.md](deployment-agentcore.md) for what remains, written against
@@ -82,7 +89,7 @@ the SDK that is actually installed rather than from memory.
 language; a working activation gate; replay-gated learning; measured evaluation results;
 an append-only audit log with tamper detection.
 
-**Not claimed:** a live Bedrock deployment; a running AgentCore Runtime; production
-integrations; a systematic evaluation of a hosted model on this task. A live model has
-been run through the smoke test, but the opt-in integration tests have not been run
-against one.
+**Not claimed:** a running AgentCore Runtime; production integrations; a systematic
+evaluation of a hosted model on this task. Live models on both the Anthropic API and
+Bedrock have passed the smoke test, but the opt-in integration tests have not been run
+against either.

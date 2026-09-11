@@ -4,12 +4,10 @@ Kept as a thin, optional adapter so the local golden path stays the source of
 truth. Importing this module does not require `bedrock-agentcore` to be
 installed; the dependency is only needed to actually serve.
 
-Deployment status: **not deployed**. The AWS credentials available while this
-project was built are not valid for AWS (`sts:GetCallerIdentity` returns
-`InvalidClientTokenId`), so this path has not been exercised against a live
-AgentCore Runtime. See `docs/deployment-agentcore.md` for the exact steps and
-the exact blocker. Nothing here invents a CLI flag or an API shape that has not
-been checked against the installed SDK.
+Deployment status: **not deployed**. AWS credentials and Bedrock model access
+are now in place, but this path has not been exercised against a live AgentCore
+Runtime. See `docs/deployment-agentcore.md` for the remaining steps. Nothing here
+invents a CLI flag or an API shape that has not been checked against the installed SDK.
 
 Run locally (serves on the AgentCore contract, no AWS involved):
 

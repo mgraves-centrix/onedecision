@@ -135,11 +135,10 @@ analytics suite.
 
 - **A1.** Judges run the project locally. `make setup && make seed && make run`
   must work with no cloud account and no credentials.
-- **A2.** The AWS credentials present in the build environment are invalid for
-  AWS (`sts:GetCallerIdentity` returns `InvalidClientTokenId`), so Bedrock and
-  AgentCore cannot be exercised here. The Bedrock path is implemented and
-  documented but is unverified against a live endpoint. See
-  `docs/provenance.md`.
+- **A2.** For most of the build, the AWS credentials in the environment were invalid
+  (`sts:GetCallerIdentity` returned `InvalidClientTokenId`). Valid credentials were
+  added on 2026-09-10: the Bedrock path now passes the smoke test live, and AgentCore
+  is not yet deployed. See `docs/provenance.md`.
 - **A3.** "One approved non-serialized accessory" means exactly one missing
   line item, quantity one.
 - **A4.** Replacement cost is authoritative from the synthetic parts catalog,

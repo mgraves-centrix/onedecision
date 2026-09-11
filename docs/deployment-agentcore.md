@@ -1,6 +1,7 @@
 # Deploying to Amazon Bedrock AgentCore Runtime
 
-**Status: not deployed.** See [provenance.md](provenance.md) for the blocker. Everything
+**Status: not deployed.** AWS credentials and Bedrock model access are in place; see
+[provenance.md](provenance.md). Everything
 below was written against `bedrock-agentcore==1.22.0` and `strands-agents==1.54.0` as
 actually installed and introspected — no CLI flags or API shapes are invented here. Steps
 marked **unverified** have not been run in this environment.
@@ -49,14 +50,13 @@ curl -s localhost:8080/invocations -H 'content-type: application/json' \
 
 ## Remaining steps to deploy (unverified)
 
-1. **Get Bedrock model access.** Enable the model named by
-   `ONEDECISION_BEDROCK_MODEL_ID` in the target region, then confirm:
+1. **Get Bedrock model access. Done.** Claude Opus 5 is available to the account, and
+   `make smoke` passes against Bedrock. Check access with:
    ```bash
-   aws sts get-caller-identity
-   aws bedrock list-foundation-models --region "$AWS_REGION"
+   aws bedrock get-foundation-model-availability --model-id anthropic.claude-opus-5 --region "$AWS_REGION"
    ```
-2. **Switch the provider.** `ONEDECISION_MODEL_PROVIDER=bedrock`. Run the opt-in
-   integration test *before* deploying anything:
+2. **Switch the provider.** `ONEDECISION_MODEL_PROVIDER=bedrock`. The smoke test passes;
+   run the opt-in integration test *before* deploying anything:
    ```bash
    ONEDECISION_MODEL_PROVIDER=bedrock pytest -m integration
    ```
@@ -76,6 +76,9 @@ curl -s localhost:8080/invocations -H 'content-type: application/json' \
 5. **Deploy.** Follow the current AgentCore Runtime deployment procedure in the AWS
    documentation (<https://docs.aws.amazon.com/bedrock-agentcore/>) — this document does
    not reproduce commands that have not been run here.
+   AWS now points to the AgentCore CLI (`npm install -g @aws/agentcore`, then
+   `agentcore deploy`). Its project layout differs from this repository's, so the
+   entrypoint needs adapting before it can be deployed that way.
 6. **Observability.** Strands emits OpenTelemetry spans. Set `OTEL_EXPORTER_OTLP_ENDPOINT`
    and `ONEDECISION_OTEL_ENABLED=true` to export them; AgentCore's own tracing picks up
    the runtime side.
