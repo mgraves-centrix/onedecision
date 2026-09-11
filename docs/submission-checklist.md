@@ -48,8 +48,8 @@ is the part that distinguishes this from an agent that merely acts.
 
 | Category | Where this project makes its case |
 | --- | --- |
-| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 141 hermetic tests run against both PostgreSQL and SQLite (282 runs); swappable model provider; deployed to AgentCore Runtime. |
-| Design | Three coherent views; the decision card is the product surface; every claim on screen is traceable to a tool call; the policy diff makes a widened boundary impossible to approve by accident. |
+| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 150 hermetic tests run against both PostgreSQL and SQLite (300 runs); swappable model provider; deployed to AgentCore Runtime. |
+| Design | Four coherent views, including a dashboard of history and usage; the decision card is the product surface; every claim on screen is traceable to a tool call; the policy diff makes a widened boundary impossible to approve by accident. |
 | Potential Impact | Any recurring human judgment call with a bounded action space — returns, claims, refunds, exceptions, approvals. |
 | Creativity & Originality | Not "an agent that writes SOPs". It converts one human decision into governed, replay-tested automation, and proves what it *would have done* before anyone trusts it. |
 | Presentation | 4:15 script that proves the whole workflow, including the refusal. |

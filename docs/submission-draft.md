@@ -60,6 +60,9 @@ came back missing an accessory — and closes the learning loop exactly once.
    writes read back and verified, exception closed against the policy version.
 9. A case that looks almost identical but has a serial mismatch **still escalates**.
 10. Every step is in an append-only, hash-chained audit log.
+11. A dashboard shows the history and usage behind it: outcomes, the share handled
+    automatically, human decisions, agent runs, tool calls by tool, and model tokens
+    when the provider reports them, all counted from the product's own records.
 
 ## How we built it
 
@@ -147,7 +150,7 @@ live: it investigates a case on Bedrock and returns a decision card from AWS.
 - **Zero** false automatic actions, **zero** prohibited actions, and **zero** duplicate
   actions across 24 evaluation cases — measured by a harness that counts from the
   database, not asserted.
-- 141 hermetic tests, run against both PostgreSQL and SQLite for 282 total runs in
+- 150 hermetic tests, run against both PostgreSQL and SQLite for 300 total runs in
   under thirty seconds, including prompt injection inside case notes,
   audit tampering, model timeouts, tool outages, and duplicate events. CI runs the
   whole suite, the smoke test, the golden path, and the safety gate on every push.

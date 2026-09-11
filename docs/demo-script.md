@@ -153,3 +153,6 @@ Every case needs a person."*]
   the audit timeline on CASE-2002 instead — it is the more convincing artifact.
 - **Say "synthetic" once, early.** The banner is on screen the whole time; do not spend
   narration on it twice.
+- **Optional close on the Dashboard** if a take has a few seconds spare. It counts what
+  the take just did: cases by outcome, the share handled automatically, the escalations,
+  tool calls, and the audit chain status. Reset before the take so the numbers are its own.

@@ -58,6 +58,11 @@ make run       # http://127.0.0.1:8000
 Then, in the app: check in **CASE-2001** → *Approve and teach* → activate the policy →
 check in **CASE-2002** (resolves itself) → check in **CASE-2003** (escalates).
 
+The **Dashboard** tab shows the history and usage behind it: cases by outcome, the share
+handled automatically, human decisions and policy activations, agent runs, tool calls by
+tool, and model tokens when the provider reports them. Every number is counted from the
+cases table, the policy store, and the audit log.
+
 Activating a policy asks for an approval token, because a human authorizing
 automation is the whole point. On a fresh clone that token is:
 
@@ -91,7 +96,7 @@ Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 141 hermetic tests, a few seconds
+make test      # 150 hermetic tests, a few seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
@@ -229,7 +234,8 @@ app/
   facts.py         deterministic facts + reconciliation
   audit.py         append-only, hash-chained
   evaluation.py    the measurement harness
-  main.py          FastAPI: inbox / decision+replay / policies+audit
+  main.py          FastAPI: inbox / decision+replay / policies+audit / dashboard
+  dashboard.py     history and usage, counted from case records and the audit log
   agentcore.py     AgentCore Runtime handler, deployed through agentcore_main.py
   db/
     postgres_backend.py  deployment target: pooling, advisory lock, NUMERIC
@@ -279,7 +285,7 @@ by a stray `.env` on disk. `.env` is gitignored and a test asserts it stays that
 
 ```bash
 make test        # hermetic. No network, no model calls. SQLite, plus PostgreSQL if it is up.
-make test-pg     # the whole suite against BOTH backends (282 runs)
+make test-pg     # the whole suite against BOTH backends (300 runs)
 pytest -m integration    # opt-in, needs a live model provider
 ```
 
