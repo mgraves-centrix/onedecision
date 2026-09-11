@@ -51,7 +51,7 @@ jobs:
 
       - name: Confirm the PostgreSQL half actually ran
         run: |
-          pytest -q -m "not integration" --collect-only 2>/dev/null \
+          pytest -m "not integration" --collect-only 2>/dev/null \
             | grep -q "db=postgres" \
             || { echo "PostgreSQL backend was not exercised"; exit 1; }
 
@@ -59,6 +59,9 @@ jobs:
         env:
           ONEDECISION_DATABASE_URL: postgresql://onedecision:ci-local-password@127.0.0.1:5432/onedecision
         run: |
+          # The service creates only onedecision_test. This step needs its own
+          # empty database to prove the migrations apply from scratch.
+          python -c "import os, psycopg; psycopg.connect(os.environ['ONEDECISION_TEST_DATABASE_URL'], autocommit=True).execute('CREATE DATABASE onedecision')"
           python -m app.seed --reset
           python -m app.evaluation
 

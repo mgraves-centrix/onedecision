@@ -171,6 +171,11 @@ def test_dotenv_is_loaded_so_the_readme_instruction_works(tmp_path, monkeypatch)
         "not-a-pair\n"
     )
     monkeypatch.setenv("ONEDECISION_TEST_PRESET", "from_environment")
+    # Register the names as absent before the loader sets them, so teardown
+    # removes them. Deleting them afterward would make monkeypatch record the
+    # loaded values as the originals and restore them into the next test.
+    for name in ("ONEDECISION_TEST_PLAIN", "ONEDECISION_TEST_QUOTED"):
+        monkeypatch.delenv(name, raising=False)
 
     loaded = load_dotenv(env_file)
 
@@ -184,8 +189,6 @@ def test_dotenv_is_loaded_so_the_readme_instruction_works(tmp_path, monkeypatch)
     assert "ONEDECISION_TEST_PRESET" not in loaded
     # Names are returned, never values, so progress output cannot leak a secret.
     assert loaded == ["ONEDECISION_TEST_PLAIN", "ONEDECISION_TEST_QUOTED"]
-    for name in ("ONEDECISION_TEST_PLAIN", "ONEDECISION_TEST_QUOTED"):
-        monkeypatch.delenv(name, raising=False)
 
 
 def test_a_missing_dotenv_is_not_an_error(tmp_path):
