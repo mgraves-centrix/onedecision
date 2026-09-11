@@ -4,10 +4,10 @@ Kept as a thin, optional adapter so the local golden path stays the source of
 truth. Importing this module does not require `bedrock-agentcore` to be
 installed; the dependency is only needed to actually serve.
 
-Deployment status: **not deployed**. AWS credentials and Bedrock model access
-are now in place, but this path has not been exercised against a live AgentCore
-Runtime. See `docs/deployment-agentcore.md` for the remaining steps. Nothing here
-invents a CLI flag or an API shape that has not been checked against the installed SDK.
+Deployment status: **deployed** to AgentCore Runtime in us-west-2. AgentCore runs
+`agentcore_main.py` at the package root, which calls `build_app()` below; the project
+config is in `agentcore/`. See `docs/deployment-agentcore.md`. Each runtime session
+seeds its own SQLite database, so state does not carry across sessions.
 
 Run locally (serves on the AgentCore contract, no AWS involved):
 
@@ -17,11 +17,14 @@ Run locally (serves on the AgentCore contract, no AWS involved):
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from app import db, seed
 from app.config import settings
 from app.orchestrator import handle_event
+
+_CASE_ID = re.compile(r"\bCASE-\d+\b", re.IGNORECASE)
 
 
 def invoke(payload: dict[str, Any]) -> dict[str, Any]:
@@ -30,12 +33,18 @@ def invoke(payload: dict[str, Any]) -> dict[str, Any]:
     Payload shape:
         {"case_id": "CASE-2002", "event_key": "optional-idempotency-key"}
 
+    The SDK examples in the AgentCore documentation send {"prompt": "..."}
+    instead, so a case ID named in a prompt is accepted too.
+
     The response is the same `HandlingResult` the local path produces, so the
     runtime is a transport detail rather than a second implementation.
     """
     case_id = payload.get("case_id")
+    if not case_id and isinstance(payload.get("prompt"), str):
+        match = _CASE_ID.search(payload["prompt"])
+        case_id = match.group(0).upper() if match else None
     if not case_id:
-        return {"error": "payload must include 'case_id'"}
+        return {"error": "payload must include 'case_id', or a prompt naming a case such as CASE-2001"}
 
     db.init_db()
     with db.read_only() as conn:

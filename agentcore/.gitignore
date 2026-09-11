@@ -1,0 +1,25 @@
+# Secrets (local environment files are never committed)
+.env.local
+
+# CDK Build Artifacts
+cdk/cdk.out/
+cdk/node_modules/
+
+# CLI Internals
+.cli/*
+
+# Ephemeral Staging
+.cache/*
+
+# Packaged CodeZip artifact and its per-agent staging directory, both produced
+# by `agentcore package` / `agentcore deploy`
+*.zip
+onedecision/
+
+# Exception: Commit the State
+!.cli/deployed-state.json
+
+# Public repository: keep the AWS account ID out of git.
+# Create aws-targets.json locally; see docs/deployment-agentcore.md.
+aws-targets.json
+.cli/deployed-state.json

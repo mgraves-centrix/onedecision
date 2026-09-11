@@ -14,6 +14,9 @@ dependencies = [
     "jinja2==3.1.6",
     "python-multipart==0.0.32",
     "boto3==1.43.88",
+    # AgentCore's CodeZip packager installs only these dependencies, not extras,
+    # so the runtime needs it here as well as in the agentcore extra below.
+    "bedrock-agentcore==1.22.0",
 ]
 
 [project.optional-dependencies]
