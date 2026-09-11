@@ -32,6 +32,44 @@ MAX_MISSING_COMPONENTS_CEILING = 1
 DEFAULT_APPROVAL_TOKEN = "replace-me-local-demo-token"
 
 
+def load_dotenv(path: Path | None = None) -> list[str]:
+    """Load `.env` into the process environment, if it exists.
+
+    The README tells anyone running this to copy `.env.example` to `.env`, so
+    something has to read it. Deliberately small and dependency-free:
+
+    * a real environment variable always wins over the file, so a deployment
+      cannot be silently overridden by a stray file on disk;
+    * values are never logged, and the names loaded are returned rather than the
+      values, so a caller that wants to report progress cannot leak a secret.
+
+    `.env` is gitignored. Never commit one.
+    """
+    target = path or (REPO_ROOT / ".env")
+    if not target.exists():
+        return []
+
+    loaded: list[str] = []
+    for raw in target.read_text().splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export ") :].lstrip()
+        key, sep, value = line.partition("=")
+        if not sep:
+            continue
+        key = key.strip()
+        if not key or key in os.environ:
+            continue  # the real environment wins
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        os.environ[key] = value
+        loaded.append(key)
+    return loaded
+
+
 def _env_float(name: str, default: float) -> float:
     raw = os.environ.get(name)
     if raw is None or raw.strip() == "":
@@ -128,6 +166,7 @@ def load_settings() -> Settings:
     )
 
 
+load_dotenv()
 settings = load_settings()
 
 

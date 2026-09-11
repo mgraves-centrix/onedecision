@@ -152,3 +152,55 @@ def test_the_demo_token_hint_disappears_once_a_real_token_is_set(client, monkeyp
     r = client.post(f"/exceptions/{exception_id}/approve", follow_redirects=True)
     assert "Demo token:" not in r.text
     assert "a-real-operator-secret" not in r.text
+
+
+# ------------------------------------------------------------ configuration
+
+
+def test_dotenv_is_loaded_so_the_readme_instruction_works(tmp_path, monkeypatch):
+    """The README tells a judge to copy .env.example to .env, so it must be read."""
+    from app.config import load_dotenv
+
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "# a comment\n"
+        "export ONEDECISION_TEST_PLAIN=plain\n"
+        'ONEDECISION_TEST_QUOTED="has spaces"\n'
+        "ONEDECISION_TEST_PRESET=from_file\n"
+        "\n"
+        "not-a-pair\n"
+    )
+    monkeypatch.setenv("ONEDECISION_TEST_PRESET", "from_environment")
+
+    loaded = load_dotenv(env_file)
+
+    import os
+
+    assert os.environ["ONEDECISION_TEST_PLAIN"] == "plain"
+    assert os.environ["ONEDECISION_TEST_QUOTED"] == "has spaces"
+    # A real environment variable must win, so a stray file cannot override a
+    # deployment's configuration.
+    assert os.environ["ONEDECISION_TEST_PRESET"] == "from_environment"
+    assert "ONEDECISION_TEST_PRESET" not in loaded
+    # Names are returned, never values, so progress output cannot leak a secret.
+    assert loaded == ["ONEDECISION_TEST_PLAIN", "ONEDECISION_TEST_QUOTED"]
+    for name in ("ONEDECISION_TEST_PLAIN", "ONEDECISION_TEST_QUOTED"):
+        monkeypatch.delenv(name, raising=False)
+
+
+def test_a_missing_dotenv_is_not_an_error(tmp_path):
+    from app.config import load_dotenv
+
+    assert load_dotenv(tmp_path / "does-not-exist") == []
+
+
+def test_dotenv_is_gitignored():
+    """A real .env must never be committable."""
+    import subprocess
+
+    from app.config import REPO_ROOT
+
+    result = subprocess.run(
+        ["git", "check-ignore", "-q", ".env"], cwd=REPO_ROOT, capture_output=True
+    )
+    assert result.returncode == 0, ".env is NOT gitignored"
