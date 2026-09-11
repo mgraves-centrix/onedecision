@@ -6,8 +6,10 @@ voiced with Amazon Polly. Waits for model calls are cut, so the video shows each
 result. Before anything is assembled, every fact the narration states is checked against the
 take's own database.
 
-Everything generated goes to `var/video/`, which git ignores. Run every command from the
-repository root.
+Everything generated goes to `../onedecision-video/`, beside the repository rather than
+inside it, because the AgentCore packager ships every file in the tree, gitignored or not,
+and a few takes are hundreds of megabytes. Override the location with
+`ONEDECISION_VIDEO_OUT`. Run every command from the repository root.
 
 ## What you need
 
@@ -45,7 +47,7 @@ repository root.
    use another address, pass it to `record_live.py` as its first argument.
 
    ```bash
-   AWS_PROFILE=onedecision ONEDECISION_MODEL_PROVIDER=bedrock ONEDECISION_DB_PATH=var/video/take.db \
+   AWS_PROFILE=onedecision ONEDECISION_MODEL_PROVIDER=bedrock ONEDECISION_DB_PATH=../onedecision-video/take.db \
      .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
    ```
 
@@ -53,7 +55,7 @@ repository root.
    page zoom, and where the pointer lands, and saves one captured frame. Look at the frame.
 
    ```bash
-   .venv/bin/python tools/video/record_live.py --preview   # writes var/video/preview.png
+   .venv/bin/python tools/video/record_live.py --preview   # writes ../onedecision-video/preview.png
    ```
 
 4. **Take.** A take lasts about eight minutes on Bedrock. Chrome takes keyboard focus, so don't
@@ -76,15 +78,15 @@ repository root.
    rather than assembling it.
 
    ```bash
-   .venv/bin/python tools/video/check_take.py var/video/take.db
+   .venv/bin/python tools/video/check_take.py ../onedecision-video/take.db
    ```
 
 7. **Assemble and look.** The contact sheet shows the start, middle, and end of every beat.
    Check it before sharing the draft.
 
    ```bash
-   .venv/bin/python tools/video/assemble.py        # var/video/onedecision-demo-draft.mp4
-   .venv/bin/python tools/video/contact_sheet.py   # var/video/contact-sheet.png
+   .venv/bin/python tools/video/assemble.py        # ../onedecision-video/onedecision-demo-draft.mp4
+   .venv/bin/python tools/video/contact_sheet.py   # ../onedecision-video/contact-sheet.png
    ```
 
 ## What is real and what stands in
@@ -93,8 +95,8 @@ repository root.
   drawn in the page, because automated input doesn't move the macOS cursor. The teal outline
   marks what the narration is talking about.
 - **Phone beat:** it's a headless, phone-sized stand-in. To use real phone footage, point
-  `"phone"` in `var/video/timeline.json` at your clip. Replace the two `phone` segments with one
-  that covers the 7.2-second beat, then re-run `assemble.py`.
+  `"phone"` in `../onedecision-video/timeline.json` at your clip. Replace the two `phone`
+  segments with one that covers the 7.2-second beat, then re-run `assemble.py`.
 - **AgentCore beat:** it replays `agentcore-result.json`, the handler's result from a real
   `agentcore invoke "Investigate CASE-2001" --json`, without the CLI's session ID or local log
   path. To use a fresh capture, pass the new CLI output to `render_terminal.py`.
