@@ -54,6 +54,7 @@ Claims in this repository were checked, not assumed:
 | The Anthropic API provider works end to end | `make smoke` run against the live Anthropic API with `claude-opus-5` on 2026-09-10: four real tool calls and a parsed `InvestigationReport` |
 | The Bedrock provider works end to end | `make smoke` run against Amazon Bedrock with `us.anthropic.claude-opus-5` in `us-west-2` on 2026-09-10: four real tool calls and a parsed `InvestigationReport`, after the concurrency fix described below |
 | The opt-in integration tests pass against a hosted model | `pytest -m integration` against Bedrock (`us.anthropic.claude-opus-5`) on 2026-09-10: 3 passed. They cover real tool calls, a report that reconciles with the source systems, and a schema-valid policy proposal |
+| The AgentCore Runtime deployment works | `agentcore deploy` to `us-west-2` on 2026-09-11, then `agentcore invoke "Investigate CASE-2001"`: runtime `READY`, four tool calls on Bedrock, a decision card returned |
 
 ## AWS access
 
@@ -77,10 +78,15 @@ Current state:
   `tests/test_agent_build.py`). The opt-in integration tests pass there too (3 of 3),
   after a fix to the tests themselves: a shared fixture forced the offline provider,
   so they had always skipped.
-- The **AgentCore Runtime** entrypoint (`app/agentcore.py`) builds against the real SDK
-  and serves the correct contract locally, but has **not** been deployed to AgentCore.
-- The only billable AWS usage is Bedrock inference for smoke tests. No compute, storage,
-  or database resources were created, and no deployment was attempted.
+- The **AgentCore Runtime** deployment is live in `us-west-2`: `agentcore_main.py` and
+  the `agentcore/` project config were deployed with the AgentCore CLI, and
+  `agentcore invoke` returns a decision card for CASE-2001 after four tool calls on
+  Bedrock. Each runtime session seeds its own SQLite database, so state does not carry
+  across sessions.
+- Billable AWS usage: Bedrock inference, the AgentCore Runtime, and what the AgentCore CLI
+  creates to deploy it (a CDK bootstrap stack with an S3 staging bucket and ECR
+  repository, the runtime's IAM role, and a CloudWatch log group). No database was
+  provisioned.
 
 The local golden path is complete, tested, and reproducible without any cloud account.
 See [deployment-agentcore.md](deployment-agentcore.md) for what remains, written against
@@ -92,7 +98,7 @@ the SDK that is actually installed rather than from memory.
 language; a working activation gate; replay-gated learning; measured evaluation results;
 an append-only audit log with tamper detection.
 
-**Not claimed:** a running AgentCore Runtime; production integrations; a systematic
-evaluation of a hosted model on this task. Live models on both the Anthropic API and
+**Not claimed:** state that persists across AgentCore Runtime sessions; production
+integrations; a systematic evaluation of a hosted model on this task. Live models on both the Anthropic API and
 Bedrock have passed the smoke test, and the opt-in integration tests pass on Bedrock,
 but three integration tests are not a systematic evaluation.

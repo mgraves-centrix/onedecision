@@ -27,8 +27,8 @@ Target: submit by **noon Pacific on September 14**.
 
 | Requirement | Status | Notes |
 | --- | --- | --- |
-| Live demo link | **Not started** | Explicitly optional: *"(Optional) Include a live demo link"*, which strengthens Technical Implementation. Requires a deploy, which is not done. The local build already satisfies the mandatory access rule. |
-| AgentCore Runtime deployment | **Not started** | Entrypoint implemented and verified against the SDK; not deployed. AWS credentials (IAM Identity Center) and Bedrock model access now work, and the AgentCore CLI (`@aws/agentcore`) is installed. The entrypoint still needs adapting to the CLI's project layout. `docs/deployment-agentcore.md`. |
+| Live demo link | **Not started** | Explicitly optional: *"(Optional) Include a live demo link"*, which strengthens Technical Implementation. The AgentCore Runtime is deployed, but invoking it requires AWS credentials, so it is not a public link; a public link would need the web app hosted separately. The local build already satisfies the mandatory access rule. |
+| AgentCore Runtime deployment | **Done** | Deployed to `us-west-2` with the AgentCore CLI (`agentcore deploy`) and invoked live; the runtime is `READY`. Each session seeds its own SQLite database, so state does not persist across sessions. `docs/deployment-agentcore.md`. |
 | Live hosted-model demo | **Done** | `make smoke` passes live on both the Anthropic API (`claude-opus-5`) and Amazon Bedrock (`us.anthropic.claude-opus-5`), and the opt-in integration tests pass on Bedrock (3 of 3). |
 | Tracing / observability | **Partial** | Strands emits OTEL spans; wiring is documented, exporter not configured. |
 | Builder.aws posts (0.2 each, max 0.6) | **Not started** | Stage Two only. Title must include "Agents for Humans". Publish before the deadline. |
@@ -48,7 +48,7 @@ is the part that distinguishes this from an agent that merely acts.
 
 | Category | Where this project makes its case |
 | --- | --- |
-| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 138 hermetic tests run against both PostgreSQL and SQLite (276 runs); swappable model provider; AgentCore-ready entrypoint. |
+| Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 141 hermetic tests run against both PostgreSQL and SQLite (282 runs); swappable model provider; deployed to AgentCore Runtime. |
 | Design | Three coherent views; the decision card is the product surface; every claim on screen is traceable to a tool call; the policy diff makes a widened boundary impossible to approve by accident. |
 | Potential Impact | Any recurring human judgment call with a bounded action space — returns, claims, refunds, exceptions, approvals. |
 | Creativity & Originality | Not "an agent that writes SOPs". It converts one human decision into governed, replay-tested automation, and proves what it *would have done* before anyone trusts it. |
@@ -57,8 +57,7 @@ is the part that distinguishes this from an agent that merely acts.
 ## Blockers requiring the owner
 
 1. **Record and publish the demo video** — needs an account and explicit authorization.
-2. **AgentCore deployment** — credentials and Bedrock model access are in place; the deploy itself is not done.
-3. **Devpost submission itself** — needs explicit authorization.
+2. **Devpost submission itself** — needs explicit authorization.
 
 ## Pre-submission verification
 

@@ -137,8 +137,8 @@ analytics suite.
   must work with no cloud account and no credentials.
 - **A2.** For most of the build, the AWS credentials in the environment were invalid
   (`sts:GetCallerIdentity` returned `InvalidClientTokenId`). Valid credentials were
-  added on 2026-09-10: the Bedrock path now passes the smoke test live, and AgentCore
-  is not yet deployed. See `docs/provenance.md`.
+  added on 2026-09-10: the Bedrock path passes the smoke and integration tests live,
+  and the agent is deployed to AgentCore Runtime. See `docs/provenance.md`.
 - **A3.** "One approved non-serialized accessory" means exactly one missing
   line item, quantity one.
 - **A4.** Replacement cost is authoritative from the synthetic parts catalog,

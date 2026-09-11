@@ -5,7 +5,7 @@
 PostgreSQL is the deployment target. SQLite remains as an explicitly-labeled
 zero-setup demo backend so a hackathon judge can run the product from a fresh
 clone with no server and no credentials. Both are real, both run the same
-migrations, and **the entire test suite runs against both** — 276 runs, 138 per
+migrations, and **the entire test suite runs against both** — 282 runs, 141 per
 backend — so they cannot drift without CI going red.
 
 Switching is one environment variable:

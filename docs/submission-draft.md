@@ -107,7 +107,9 @@ The model provider sits behind an adapter: Bedrock, the Anthropic API, or a dete
 implementation of the Strands `Model` interface that drives the unmodified agent loop
 with no credentials and no network. That last one is why a judge can run the entire
 product — real agent, real tool calls, real typed output — with `make setup && make seed
-&& make run` and no AWS account.
+&& make run` and no AWS account. The same agent is deployed to Amazon Bedrock AgentCore
+Runtime through a thin entrypoint (`agentcore_main.py`) and the AgentCore CLI's CDK
+project, so the runtime is a transport detail rather than a second implementation.
 
 ## Challenges
 
@@ -135,7 +137,8 @@ shared database connection. The agent escalated rather than act on the bad data,
 the design working, and tools now run one at a time. All three fixes have regression tests.
 The opt-in integration tests then passed on Bedrock, 3 of 3, after one more fix: a shared
 test fixture had been forcing the offline provider, so those tests had always skipped.
-AgentCore Runtime is not yet deployed.
+Finally, the agent was deployed to AgentCore Runtime with the AgentCore CLI and invoked
+live: it investigates a case on Bedrock and returns a decision card from AWS.
 
 ## Accomplishments
 
@@ -144,12 +147,12 @@ AgentCore Runtime is not yet deployed.
 - **Zero** false automatic actions, **zero** prohibited actions, and **zero** duplicate
   actions across 24 evaluation cases — measured by a harness that counts from the
   database, not asserted.
-- 138 hermetic tests, run against both PostgreSQL and SQLite for 276 total runs in
+- 141 hermetic tests, run against both PostgreSQL and SQLite for 282 total runs in
   under thirty seconds, including prompt injection inside case notes,
   audit tampering, model timeouts, tool outages, and duplicate events. CI runs the
   whole suite, the smoke test, the golden path, and the safety gate on every push.
 - The same Strands agent runs live on Claude Opus 5 through both the Anthropic API and
-  Amazon Bedrock, and fully offline with no credentials.
+  Amazon Bedrock, deployed on AgentCore Runtime, and fully offline with no credentials.
 - A replay gate that shows a supervisor what a proposed policy *would have done* to their
   own history before they trust it.
 
@@ -162,8 +165,9 @@ that boundary that a non-engineer can read in thirty seconds.
 
 ## What's next
 
-An AgentCore Runtime deployment, the opt-in integration tests against the Anthropic API,
-policy expiry and periodic re-replay against newer history, and a second
+PostgreSQL behind the AgentCore deployment so taught policies persist across sessions,
+the opt-in integration tests against the Anthropic API, policy expiry and periodic
+re-replay against newer history, and a second
 exception family, chosen to test whether the policy language generalizes or was quietly
 fitted to the first one.
 

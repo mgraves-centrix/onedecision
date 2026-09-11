@@ -2,7 +2,7 @@
 
 **Teach the agent once; it safely handles the next hundred.**
 
-Built for **Agents for Humans** · Professional Agents track · Strands Agents, with an Amazon Bedrock AgentCore Runtime entrypoint (not yet deployed)
+Built for **Agents for Humans** · Professional Agents track · Strands Agents on Claude Opus 5, deployed to Amazon Bedrock AgentCore Runtime
 
 ![OneDecision architecture](docs/architecture.png)
 
@@ -91,7 +91,7 @@ Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 138 hermetic tests, a few seconds
+make test      # 141 hermetic tests, a few seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
@@ -137,9 +137,11 @@ The opt-in integration tests (real tool calls, a report that reconciles with the
 systems, and a schema-valid policy proposal) pass against Bedrock, 3 of 3. They have not
 been run against the Anthropic API.
 
-**AgentCore Runtime status:** the entrypoint builds against the real SDK and serves the
-AgentCore contract locally, but it has **not been deployed**. See
-[docs/deployment-agentcore.md](docs/deployment-agentcore.md) for the remaining steps.
+**AgentCore Runtime status:** deployed to AgentCore Runtime in `us-west-2` with the
+AgentCore CLI, and invoked live: the deployed agent investigates CASE-2001 on Bedrock
+with four real tool calls and returns a decision card. Each runtime session seeds its own
+SQLite database, so taught policies do not carry across sessions; the full teach-once loop
+runs in the local app. See [docs/deployment-agentcore.md](docs/deployment-agentcore.md).
 
 ---
 
@@ -228,7 +230,7 @@ app/
   audit.py         append-only, hash-chained
   evaluation.py    the measurement harness
   main.py          FastAPI: inbox / decision+replay / policies+audit
-  agentcore.py     Bedrock AgentCore Runtime entrypoint (optional)
+  agentcore.py     AgentCore Runtime handler, deployed through agentcore_main.py
   db/
     postgres_backend.py  deployment target: pooling, advisory lock, NUMERIC
     sqlite_backend.py    zero-setup demo backend
@@ -236,6 +238,8 @@ app/
 fixtures/          synthetic catalog + 24 historical + 6 demo cases
 tests/             hermetic; every test runs on both backends
 docs/              scope, architecture, database, evaluation, demo, provenance
+agentcore/         AgentCore CLI project: runtime config and CDK app
+agentcore_main.py  AgentCore Runtime entrypoint (imports app.agentcore)
 ```
 
 ## Database
@@ -275,7 +279,7 @@ by a stray `.env` on disk. `.env` is gitignored and a test asserts it stays that
 
 ```bash
 make test        # hermetic. No network, no model calls. SQLite, plus PostgreSQL if it is up.
-make test-pg     # the whole suite against BOTH backends (276 runs)
+make test-pg     # the whole suite against BOTH backends (282 runs)
 pytest -m integration    # opt-in, needs a live model provider
 ```
 
