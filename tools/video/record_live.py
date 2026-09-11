@@ -475,7 +475,8 @@ def main() -> None:
         d.hold("dashboard", 0.55)
         spot(page, "ul.bars >> nth=1", ptr)
         d.hold("dashboard", 0.75)
-        spot(page, '.kpi:has(.label:text-is("Model tokens"))', ptr, "center")
+        # Rest beside the tile's label: centered, the pointer would sit on the token breakdown.
+        spot(page, '.kpi:has(.label:text-is("Model tokens"))', ptr)
         d.hold("dashboard", 1.0)
         d.cut()
 
