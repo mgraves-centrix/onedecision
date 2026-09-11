@@ -147,12 +147,12 @@
   {% if wrong %}
   <h4 class="danger-heading">Cases this version would have actioned wrongly</h4>
   <p class="muted small">These block activation outright.</p>
-  <table class="replay">
+  <table class="replay stack">
     <thead><tr><th>Case</th><th>Should have</th><th>Would have</th><th>Why it matters</th></tr></thead>
     <tbody>
       {% for f in wrong %}
-      <tr><td><code>{{ f.case_id }}</code></td><td>{{ f.expected }}</td><td>{{ f.predicted }}</td>
-          <td>{{ f.scenario_note }}</td></tr>
+      <tr><td class="row-title"><code>{{ f.case_id }}</code></td><td data-label="Should have">{{ f.expected }}</td><td data-label="Would have">{{ f.predicted }}</td>
+          <td data-label="Why it matters">{{ f.scenario_note }}</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -165,12 +165,12 @@
     action costs a camera. Tightening the boundary deliberately trades the first
     for the second.
   </p>
-  <table class="replay">
-    <thead><tr><th>Case</th><th>Could have been</th><th>Will be</th><th>Case</th></tr></thead>
+  <table class="replay stack">
+    <thead><tr><th>Case</th><th>Could have been</th><th>Will be</th><th>Scenario</th></tr></thead>
     <tbody>
       {% for f in missed %}
-      <tr><td><code>{{ f.case_id }}</code></td><td>{{ f.expected }}</td><td>{{ f.predicted }}</td>
-          <td>{{ f.scenario_note }}</td></tr>
+      <tr><td class="row-title"><code>{{ f.case_id }}</code></td><td data-label="Could have been">{{ f.expected }}</td><td data-label="Will be">{{ f.predicted }}</td>
+          <td data-label="Scenario">{{ f.scenario_note }}</td></tr>
       {% endfor %}
     </tbody>
   </table>

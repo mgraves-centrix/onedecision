@@ -67,11 +67,11 @@ _USAGE_EVENTS = (
 # Column chart geometry, in SVG user units. Columns are capped at 24 wide and
 # take 60% of their slot, so the rest of the slot is air.
 _CHART_WIDTH = 720
-_CHART_LEFT = 36
-_CHART_RIGHT = 24  # room for the last date label, centered on the last column
+_CHART_LEFT = 56  # room for the y-axis labels, which are sized up on small screens
+_CHART_RIGHT = 40  # room for the last date label, centered on the last column
 _CHART_TOP = 12
 _CHART_PLOT = 140
-_CHART_AXIS = 26
+_CHART_AXIS = 40  # the date labels hang below the baseline
 _MAX_COLUMN = 24.0
 
 
@@ -234,7 +234,7 @@ def _column_chart(
     width = min(_MAX_COLUMN, slot * 0.6)
     peak = max(counts, default=0)
     base = _CHART_TOP + _CHART_PLOT
-    tick_every = max(1, math.ceil(n / 7))
+    tick_every = max(1, math.ceil(n / 5))
     columns = []
     for i, (start, count) in enumerate(zip(starts, counts)):
         slot_x = _CHART_LEFT + i * slot

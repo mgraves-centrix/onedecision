@@ -9,17 +9,17 @@
 </h3>
 
 {% if diff.has_changes %}
-<table class="diff">
+<table class="diff stack">
   <thead>
     <tr><th>What</th><th>Before</th><th>After</th><th>Effect</th></tr>
   </thead>
   <tbody>
     {% for row in diff.changed_rows %}
     <tr class="kind-{{ row.kind }}">
-      <th><code>{{ row.label }}</code></th>
-      <td class="before">{{ row.before or '—' }}</td>
-      <td class="after">{{ row.after or '—' }}</td>
-      <td>
+      <th class="row-title"><code>{{ row.label }}</code></th>
+      <td class="before" data-label="Before">{{ row.before or '—' }}</td>
+      <td class="after" data-label="After">{{ row.after or '—' }}</td>
+      <td data-label="Effect">
         <span class="pill kind-{{ row.kind }}">{{ row.kind }}</span>
         {% if row.note %}<span class="muted small">{{ row.note }}</span>{% endif %}
       </td>

@@ -28,14 +28,14 @@ a { color: inherit; }
 
 /* ------------------------------------------------------------------ chrome */
 .topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 24px; padding: 14px 28px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 10px 24px; padding: 14px 28px; border-bottom: 1px solid var(--line);
   background: var(--panel);
 }
 .brand a { font-size: 19px; font-weight: 650; text-decoration: none; letter-spacing: -.01em; }
 .brand .mark { color: var(--accent); }
 .brand .tagline { display: block; color: var(--ink-faint); font-size: 12.5px; margin-top: 2px; }
-.topbar nav { display: flex; align-items: center; gap: 18px; }
+.topbar nav { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; }
 .topbar nav a { color: var(--ink-dim); text-decoration: none; font-size: 14px; }
 .topbar nav a:hover { color: var(--ink); }
 
@@ -46,7 +46,7 @@ a { color: inherit; }
 
 main { padding: 26px 28px 60px; max-width: 1440px; margin: 0 auto; }
 footer {
-  display: flex; justify-content: space-between; padding: 16px 28px;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 16px; padding: 16px 28px;
   color: var(--ink-faint); font-size: 12.5px; border-top: 1px solid var(--line);
 }
 
@@ -71,7 +71,7 @@ h4 { font-size: 12px; margin: 14px 0 6px; text-transform: uppercase;
 .card.danger h2 { color: var(--danger); }
 .card.muted-card { background: var(--panel-2); }
 
-.split { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; }
 @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
 
 /* ------------------------------------------------------------------- inbox */
@@ -91,8 +91,8 @@ h4 { font-size: 12px; margin: 14px 0 6px; text-transform: uppercase;
 }
 .policy-strip.empty { background: var(--panel-2); border-color: var(--line); }
 
-.columns { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
-@media (max-width: 1200px) { .columns { grid-template-columns: repeat(2, 1fr); } }
+.columns { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 1200px) { .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .column {
   background: var(--panel); border: 1px solid var(--line);
   border-radius: var(--radius); padding: 14px;
@@ -151,7 +151,7 @@ ul.boundaries li { padding: 8px 0; border-bottom: 1px solid var(--line); font-si
 ul.boundaries li:last-child { border-bottom: 0; }
 ul.boundaries span { display: block; font-size: 12.5px; margin-top: 2px; }
 
-.actions { display: flex; gap: 10px; margin-top: 18px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .decided { margin-top: 16px; color: var(--good); font-size: 13.5px; }
 
 .btn {
@@ -163,10 +163,11 @@ ul.boundaries span { display: block; font-size: 12.5px; margin-top: 2px; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
                font-weight: 600; }
 .btn.ghost { background: transparent; color: var(--ink-dim); }
-.inline { display: inline-flex; gap: 8px; align-items: center; margin: 0; }
+.inline { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; }
 input[type=password] {
   font: inherit; font-size: 13.5px; padding: 7px 11px; border-radius: 7px;
   border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 210px;
+  max-width: 100%;
 }
 
 /* ---------------------------------------------------------------- policies */
@@ -201,7 +202,7 @@ table.replay th { color: var(--ink-dim); font-weight: 500; }
   background: var(--panel-2);
 }
 .policy-version.status-active { border-color: rgba(74, 222, 128, .35); }
-.policy-version header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.policy-version header { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 6px; }
 .case-chips code {
   display: inline-block; padding: 2px 7px; margin: 0 5px 5px 0;
   background: var(--panel); border: 1px solid var(--line); border-radius: 5px;
@@ -210,11 +211,14 @@ table.replay th { color: var(--ink-dim); font-weight: 500; }
 /* ---------------------------------------------------------------- timeline */
 ol.timeline { list-style: none; margin: 0; padding: 0; font-size: 12.5px; }
 ol.timeline li {
-  display: grid; grid-template-columns: 92px 210px 110px 1fr 130px; gap: 12px;
+  display: grid; grid-template-columns: 96px 210px 110px 1fr 130px; gap: 12px;
   padding: 5px 0 5px 10px; border-left: 2px solid var(--line);
 }
-@media (max-width: 1000px) { ol.timeline li { grid-template-columns: 80px 1fr; } }
-ol.timeline .ts { color: var(--ink-faint); font-family: ui-monospace, monospace; }
+@media (max-width: 1000px) {
+  ol.timeline li { grid-template-columns: 96px minmax(0, 1fr); row-gap: 1px; }
+  ol.timeline .actor, ol.timeline .detail, ol.timeline .pol { grid-column: 1 / -1; }
+}
+ol.timeline .ts { color: var(--ink-faint); font-family: ui-monospace, monospace; white-space: nowrap; }
 ol.timeline .type { color: var(--ink); }
 ol.timeline .actor { color: var(--ink-dim); }
 ol.timeline .detail, ol.timeline .pol { color: var(--ink-dim); }
@@ -355,3 +359,70 @@ table.data tbody th { font-weight: 500; color: var(--ink-dim); }
 table.data .num { text-align: right; font-variant-numeric: tabular-nums; }
 
 ol.timeline .ev-agent { border-left-color: var(--mark); }
+
+/* -------------------------------------------------------------- responsive */
+/* Long identifiers (tool names, trace and policy IDs) break instead of pushing
+   their container wider than the screen, and grid and flex children may shrink
+   below their longest word. */
+main { overflow-wrap: break-word; }
+code, table.evidence td, ol.timeline .type, ol.timeline .detail, ol.timeline .pol,
+.bar-label { overflow-wrap: anywhere; }
+.column, .split > *, .kpi, .case, ol.timeline li > *, .policy-version header > * { min-width: 0; }
+
+@media (max-width: 900px) {
+  main { padding: 22px 18px 48px; }
+  .topbar { padding: 12px 18px; }
+  .synthetic-banner, footer { padding-left: 18px; padding-right: 18px; }
+  .column-chart .tick { font-size: 15px; }
+}
+
+@media (max-width: 640px) {
+  main { padding: 18px 12px 40px; }
+  h1 { font-size: 21px; }
+  .card { padding: 16px 14px; }
+  .brand .tagline { display: none; }
+  .columns { grid-template-columns: minmax(0, 1fr); }
+  /* Empty status columns shrink to a one-line count so the cases that need
+     attention are not pushed below the fold. */
+  .column.is-empty { padding: 10px 14px; }
+  .column.is-empty h2 { margin: 0; }
+  .column.is-empty .empty { display: none; }
+  .column-chart .tick { font-size: 22px; }
+
+  /* Evidence: label, value, and source tool stack inside each row. */
+  table.evidence, table.evidence tbody, table.evidence tr,
+  table.evidence th, table.evidence td { display: block; width: auto; }
+  table.evidence tr { border-top: 1px solid var(--line); padding: 9px 0; }
+  table.evidence th, table.evidence td { border-top: 0; padding: 0; }
+  table.evidence th { font-size: 12px; margin-bottom: 2px; }
+  table.evidence td.tool { width: auto; margin-top: 3px; font-size: 12px; }
+
+  /* Other tables become one block per row, each value labeled from data-label.
+     The header row stays in the accessibility tree. */
+  table.stack thead {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  table.stack, table.stack tbody, table.stack tr { display: block; width: 100%; }
+  table.stack tr { padding: 9px 0; border-bottom: 1px solid var(--line); }
+  table.stack th, table.stack td {
+    display: grid; grid-template-columns: minmax(88px, 38%) minmax(0, 1fr); gap: 10px;
+    width: auto; padding: 3px 0; border: 0; text-align: left;
+  }
+  table.stack td.num { text-align: left; }
+  table.stack td::before { content: attr(data-label); color: var(--ink-dim); font-size: 12px; }
+  table.stack .row-title { display: block; font-weight: 600; padding-bottom: 4px; }
+  table.stack .row-title::before { content: none; }
+
+  ul.bars li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .inline input[type=password] { flex: 1 1 180px; width: auto; }
+}
+
+@media (max-width: 420px) {
+  .column-chart .tick { font-size: 26px; }
+}
+
+@media (pointer: coarse) {
+  .btn { min-height: 40px; }
+  .topbar nav a { padding: 8px 2px; }
+}

@@ -30,6 +30,13 @@ def test_healthz(client):
     assert body["audit_chain_ok"] is True
 
 
+def test_every_page_links_a_versioned_stylesheet(client):
+    # The version changes with app.css, so a browser fetches the new stylesheet
+    # after an update instead of reusing a stale cached copy.
+    for path in ("/", "/policies", "/dashboard"):
+        assert "/static/app.css?v=" in client.get(path).text
+
+
 def test_check_in_produces_a_decision_card_view(client):
     r = client.post("/events/CASE-2001", follow_redirects=True)
     assert r.status_code == 200

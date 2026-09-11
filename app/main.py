@@ -85,9 +85,16 @@ STATUS_LABELS = {
 }
 
 
+def _asset_version() -> str:
+    """Changes whenever app.css does, so browsers fetch the new stylesheet
+    instead of reusing a cached copy after an update."""
+    return str(int((BASE_DIR / "static" / "app.css").stat().st_mtime))
+
+
 def _base_context(request: Request) -> dict[str, Any]:
     return {
         "request": request,
+        "asset_version": _asset_version(),
         "company": COMPANY_NAME,
         "facility": FACILITY_ID,
         "provider": provider_label(),

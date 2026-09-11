@@ -102,14 +102,14 @@
     <svg viewBox="0 0 {{ a.width }} {{ a.height }}" role="img" aria-label="{{ a.caption }}">
       <line class="grid" x1="{{ a.left }}" x2="{{ a.right }}" y1="{{ a.top }}" y2="{{ a.top }}"/>
       <line class="axis" x1="{{ a.left }}" x2="{{ a.right }}" y1="{{ a.base }}" y2="{{ a.base }}"/>
-      <text class="tick" x="{{ a.left - 8 }}" y="{{ a.top + 4 }}" text-anchor="end">{{ a.peak }}</text>
-      <text class="tick" x="{{ a.left - 8 }}" y="{{ a.base + 4 }}" text-anchor="end">0</text>
+      <text class="tick" x="{{ a.left - 8 }}" y="{{ a.top + 2 }}" text-anchor="end" dominant-baseline="hanging">{{ a.peak }}</text>
+      <text class="tick" x="{{ a.left - 8 }}" y="{{ a.base - 3 }}" text-anchor="end">0</text>
       {% for c in a.columns %}
       <g class="col" tabindex="0" aria-label="{{ c.tip }}">
         <title>{{ c.tip }}</title>
         <rect class="hit" x="{{ c.slot_x }}" y="{{ a.top }}" width="{{ c.slot_w }}" height="{{ a.base - a.top }}"/>
         {% if c.path %}<path class="mark" d="{{ c.path }}"/>{% endif %}
-        {% if c.tick %}<text class="tick" x="{{ c.center }}" y="{{ a.base + 18 }}" text-anchor="middle">{{ c.tick }}</text>{% endif %}
+        {% if c.tick %}<text class="tick" x="{{ c.center }}" y="{{ a.base + 6 }}" text-anchor="middle" dominant-baseline="hanging">{{ c.tick }}</text>{% endif %}
       </g>
       {% endfor %}
     </svg>
@@ -161,13 +161,13 @@
   <section class="card">
     <h2>Agent runs by step</h2>
     {% if d.usage.steps %}
-    <table class="data">
+    <table class="data stack">
       <thead>
         <tr><th>Step</th><th class="num">Runs</th><th class="num">Avg. time</th><th class="num">Avg. model time</th><th class="num">Tokens</th></tr>
       </thead>
       <tbody>
         {% for s in d.usage.steps %}
-        <tr><td>{{ s.label }}</td><td class="num">{{ s.runs }}</td><td class="num">{{ s.avg_duration }}</td><td class="num">{{ s.avg_latency }}</td><td class="num">{{ s.tokens }}</td></tr>
+        <tr><td class="row-title">{{ s.label }}</td><td class="num" data-label="Runs">{{ s.runs }}</td><td class="num" data-label="Avg. time">{{ s.avg_duration }}</td><td class="num" data-label="Avg. model time">{{ s.avg_latency }}</td><td class="num" data-label="Tokens">{{ s.tokens }}</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -183,16 +183,16 @@
 <section class="card">
   <h2>Recent cases</h2>
   {% if d.recent_cases %}
-  <table class="data">
+  <table class="data stack">
     <thead><tr><th>Case</th><th>Kit</th><th>Status</th><th>Policy</th><th class="num">Received (UTC)</th></tr></thead>
     <tbody>
       {% for c in d.recent_cases %}
       <tr>
-        <td><a href="/exceptions/{{ c.exception_id }}"><code>{{ c.case_id }}</code></a></td>
-        <td>{{ c.kit_name }}</td>
-        <td><span class="pill status-{{ c.status }}">{{ status_labels.get(c.status, c.status) }}</span></td>
-        <td>{% if c.applied_policy_id %}<code>{{ c.applied_policy_id }}</code>{% else %}<span class="muted">—</span>{% endif %}</td>
-        <td class="num">{{ c.created_at[:10] }} {{ c.created_at[11:19] }}</td>
+        <td class="row-title"><a href="/exceptions/{{ c.exception_id }}"><code>{{ c.case_id }}</code></a></td>
+        <td data-label="Kit">{{ c.kit_name }}</td>
+        <td data-label="Status"><span class="pill status-{{ c.status }}">{{ status_labels.get(c.status, c.status) }}</span></td>
+        <td data-label="Policy">{% if c.applied_policy_id %}<code>{{ c.applied_policy_id }}</code>{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td class="num" data-label="Received (UTC)">{{ c.created_at[:10] }} {{ c.created_at[11:19] }}</td>
       </tr>
       {% endfor %}
     </tbody>

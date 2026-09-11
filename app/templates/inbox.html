@@ -42,7 +42,7 @@
 
 <div class="columns">
   {% for status in status_order %}
-  <section class="column status-{{ status }}">
+  <section class="column status-{{ status }}{% if not buckets[status] %} is-empty{% endif %}">
     <h2>{{ status_labels[status] }} <span class="count">{{ buckets[status]|length }}</span></h2>
     {% for e in buckets[status] %}
     <a class="case" href="/exceptions/{{ e.exception_id }}">
