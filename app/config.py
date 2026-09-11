@@ -106,10 +106,14 @@ def load_settings() -> Settings:
         model_provider=os.environ.get("ONEDECISION_MODEL_PROVIDER", "scripted").strip().lower(),
         bedrock_model_id=os.environ.get(
             "ONEDECISION_BEDROCK_MODEL_ID",
-            "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+            # Bedrock IDs carry an "anthropic." prefix. Unverified against a live
+            # endpoint (see docs/provenance.md); confirm against
+            # `aws bedrock list-foundation-models` for the target account.
+            "anthropic.claude-opus-5",
         ),
         anthropic_model_id=os.environ.get(
-            "ONEDECISION_ANTHROPIC_MODEL_ID", "claude-sonnet-4-5-20250929"
+            # Current model IDs carry no date suffix.
+            "ONEDECISION_ANTHROPIC_MODEL_ID", "claude-opus-5"
         ),
         aws_region=os.environ.get("AWS_REGION", "us-west-2"),
         database_url=resolve_database_url(),
