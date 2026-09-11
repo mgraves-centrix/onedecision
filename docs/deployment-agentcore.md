@@ -55,8 +55,8 @@ curl -s localhost:8080/invocations -H 'content-type: application/json' \
    ```bash
    aws bedrock get-foundation-model-availability --model-id anthropic.claude-opus-5 --region "$AWS_REGION"
    ```
-2. **Switch the provider.** `ONEDECISION_MODEL_PROVIDER=bedrock`. The smoke test passes;
-   run the opt-in integration test *before* deploying anything:
+2. **Switch the provider. Done.** `ONEDECISION_MODEL_PROVIDER=bedrock`. The smoke test and
+   the opt-in integration tests pass against Bedrock:
    ```bash
    ONEDECISION_MODEL_PROVIDER=bedrock pytest -m integration
    ```

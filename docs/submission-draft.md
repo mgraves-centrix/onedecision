@@ -133,6 +133,8 @@ offline suite could not: two bugs in how Anthropic requests were built, and on B
 concurrency bug where the model requested several tools at once and they collided on the
 shared database connection. The agent escalated rather than act on the bad data, which is
 the design working, and tools now run one at a time. All three fixes have regression tests.
+The opt-in integration tests then passed on Bedrock, 3 of 3, after one more fix: a shared
+test fixture had been forcing the offline provider, so those tests had always skipped.
 AgentCore Runtime is not yet deployed.
 
 ## Accomplishments
@@ -160,8 +162,8 @@ that boundary that a non-engineer can read in thirty seconds.
 
 ## What's next
 
-An AgentCore Runtime deployment, the opt-in integration tests against both hosted
-providers, policy expiry and periodic re-replay against newer history, and a second
+An AgentCore Runtime deployment, the opt-in integration tests against the Anthropic API,
+policy expiry and periodic re-replay against newer history, and a second
 exception family, chosen to test whether the policy language generalizes or was quietly
 fitted to the first one.
 

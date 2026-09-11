@@ -29,7 +29,7 @@ Target: submit by **noon Pacific on September 14**.
 | --- | --- | --- |
 | Live demo link | **Not started** | Explicitly optional: *"(Optional) Include a live demo link"*, which strengthens Technical Implementation. Requires a deploy, which is not done. The local build already satisfies the mandatory access rule. |
 | AgentCore Runtime deployment | **Not started** | Entrypoint implemented and verified against the SDK; not deployed. AWS credentials (IAM Identity Center) and Bedrock model access now work, and the AgentCore CLI (`@aws/agentcore`) is installed. The entrypoint still needs adapting to the CLI's project layout. `docs/deployment-agentcore.md`. |
-| Live hosted-model demo | **Partial** | `make smoke` passes live on both the Anthropic API (`claude-opus-5`) and Amazon Bedrock (`us.anthropic.claude-opus-5`). The opt-in integration tests have not been run against a hosted model. |
+| Live hosted-model demo | **Done** | `make smoke` passes live on both the Anthropic API (`claude-opus-5`) and Amazon Bedrock (`us.anthropic.claude-opus-5`), and the opt-in integration tests pass on Bedrock (3 of 3). |
 | Tracing / observability | **Partial** | Strands emits OTEL spans; wiring is documented, exporter not configured. |
 | Builder.aws posts (0.2 each, max 0.6) | **Not started** | Stage Two only. Title must include "Agents for Humans". Publish before the deadline. |
 | AWS promotional credits | **Unavailable** | The resources page says all credits for this hackathon have been disbursed. |

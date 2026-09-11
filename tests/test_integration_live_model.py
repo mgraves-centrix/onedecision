@@ -30,10 +30,16 @@ pytestmark = pytest.mark.integration
 
 LIVE_PROVIDERS = {"bedrock", "anthropic"}
 
+# Read at import, before any fixture runs. The autouse temp_db fixture in
+# conftest.py forces the offline provider for every test, so reading the variable
+# inside a fixture always saw "scripted" and these tests skipped even when a live
+# provider was requested.
+REQUESTED_PROVIDER = os.environ.get("ONEDECISION_MODEL_PROVIDER", "scripted")
+
 
 @pytest.fixture()
 def live_settings(monkeypatch):
-    provider = os.environ.get("ONEDECISION_MODEL_PROVIDER", "scripted")
+    provider = REQUESTED_PROVIDER
     if provider not in LIVE_PROVIDERS:
         pytest.skip(
             "set ONEDECISION_MODEL_PROVIDER=bedrock|anthropic to run the live integration test"

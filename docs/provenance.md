@@ -53,6 +53,7 @@ Claims in this repository were checked, not assumed:
 | The evaluation numbers | produced by `python -m app.evaluation`, counted from the database after a real run |
 | The Anthropic API provider works end to end | `make smoke` run against the live Anthropic API with `claude-opus-5` on 2026-09-10: four real tool calls and a parsed `InvestigationReport` |
 | The Bedrock provider works end to end | `make smoke` run against Amazon Bedrock with `us.anthropic.claude-opus-5` in `us-west-2` on 2026-09-10: four real tool calls and a parsed `InvestigationReport`, after the concurrency fix described below |
+| The opt-in integration tests pass against a hosted model | `pytest -m integration` against Bedrock (`us.anthropic.claude-opus-5`) on 2026-09-10: 3 passed. They cover real tool calls, a report that reconciles with the source systems, and a schema-valid policy proposal |
 
 ## AWS access
 
@@ -73,7 +74,9 @@ Current state:
   in `us-west-2`. The first live run found a real defect: the model requested several
   tools in one turn, Strands ran them concurrently, and they collided on the shared
   database connection. Tools now run one at a time (`app/agent/build.py`,
-  `tests/test_agent_build.py`).
+  `tests/test_agent_build.py`). The opt-in integration tests pass there too (3 of 3),
+  after a fix to the tests themselves: a shared fixture forced the offline provider,
+  so they had always skipped.
 - The **AgentCore Runtime** entrypoint (`app/agentcore.py`) builds against the real SDK
   and serves the correct contract locally, but has **not** been deployed to AgentCore.
 - The only billable AWS usage is Bedrock inference for smoke tests. No compute, storage,
@@ -91,5 +94,5 @@ an append-only audit log with tamper detection.
 
 **Not claimed:** a running AgentCore Runtime; production integrations; a systematic
 evaluation of a hosted model on this task. Live models on both the Anthropic API and
-Bedrock have passed the smoke test, but the opt-in integration tests have not been run
-against either.
+Bedrock have passed the smoke test, and the opt-in integration tests pass on Bedrock,
+but three integration tests are not a systematic evaluation.

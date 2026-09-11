@@ -133,7 +133,9 @@ with Claude Opus 5: the Anthropic API (`claude-opus-5`) and Amazon Bedrock
 exposed a concurrency bug: the model requested several tools in one turn, Strands ran them
 concurrently, and they collided on the shared database connection. The agent escalated
 rather than act on the bad data, and tools now run one at a time, with a regression test.
-The opt-in integration tests have not yet been run against either provider.
+The opt-in integration tests (real tool calls, a report that reconciles with the source
+systems, and a schema-valid policy proposal) pass against Bedrock, 3 of 3. They have not
+been run against the Anthropic API.
 
 **AgentCore Runtime status:** the entrypoint builds against the real SDK and serves the
 AgentCore contract locally, but it has **not been deployed**. See
