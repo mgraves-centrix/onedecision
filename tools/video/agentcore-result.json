@@ -8,92 +8,99 @@
   "verification": null,
   "decision_card": {
     "case_id": "CASE-2001",
-    "headline": "Meridian 4100 kit returned complete except one $14 neoprene shoulder strap; serial matches, no damage, no policy covers it.",
+    "headline": "Meridian 4100 kit returned complete except one $14 neoprene strap; serial matches, no damage, no policy covers it",
     "evidence": [
       {
         "label": "Missing component",
-        "value": "CMP-STRAP-NEO (Neoprene shoulder strap) - not serialized, not safety-critical, not essential. Only item missing.",
+        "value": "1 item short: CMP-STRAP-NEO (neoprene shoulder strap). Not serialized, not safety-critical, not essential. No unexpected items in the box.",
         "source_tool": "compare_expected_and_received"
       },
       {
-        "label": "Replacement cost",
-        "value": "$14.00, in stock - 0.6% of the $2,400 declared kit value.",
-        "source_tool": "lookup_replacement_cost"
-      },
-      {
-        "label": "Serial check",
-        "value": "Expected and received both 4100-SN-02201 - match confirmed, serial photo on file.",
+        "label": "Serial match",
+        "value": "Expected and received both 4100-SN-02201 - correct body returned.",
         "source_tool": "compare_expected_and_received"
       },
       {
-        "label": "Everything else returned",
-        "value": "Body, battery, charger, body cap, USB-C cable, foam case, rail clip all present. No unexpected components.",
-        "source_tool": "compare_expected_and_received"
+        "label": "Damage",
+        "value": "No new damage recorded.",
+        "source_tool": "get_return_case"
       },
       {
         "label": "Inspection evidence",
-        "value": "Complete - exterior photo, serial photo, completed checklist, inspector INSP-114, weight check pass. No missing fields.",
-        "source_tool": "compare_expected_and_received"
-      },
-      {
-        "label": "New damage",
-        "value": "None recorded.",
+        "value": "Complete - exterior photo, serial photo, checklist completed, weight check pass (INSP-114). No missing fields.",
         "source_tool": "get_return_case"
       },
       {
-        "label": "Inspector notes",
-        "value": "Empty - no free text submitted, so nothing to flag.",
+        "label": "Replacement cost",
+        "value": "$14.00, in stock. Catalog price agrees with the reconciliation figure.",
+        "source_tool": "lookup_replacement_cost"
+      },
+      {
+        "label": "Inspector / customer notes",
+        "value": "Empty. No free text, so nothing to flag and no embedded instructions.",
         "source_tool": "get_return_case"
       },
       {
-        "label": "Approved policy",
-        "value": "Zero active policies for this exception family; no matches and no near-misses.",
+        "label": "Policy coverage",
+        "value": "0 active policies for this exception family; no matches, no near misses, no conflicts.",
         "source_tool": "find_approved_policy"
       },
       {
-        "label": "Tool failures",
-        "value": "None - all four lookups returned cleanly.",
+        "label": "Tool health",
+        "value": "No tool failures on any call.",
         "source_tool": "compare_expected_and_received"
       }
     ],
-    "recommended_action": "Charge the customer $14.00 for CMP-STRAP-NEO, release the kit to resale stock, and close the case. No hold on the kit - the strap is a stock accessory and the body is verified by serial.",
+    "recommended_action": "Charge the customer the $14.00 catalog replacement cost for CMP-STRAP-NEO, no damage fee, and release the kit to restock with a replacement strap pulled from stock. Close CASE-2001 as resolved-short-accessory.",
     "uncertainty": [
-      "No outbound proof the strap physically shipped - the shortfall is derived from the kit BOM, not a dock photo of that specific item. If a pick error is plausible, the charge is wrong.",
-      "Whether $14 is worth billing at all versus waiving as goodwill; that is a commercial call I have no guidance on.",
-      "No customer history reviewed - I cannot tell whether CUST-SYN-801 is a first-time or repeat short-return, which might change the response.",
-      "Customer notes were not present in the case record, so I cannot confirm the customer agrees the strap is missing."
+      "Whether $14 is worth billing at all - collection and dispute handling may cost more than the strap.",
+      "No customer history was available to me, so I cannot tell if this is a first occurrence or a repeat pattern for CUST-SYN-801.",
+      "The strap may still turn up separately; nothing in the record rules out a second inbound parcel.",
+      "Weight check passed with the strap absent, so weight alone would not catch this class of shortage in future cases."
     ],
     "proposed_boundaries": [
       {
-        "description": "Exactly one missing component, and it is non-serialized, non-safety-critical, and non-essential.",
-        "reason": "Multiple missing items, or anything serialized or essential, suggests a different failure than a dropped accessory and deserves fresh eyes."
+        "description": "Exactly one component missing, and it is flagged not serialized, not safety-critical and not essential.",
+        "reason": "Multiple shortages, or anything serialized, safety-critical or essential, indicate a different failure mode and possible loss or substitution that needs human eyes."
       },
       {
-        "description": "Replacement cost at or below $25 and at or below 2% of declared kit value.",
-        "reason": "Caps worst-case auto-charge exposure and keeps the rule from silently scaling up on high-value kits where 2% is still real money."
+        "description": "Total replacement cost at or below $25.00, priced from the catalog lookup at decision time.",
+        "reason": "Keeps the unattended blast radius small. Pricing live prevents a stale figure from authorising a larger charge than intended."
       },
       {
-        "description": "Expected and received serials match, and the component is in_stock.",
-        "reason": "A serial mismatch means the wrong or a swapped unit came back - a bigger problem than an accessory. In-stock keeps the charge equal to true replaceable cost."
+        "description": "Missing component stock_status is in_stock.",
+        "reason": "If the part cannot be replaced from stock, the kit cannot be restocked and the disposition is a resale or hold question, not a fee question."
       },
       {
-        "description": "Inspection evidence complete with zero missing fields, no new damage, and no unexpected components.",
-        "reason": "The charge rests entirely on the completed checklist and weight check. Incomplete evidence means the shortfall is not actually established."
+        "description": "Received serial matches expected serial.",
+        "reason": "A serial mismatch means the wrong asset came back. That outranks any accessory shortage and must go to a person."
       },
       {
-        "description": "Zero tool failures across all lookups in the case.",
-        "reason": "A silent lookup failure could hide a second missing item or a wrong price; a partial picture must never auto-charge."
+        "description": "new_damage_present is false.",
+        "reason": "Damage introduces a separate and usually larger assessment that this decision does not cover."
       },
       {
-        "description": "Inspector and customer notes are empty, or contain no dispute over what shipped and no embedded instruction; any instruction-like text routes to a human.",
-        "reason": "A disputed shortfall is a judgment call, and note text must never be able to steer an automated charge."
+        "description": "Inspection evidence complete with zero missing evidence fields.",
+        "reason": "Billing a customer on an incomplete inspection is not defensible if they dispute it."
       },
       {
-        "description": "Charge only; never auto-waive, never place a hold, never touch the customer's deposit beyond the itemized amount.",
-        "reason": "Keeps the automated action to a single reversible line item with a clear audit trail."
+        "description": "No unexpected or substituted components in the return.",
+        "reason": "Extra or swapped parts suggest a mis-picked or cross-contaminated return that reconciliation alone will not explain."
+      },
+      {
+        "description": "Inspector and customer notes are empty, or contain no dispute, no claim that the item was shipped, and no instruction-like text. Any note content routes to a person.",
+        "reason": "Notes are untrusted free text. They can be reported but never acted on, and a customer contesting the shortage should be read by a human before a charge lands."
+      },
+      {
+        "description": "Zero tool failures across the case lookup, reconciliation and cost lookup.",
+        "reason": "A degraded lookup means the numbers may not reflect the source systems, which win over my report."
+      },
+      {
+        "description": "No conflicting active policy matches the case.",
+        "reason": "Overlapping rules must be reconciled by a person rather than resolved silently by whichever fires first."
       }
     ],
-    "why_human_must_decide": "No active policy exists for missing-accessory returns, so there is no rule to apply. This is the first case of its kind, meaning your decision sets the dollar threshold and the charge-vs-waive default for every similar return that follows. Deterministic code performs the charge only after you approve.",
+    "why_human_must_decide": "No active policy exists for this exception family, so there is no approved rule that sets the disposition for a missing non-essential accessory. A person must set the precedent on whether to bill at catalog cost or waive. Approving this card records your decision on CASE-2001 and asks me to draft a policy for your review; it does not activate that policy or automate any future case.",
     "estimated_cost_usd": 14
   },
   "tool_calls": [
@@ -102,8 +109,8 @@
     "lookup_replacement_cost",
     "find_approved_policy"
   ],
-  "trace_id": "trc_190454398e20",
-  "duration_ms": 43961,
+  "trace_id": "trc_2f8c4f86f6a3",
+  "duration_ms": 39239,
   "model_provider": "bedrock",
   "database": "sqlite"
 }
