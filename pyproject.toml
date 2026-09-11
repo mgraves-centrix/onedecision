@@ -32,6 +32,11 @@ postgres = [
 agentcore = [
     "bedrock-agentcore==1.22.0",
 ]
+# The draft demo video tools in tools/video. They also need Google Chrome, ffmpeg,
+# and the AWS CLI; see tools/video/README.md.
+video = [
+    "playwright==1.62.0",
+]
 
 [build-system]
 requires = ["setuptools>=68"]

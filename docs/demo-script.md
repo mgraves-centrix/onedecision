@@ -195,3 +195,7 @@ Intact**.]
 - **Do not** show a terminal full of passing tests as filler; if there is spare time, show
   the audit timeline on CASE-2002 instead.
 - **Say "synthetic" once, early.** The banner is on screen the whole time.
+- **A draft cut can be made end to end.** `tools/video/` records a take of this script in
+  a real Chrome window on Bedrock and voices it with Amazon Polly. It cuts the model waits,
+  and it checks every fact the narration states against the take's database before
+  assembling. See [tools/video/README.md](../tools/video/README.md).

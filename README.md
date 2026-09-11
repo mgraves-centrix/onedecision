@@ -246,6 +246,7 @@ tests/             hermetic; every test runs on both backends
 docs/              scope, architecture, database, evaluation, demo, provenance
 agentcore/         AgentCore CLI project: runtime config and CDK app
 agentcore_main.py  AgentCore Runtime entrypoint (imports app.agentcore)
+tools/video/       draft demo video: a live take in Chrome, Polly voiceover, assembly
 ```
 
 ## Database

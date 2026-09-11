@@ -1,0 +1,42 @@
+[
+  {
+    "id": "problem",
+    "text": "This is OneDecision, a Strands Agents agent running on Claude Opus 5 through Amazon Bedrock. Dana runs returns for a camera rental company. Twenty times a week, a kit comes back missing something small, and someone asks her what to do. She answers in thirty seconds, and she has never had an hour to write it down. Rule-based automation can't help, because nobody wrote the rule. Everything you'll see runs on synthetic data."
+  },
+  {
+    "id": "arrive",
+    "text": "A kit is checked in at the returns dock. That's an event, not somebody typing a prompt at a chatbot. The Strands agent investigates it with four read-only tool calls. It pulls the case, reconciles what arrived against the bill of materials, prices the missing part, and checks for an approved policy. Every line of evidence names the tool that produced it. One neoprene strap is missing, fourteen dollars. The serial matches, and there's no damage. But no approved policy exists. So it doesn't act. It asks, once, and it proposes the boundary the answer should live inside."
+  },
+  {
+    "id": "phone",
+    "text": "Dana isn't at her desk. She approves from her phone, between two other jobs. That's the whole interruption."
+  },
+  {
+    "id": "teach",
+    "text": "Approving records her decision. It activates nothing. The agent now proposes a policy, and it can only propose in a constrained language, where every condition comes from an allowlist of nine fields. The actions, hold for parts, raise a replacement work order under the spend cap, and close the exception, weren't chosen by the agent. The action set is fixed by the system. Then deterministic code replays the candidate against twenty-four historical cases. It would have gotten zero of them wrong. If that number were anything but zero, the activate button wouldn't be here."
+  },
+  {
+    "id": "activate",
+    "text": "A human activates it. That's the only path from candidate to active. It needs a token, and it's refused without a passing replay. The model can't do this. It isn't a tool the agent has."
+  },
+  {
+    "id": "next",
+    "text": "Another kit comes in, missing a body cap. Same investigation, but this time an approved policy matches. The work order is raised, the disposition is set, both writes are read back and verified, and the exception is closed against policy version one. Dana never saw this case."
+  },
+  {
+    "id": "boundary",
+    "text": "Now one that looks almost identical. Same kit, one cheap accessory missing. But the serial doesn't match. The wrong body came back. It refuses. Not because a prompt told it to be careful. A hard guardrail runs before any policy is consulted, and a policy can only ever narrow what's allowed. The preferred answer is always: ask a person."
+  },
+  {
+    "id": "agentcore",
+    "text": "The same agent is deployed to Amazon Bedrock AgentCore Runtime. An invocation from AWS runs the same four tools on Bedrock and returns the same decision card, with nothing executed until a person approves."
+  },
+  {
+    "id": "dashboard",
+    "text": "The dashboard counts everything this demo just did, from the product's own records. Cases by outcome, the share handled automatically, the escalations, every agent run and tool call, and the tokens Bedrock reported."
+  },
+  {
+    "id": "close",
+    "text": "Every event, tool call, approval, and action lands in an append-only, hash-chained log the database refuses to edit. Across twenty-four evaluation cases, one hundred percent correct escalation, and zero false automatic actions. Teach the agent once. It safely handles the next hundred."
+  }
+]
