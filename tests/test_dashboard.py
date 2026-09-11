@@ -88,6 +88,38 @@ def test_token_usage_is_summed_from_what_the_provider_reported(conn):
     assert d["usage"]["tokens"]["total"] == 2200
 
 
+def test_cached_input_is_shown_so_the_token_figures_add_up(conn):
+    # With prompt caching on, Bedrock reports most input as cache reads and
+    # writes, counted in totalTokens but not in inputTokens. These are the
+    # numbers from one live investigation.
+    audit.record(
+        conn,
+        trace_id="trc_cache",
+        event_type=AuditEventType.AGENT_RUN,
+        actor="agent",
+        case_id="CASE-2001",
+        payload={
+            "step": "investigation",
+            "provider": "bedrock · us.anthropic.claude-opus-5",
+            "input_tokens": 6,
+            "output_tokens": 1305,
+            "total_tokens": 11204,
+            "cache_read_input_tokens": 6034,
+            "cache_write_input_tokens": 3859,
+            "model_latency_ms": 900,
+            "duration_ms": 1500,
+            "cycles": 3,
+            "tool_calls": 4,
+        },
+    )
+
+    tokens = build_dashboard(conn)["usage"]["tokens"]
+
+    assert tokens["cached"] == 9893
+    assert tokens["input"] + tokens["cached"] + tokens["output"] == tokens["total"]
+    assert tokens["cached_display"] == compact(9893)
+
+
 def test_the_range_filter_scopes_every_number(conn):
     handle_event("CASE-2001", conn=conn)
     three_days_later = datetime.now(timezone.utc) + timedelta(days=3)

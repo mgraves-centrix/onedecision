@@ -51,7 +51,7 @@
     <span class="label">Model tokens</span>
     {% if d.usage.tokens_reported %}
     <span class="value">{{ d.usage.tokens_display }}</span>
-    <span class="sub">{{ d.usage.tokens.input_display }} in · {{ d.usage.tokens.output_display }} out</span>
+    <span class="sub">{{ d.usage.tokens.input_display }} in{% if d.usage.tokens.cached %} · {{ d.usage.tokens.cached_display }} cached{% endif %} · {{ d.usage.tokens.output_display }} out</span>
     {% else %}
     <span class="value muted-value">Not reported</span>
     <span class="sub">{% if d.usage.agent_runs %}The model provider reported no token counts{% else %}No agent runs yet{% endif %}</span>

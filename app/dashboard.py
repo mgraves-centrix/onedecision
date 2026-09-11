@@ -349,6 +349,9 @@ def _usage(events: list[tuple[str, dict[str, Any]]]) -> dict[str, Any]:
 
     tokens = {
         "input": total("input_tokens", runs),
+        # Input read from or written to the prompt cache. Bedrock counts it in the
+        # total but not in input_tokens, so it gets its own figure.
+        "cached": total("cache_read_input_tokens", runs) + total("cache_write_input_tokens", runs),
         "output": total("output_tokens", runs),
         "total": total("total_tokens", runs),
     }
@@ -360,7 +363,11 @@ def _usage(events: list[tuple[str, dict[str, Any]]]) -> dict[str, Any]:
         "tool_failures": sum(t["failed"] for t in tools.values()),
         "tools": tool_rows,
         "tokens": tokens
-        | {"input_display": compact(tokens["input"]), "output_display": compact(tokens["output"])},
+        | {
+            "input_display": compact(tokens["input"]),
+            "cached_display": compact(tokens["cached"]),
+            "output_display": compact(tokens["output"]),
+        },
         "tokens_reported": tokens["total"] > 0,
         "tokens_display": compact(tokens["total"]),
         "avg_duration": seconds(total("duration_ms", runs) / len(runs)) if runs else "—",
