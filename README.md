@@ -257,8 +257,12 @@ Full write-up, including what still stands between this and production:
 
 ## Configuration
 
-Copy `.env.example` to `.env`. Everything has a safe local default; nothing is required
-to run the demo. **Never commit a real `.env`.**
+Copy `.env.example` to `.env` and edit it — the app reads it on startup. Everything has
+a safe local default; nothing is required to run the demo.
+
+A real environment variable always beats the file, so a deployment cannot be overridden
+by a stray `.env` on disk. `.env` is gitignored and a test asserts it stays that way.
+**Never commit a real `.env`** — it is where an API key goes.
 
 ## Tests
 
