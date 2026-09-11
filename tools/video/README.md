@@ -39,9 +39,14 @@ repository root.
 2. **Take server.** Start a Bedrock-backed app with its own database, so a take never touches
    your local demo data. Keep it running in another terminal.
 
+   It uses port 8000, the same as `make run`, so stop that first. The recorder opens the app
+   as `onedecision.localhost:8000`. Chrome sends any `*.localhost` name to this machine, so no
+   hosts-file change is needed, and the address bar shows a name instead of an IP address. To
+   use another address, pass it to `record_live.py` as its first argument.
+
    ```bash
    AWS_PROFILE=onedecision ONEDECISION_MODEL_PROVIDER=bedrock ONEDECISION_DB_PATH=var/video/take.db \
-     .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8096
+     .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
    ```
 
 3. **Preview.** This opens the Chrome window for a few seconds, checks its position, the 125%

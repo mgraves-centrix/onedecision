@@ -39,7 +39,7 @@ from paths import OUT, REPO
 
 ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
 PREVIEW = "--preview" in sys.argv
-BASE = ARGS[0] if ARGS else "http://localhost:8096"
+BASE = ARGS[0] if ARGS else "http://onedecision.localhost:8000"
 TOKEN = os.environ.get("ONEDECISION_APPROVAL_TOKEN", "replace-me-local-demo-token")
 DUR: dict[str, float] = json.loads((OUT / "durations.json").read_text())
 RAW = OUT / "raw"
@@ -321,7 +321,9 @@ def main() -> None:
             # Without these, Chrome shows the automation and --no-sandbox infobars.
             chromium_sandbox=True, ignore_default_args=["--enable-automation"],
             args=[f"--window-position={win[0]},{win[1]}", f"--window-size={WIN[0]},{WIN[1]}",
-                  "--hide-crash-restore-bubble"],
+                  "--hide-crash-restore-bubble",
+                  # A dark window frame to match the app; the app is dark either way.
+                  "--force-dark-mode"],
         )
         ctx.add_init_script(init_script(pointer=True))
         ctx.set_default_navigation_timeout(LONG_MS)
