@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from strands import Agent
+from strands.tools.executors import SequentialToolExecutor
 
 from app.agent import prompts
 from app.agent.providers import resolve_model
@@ -32,6 +33,11 @@ def build_agent(
         system_prompt=system_prompt,
         name=AGENT_NAME,
         callback_handler=None,
+        # Every tool shares the one database connection in `ctx`, and by default
+        # Strands runs the tool calls from a single model turn concurrently.
+        # Concurrent use of one connection mixes result rows between queries, so
+        # tools run one at a time.
+        tool_executor=SequentialToolExecutor(),
     )
 
 

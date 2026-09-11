@@ -56,6 +56,7 @@ def main() -> int:
         for call in ctx.calls:
             flag = "ok  " if call.ok else "FAIL"
             print(f"  [{flag}] {call.name}({call.arguments}) -> {call.summary}")
+        failed = [call.name for call in ctx.calls if not call.ok]
 
         print(f"\nstop reason        : {result.stop_reason}")
         print(f"structured output  : {type(report).__name__}")
@@ -67,6 +68,9 @@ def main() -> int:
             print(f"  recommendation     : {report.recommended_action}")
             print(f"  confidence         : {report.confidence}")
             print(f"  rationale          : {report.rationale}")
+            if failed:
+                print(f"\nSMOKE TEST FAILED: tool calls failed: {', '.join(failed)}")
+                return 1
             print("\nSMOKE TEST PASSED")
             return 0
 
