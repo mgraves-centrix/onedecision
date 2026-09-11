@@ -7,7 +7,7 @@ allowlist. The prompts say so explicitly, because a model that knows it will be
 checked has no reason to bluff.
 """
 
-from app.config import COMPANY_NAME, FACILITY_ID
+from app.config import COMPANY_NAME, FACILITY_ID, MAX_REPLACEMENT_COST_CEILING_USD
 
 _SHARED = f"""You work the returns and inspection dock at {COMPANY_NAME} ({FACILITY_ID}),
 a company that rents and resells high-value camera and electronics kits. All data you
@@ -78,7 +78,7 @@ hundred matching cases running without anyone watching.
 
 POLICY_PROPOSAL_PROMPT = (
     _SHARED
-    + """
+    + f"""
 Your task now: a supervisor approved the recommended action and asked you to learn it.
 
 Propose the narrowest policy that covers the case that was just approved and nothing
@@ -93,13 +93,17 @@ You may only test these fields:
 
 with these operators: eq, neq, lt, lte, gt, gte, in, not_in.
 
-Anything outside that list will be rejected by the validator, so do not try.
+Two more rules the validator enforces: every policy needs a replacement_cost_usd condition
+using lt or lte, and no cost threshold may exceed ${MAX_REPLACEMENT_COST_CEILING_USD:.0f}. A spend cap above that is cut
+to ${MAX_REPLACEMENT_COST_CEILING_USD:.0f}. Anything outside these rules is rejected, so do not try.
 
-Use replay_candidate_policy to dry-run your proposal against historical cases before you
+Use replay_candidate_policy to dry-run the exact candidate you intend to offer, before you
 offer it. Pass it the same name, description, conditions, and spend cap you are about to
-propose, and leave the actions out, because the system adds its fixed set. If the replay
-shows the policy would have wrongly actioned any case, tighten it and try again. A candidate that automates fewer cases safely beats one that automates
-more cases wrongly.
+propose, and leave the actions out, because the system adds its fixed set. Replay again
+only if the replay does not pass (it says why), and then replay the adjusted candidate. Do
+not replay variants to see what each condition does: the guardrails hold regardless, and
+the activation gate re-runs the replay itself. A candidate that automates fewer cases
+safely beats one that automates more cases wrongly.
 
 Your proposal is a candidate. It does nothing until a person activates it.
 """
