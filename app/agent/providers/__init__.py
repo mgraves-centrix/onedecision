@@ -44,10 +44,11 @@ def resolve_model(settings: Settings | None = None, **overrides: Any) -> Model:
             from strands.models import BedrockModel
         except ImportError as exc:  # pragma: no cover - dependency is pinned
             raise ModelProviderUnavailable(f"BedrockModel unavailable: {exc}") from exc
+        # No default temperature, for the same reason as the Anthropic provider
+        # below: current Claude models reject it as deprecated.
         return BedrockModel(
             model_id=overrides.pop("model_id", cfg.bedrock_model_id),
             region_name=overrides.pop("region_name", cfg.aws_region),
-            temperature=overrides.pop("temperature", 0.0),
             **overrides,
         )
 
@@ -59,9 +60,13 @@ def resolve_model(settings: Settings | None = None, **overrides: Any) -> Model:
                 "AnthropicModel requires the 'anthropic' extra: "
                 "pip install 'strands-agents[anthropic]'"
             ) from exc
+        # Strands requires max_tokens as a top-level config key; anything in
+        # `params` is passed through to the request as extra fields. No default
+        # temperature: current Claude models reject it as deprecated.
         return AnthropicModel(
             model_id=overrides.pop("model_id", cfg.anthropic_model_id),
-            params=overrides.pop("params", {"temperature": 0.0, "max_tokens": 2048}),
+            max_tokens=overrides.pop("max_tokens", 2048),
+            params=overrides.pop("params", None),
             **overrides,
         )
 
