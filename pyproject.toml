@@ -39,6 +39,7 @@ include = ["app*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "-q --strict-markers"
 markers = [
     "integration: opt-in tests that call a live model provider (deselected by default)",
