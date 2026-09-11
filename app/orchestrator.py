@@ -28,6 +28,7 @@ from app import audit, db
 from app.adapters import warehouse
 from app.adapters.returns_system import AdapterError
 from app.agent.build import decision_card_agent, investigation_agent, policy_proposal_agent
+from app.agent.providers import provider_label
 from app.agent.tools import AgentContext
 from app.audit import AuditEventType
 from app.config import settings
@@ -335,9 +336,44 @@ class _AgentOutcome:
     tool_failures: list[str]
 
 
+def _record_agent_run(
+    ctx: AgentContext, step: str, result: Any, started: float, calls_before: int
+) -> None:
+    """Record what one agent invocation consumed, for the usage dashboard.
+
+    Token counts are whatever the model provider reported. The offline scripted
+    model reports none, so they are recorded as zero rather than estimated. Tool
+    calls are counted from the context, not from Strands' tool metrics, which also
+    count the internal tool Strands uses to return structured output.
+    """
+    metrics = getattr(result, "metrics", None)
+    usage = dict(getattr(metrics, "accumulated_usage", None) or {})
+    latency = dict(getattr(metrics, "accumulated_metrics", None) or {})
+    audit.record(
+        ctx.conn,
+        trace_id=ctx.trace_id,
+        event_type=AuditEventType.AGENT_RUN,
+        actor="agent",
+        case_id=ctx.case_id,
+        exception_id=ctx.exception_id,
+        payload={
+            "step": step,
+            "provider": provider_label(),
+            "input_tokens": int(usage.get("inputTokens") or 0),
+            "output_tokens": int(usage.get("outputTokens") or 0),
+            "total_tokens": int(usage.get("totalTokens") or 0),
+            "model_latency_ms": int(latency.get("latencyMs") or 0),
+            "duration_ms": int((time.perf_counter() - started) * 1000),
+            "cycles": int(getattr(metrics, "cycle_count", 0) or 0),
+            "tool_calls": len(ctx.calls) - calls_before,
+        },
+    )
+
+
 def _run_investigation(ctx: AgentContext, case_id: str) -> _AgentOutcome:
     _prepare_scripted_context(case_id=case_id)
     agent = investigation_agent(ctx)
+    started, calls_before = time.perf_counter(), len(ctx.calls)
     try:
         result = agent(
             f"Investigate return case {case_id} and report what you found.",
@@ -346,6 +382,7 @@ def _run_investigation(ctx: AgentContext, case_id: str) -> _AgentOutcome:
     except Exception as exc:  # model timeout, transport error, malformed output
         return _AgentOutcome(None, f"{type(exc).__name__}: {exc}", ctx.tool_names, ctx.failures)
 
+    _record_agent_run(ctx, "investigation", result, started, calls_before)
     ctx.transcript = list(agent.messages)
     report = result.structured_output
     if not isinstance(report, InvestigationReport):
@@ -698,6 +735,7 @@ def _build_decision_card(
     # Carry the investigation transcript so the card is grounded in the same
     # tool results rather than a fresh guess.
     agent.messages = list(ctx.transcript)
+    started, calls_before = time.perf_counter(), len(ctx.calls)
     try:
         result = agent(
             "Produce the decision card for this case.", structured_output_model=DecisionCard
@@ -714,6 +752,7 @@ def _build_decision_card(
         )
         return None
 
+    _record_agent_run(ctx, "decision_card", result, started, calls_before)
     card = result.structured_output
     if not isinstance(card, DecisionCard):
         return None
@@ -840,6 +879,7 @@ def approve_and_teach(
     )
 
     agent = policy_proposal_agent(ctx)
+    started, calls_before = time.perf_counter(), len(ctx.calls)
     result = agent(
         (
             f"The supervisor approved the recommended action on case {case_id}. "
@@ -847,6 +887,7 @@ def approve_and_teach(
         ),
         structured_output_model=PolicyProposal,
     )
+    _record_agent_run(ctx, "policy_proposal", result, started, calls_before)
     proposal = result.structured_output
     if not isinstance(proposal, PolicyProposal):
         raise OrchestratorError("agent did not return a typed PolicyProposal")

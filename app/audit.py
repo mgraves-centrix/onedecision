@@ -27,6 +27,7 @@ class AuditEventType:
     TOOL_CALLED = "tool.called"
     TOOL_FAILED = "tool.failed"
     INVESTIGATION_COMPLETED = "investigation.completed"
+    AGENT_RUN = "agent.run"
     RECONCILIATION_MISMATCH = "investigation.reconciliation_mismatch"
     GUARDRAIL_BLOCKED = "guardrail.blocked"
     POLICY_MATCHED = "policy.matched"
@@ -184,6 +185,19 @@ def _row_to_entry(row: dict) -> AuditEntry:
 def read_all(conn: "Connection", limit: int = 500) -> list[AuditEntry]:
     rows = conn.execute(
         "SELECT * FROM audit_log ORDER BY seq DESC LIMIT ?", (limit,)
+    ).fetchall()
+    return [_row_to_entry(r) for r in rows]
+
+
+def read_recent(
+    conn: "Connection", *, limit: int = 25, since: str | None = None
+) -> list[AuditEntry]:
+    """Newest first, optionally only entries recorded at or after `since`."""
+    if since is None:
+        return read_all(conn, limit=limit)
+    rows = conn.execute(
+        "SELECT * FROM audit_log WHERE created_at >= ? ORDER BY seq DESC LIMIT ?",
+        (since, limit),
     ).fetchall()
     return [_row_to_entry(r) for r in rows]
 

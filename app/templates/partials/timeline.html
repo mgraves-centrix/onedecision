@@ -5,7 +5,8 @@
     <span class="type">{{ e.event_type }}</span>
     <span class="actor">{{ e.actor }}</span>
     <span class="detail">
-      {%- if e.payload.tool %}<code>{{ e.payload.tool }}</code> — {{ e.payload.summary }}
+      {%- if e.event_type == 'agent.run' %}{{ e.payload.step|replace('_', ' ') }} · {{ e.payload.tool_calls }} tool calls · {% if e.payload.total_tokens %}{{ e.payload.total_tokens }} tokens{% else %}tokens not reported{% endif %} · {% if e.payload.duration_ms < 1000 %}{{ e.payload.duration_ms }} ms{% else %}{{ '%.1f'|format(e.payload.duration_ms / 1000) }} s{% endif %}
+      {%- elif e.payload.tool %}<code>{{ e.payload.tool }}</code> — {{ e.payload.summary }}
       {%- elif e.payload.action %}{{ e.payload.action }} — {{ e.payload.detail }}
       {%- elif e.payload.reasons %}{{ e.payload.reasons|join('; ') }}
       {%- elif e.payload.headline %}{{ e.payload.headline }}

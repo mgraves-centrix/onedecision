@@ -293,3 +293,65 @@ details.revise > p { margin: 10px 0 14px; }
 .revise-form button { grid-column: 1 / -1; justify-self: start; }
 
 h4.danger-heading { color: var(--danger); }
+
+/* --------------------------------------------------------------- dashboard */
+/* Chart marks use one hue. #0d9488 passes the dark-mode lightness band
+   (L 0.48-0.67) and 3:1 contrast against --panel, per the palette validator;
+   the brighter step is the hover lift. */
+:root { --mark: #0d9488; --mark-hover: #2dd4bf; }
+
+.filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 18px; }
+.filter-row .filter-label { font-size: 12.5px; color: var(--ink-faint); margin-right: 4px; }
+.btn.selected { border-color: var(--accent); color: var(--ink); font-weight: 600; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+@media (max-width: 1280px) { .kpi-row { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi {
+  display: flex; flex-direction: column; gap: 4px; min-width: 0;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.kpi .label { font-size: 12.5px; color: var(--ink-dim); }
+.kpi .value { font-size: 26px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
+.kpi .value.muted-value { font-size: 17px; font-weight: 500; color: var(--ink-dim); }
+.kpi .sub { font-size: 12px; color: var(--ink-faint); }
+
+ul.bars { list-style: none; margin: 0; padding: 0; }
+ul.bars li {
+  display: grid; grid-template-columns: minmax(150px, 40%) 1fr; align-items: center;
+  gap: 12px; padding: 6px 0; border-radius: 6px;
+}
+ul.bars li:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bar-label { min-width: 0; overflow-wrap: anywhere; font-size: 13px; }
+.bar-track { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.bar {
+  display: block; height: 12px; min-width: 2px; border-radius: 0 4px 4px 0;
+  width: calc((100% - 11ch) * var(--p) / 100); background: var(--mark);
+}
+ul.bars li:hover .bar, ul.bars li:focus-visible .bar { background: var(--mark-hover); }
+.bar-value { font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.column-chart { margin: 8px 0 0; }
+.column-chart svg { display: block; width: 100%; height: auto; font-family: inherit; }
+.column-chart .grid, .column-chart .axis { stroke: var(--line); stroke-width: 1; }
+.column-chart .tick { fill: var(--ink-faint); font-size: 11px; font-variant-numeric: tabular-nums; }
+.column-chart .hit { fill: transparent; }
+.column-chart .mark { fill: var(--mark); }
+.column-chart .col { outline: none; }
+.column-chart .col:hover .mark, .column-chart .col:focus-visible .mark { fill: var(--mark-hover); }
+.column-chart .col:focus-visible .hit { stroke: var(--accent); stroke-width: 1; }
+
+details.table-view { margin-top: 10px; }
+details.table-view > summary { cursor: pointer; font-size: 12.5px; color: var(--ink-dim); }
+
+table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.data th, table.data td {
+  text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top;
+}
+table.data thead th { color: var(--ink-dim); font-weight: 500; font-size: 12px;
+                      text-transform: uppercase; letter-spacing: .05em; }
+table.data tbody th { font-weight: 500; color: var(--ink-dim); }
+table.data .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+ol.timeline .ev-agent { border-left-color: var(--mark); }

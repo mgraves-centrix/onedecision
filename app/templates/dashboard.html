@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · OneDecision{% endblock %}
+{% block content %}
+
+<h1>Dashboard</h1>
+<p class="lede">
+  What the agent handled, what people decided, and what it took to run. Every number is
+  counted from the product's own records: the cases table, the policy store, and the
+  hash-chained audit log.
+</p>
+
+<form class="filter-row" method="get" action="/dashboard" aria-label="Time range">
+  <span class="filter-label">Range</span>
+  {% for key, label in d.ranges %}
+  <button type="submit" name="range" value="{{ key }}" class="btn{% if key == d.range_key %} selected{% endif %}" aria-pressed="{{ 'true' if key == d.range_key else 'false' }}">{{ label }}</button>
+  {% endfor %}
+</form>
+
+<section class="kpi-row" aria-label="Headline numbers, {{ d.range_label|lower }}">
+  <div class="kpi">
+    <span class="label">Cases handled</span>
+    <span class="value">{{ d.cases.total }}</span>
+    <span class="sub">{{ d.range_label }}</span>
+  </div>
+  <div class="kpi">
+    <span class="label">Handled automatically</span>
+    <span class="value">{{ d.cases.automated }}</span>
+    <span class="sub">{% if d.cases.automated_pct is not none %}{{ d.cases.automated_pct }}% of cases{% else %}No cases yet{% endif %}</span>
+  </div>
+  <div class="kpi">
+    <span class="label">Waiting for a decision</span>
+    <span class="value">{{ d.cases.waiting }}</span>
+    <span class="sub"><a href="/">Open the inbox</a></span>
+  </div>
+  <div class="kpi">
+    <span class="label">Escalated to a person</span>
+    <span class="value">{{ d.cases.escalated }}</span>
+    <span class="sub">Needed a person's judgment</span>
+  </div>
+  <div class="kpi">
+    <span class="label">Agent runs</span>
+    <span class="value">{{ d.usage.agent_runs }}</span>
+    <span class="sub">Average {{ d.usage.avg_duration }}</span>
+  </div>
+  <div class="kpi">
+    <span class="label">Tool calls</span>
+    <span class="value">{{ d.usage.tool_calls }}</span>
+    <span class="sub">{{ d.usage.tool_failures }} failed</span>
+  </div>
+  <div class="kpi">
+    <span class="label">Model tokens</span>
+    {% if d.usage.tokens_reported %}
+    <span class="value">{{ d.usage.tokens_display }}</span>
+    <span class="sub">{{ d.usage.tokens.input_display }} in · {{ d.usage.tokens.output_display }} out</span>
+    {% else %}
+    <span class="value muted-value">Not reported</span>
+    <span class="sub">{% if d.usage.agent_runs %}The model provider reported no token counts{% else %}No agent runs yet{% endif %}</span>
+    {% endif %}
+  </div>
+</section>
+
+<div class="split">
+  <section class="card">
+    <h2>Cases by outcome</h2>
+    {% if d.cases.total %}
+    <ul class="bars">
+      {% for row in d.outcomes %}
+      <li tabindex="0" title="{{ row.label }}: {{ row.count }}">
+        <span class="bar-label"><span class="pill {{ row.pill }}">{{ row.label }}</span></span>
+        <span class="bar-track">{% if row.count %}<span class="bar" style="--p: {{ '%.1f'|format(row.pct) }}"></span>{% endif %}<span class="bar-value">{{ row.count }}</span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">No cases in this range yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Tool calls by tool</h2>
+    {% if d.usage.tools %}
+    <ul class="bars">
+      {% for t in d.usage.tools %}
+      <li tabindex="0" title="{{ t.name }}: {{ t.calls }} calls, {{ t.failed }} failed">
+        <span class="bar-label"><code>{{ t.name }}</code></span>
+        <span class="bar-track"><span class="bar" style="--p: {{ '%.1f'|format(t.pct) }}"></span><span class="bar-value">{{ t.calls }}{% if t.failed %} <span class="muted">({{ t.failed }} failed)</span>{% endif %}</span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty">No tool calls in this range yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% set a = d.activity %}
+<section class="card">
+  <h2>Cases received</h2>
+  <p class="muted small">{{ a.caption }}. Hover or focus a column for its count.</p>
+  {% if a.peak %}
+  <figure class="column-chart">
+    <svg viewBox="0 0 {{ a.width }} {{ a.height }}" role="img" aria-label="{{ a.caption }}">
+      <line class="grid" x1="{{ a.left }}" x2="{{ a.right }}" y1="{{ a.top }}" y2="{{ a.top }}"/>
+      <line class="axis" x1="{{ a.left }}" x2="{{ a.right }}" y1="{{ a.base }}" y2="{{ a.base }}"/>
+      <text class="tick" x="{{ a.left - 8 }}" y="{{ a.top + 4 }}" text-anchor="end">{{ a.peak }}</text>
+      <text class="tick" x="{{ a.left - 8 }}" y="{{ a.base + 4 }}" text-anchor="end">0</text>
+      {% for c in a.columns %}
+      <g class="col" tabindex="0" aria-label="{{ c.tip }}">
+        <title>{{ c.tip }}</title>
+        <rect class="hit" x="{{ c.slot_x }}" y="{{ a.top }}" width="{{ c.slot_w }}" height="{{ a.base - a.top }}"/>
+        {% if c.path %}<path class="mark" d="{{ c.path }}"/>{% endif %}
+        {% if c.tick %}<text class="tick" x="{{ c.center }}" y="{{ a.base + 18 }}" text-anchor="middle">{{ c.tick }}</text>{% endif %}
+      </g>
+      {% endfor %}
+    </svg>
+  </figure>
+  <details class="table-view">
+    <summary>Show as a table</summary>
+    <table class="data">
+      <thead><tr><th>Period</th><th class="num">Cases</th></tr></thead>
+      <tbody>
+        {% for c in a.columns %}<tr><td>{{ c.period }}</td><td class="num">{{ c.count }}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% else %}
+  <p class="empty">No cases in this period.</p>
+  {% endif %}
+</section>
+
+<div class="split">
+  <section class="card">
+    <h2>People and policies</h2>
+    <table class="data">
+      <tbody>
+        {% for row in d.decisions %}
+        <tr><th>{{ row.label }}</th><td class="num">{{ row.count }}</td></tr>
+        {% else %}
+        <tr><th>Human decisions</th><td class="num">0</td></tr>
+        {% endfor %}
+        <tr><th>Policy activations</th><td class="num">{{ d.operations.activations }}</td></tr>
+        <tr>
+          <th>Active policy versions</th>
+          <td>{% for p in d.policies.active %}<code>{{ p }}</code>{% if not loop.last %}, {% endif %}{% else %}<span class="muted">None</span>{% endfor %}</td>
+        </tr>
+        <tr><th>Actions executed</th><td class="num">{{ d.operations.actions_executed }}</td></tr>
+        <tr><th>Duplicate actions suppressed</th><td class="num">{{ d.operations.duplicates_suppressed }}</td></tr>
+        <tr>
+          <th>Actions verified</th>
+          <td class="num">{{ d.operations.verified }}{% if d.operations.verification_failed %} <span class="pill bad">{{ d.operations.verification_failed }} failed</span>{% endif %}</td>
+        </tr>
+        <tr>
+          <th>Audit chain</th>
+          <td>{% if d.chain.ok %}<span class="pill ok">Intact</span>{% else %}<span class="pill bad">Broken</span>{% endif %}
+              <span class="muted small">{{ d.chain.entries_checked }} entries, all time</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Agent runs by step</h2>
+    {% if d.usage.steps %}
+    <table class="data">
+      <thead>
+        <tr><th>Step</th><th class="num">Runs</th><th class="num">Avg. time</th><th class="num">Avg. model time</th><th class="num">Tokens</th></tr>
+      </thead>
+      <tbody>
+        {% for s in d.usage.steps %}
+        <tr><td>{{ s.label }}</td><td class="num">{{ s.runs }}</td><td class="num">{{ s.avg_duration }}</td><td class="num">{{ s.avg_latency }}</td><td class="num">{{ s.tokens }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="muted small">
+      Model: {% for p in d.usage.providers %}{{ p.label }} ({{ p.runs }} run{{ '' if p.runs == 1 else 's' }}){% if not loop.last %}; {% endif %}{% endfor %}
+    </p>
+    {% else %}
+    <p class="empty">No agent runs recorded in this range yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Recent cases</h2>
+  {% if d.recent_cases %}
+  <table class="data">
+    <thead><tr><th>Case</th><th>Kit</th><th>Status</th><th>Policy</th><th class="num">Received (UTC)</th></tr></thead>
+    <tbody>
+      {% for c in d.recent_cases %}
+      <tr>
+        <td><a href="/exceptions/{{ c.exception_id }}"><code>{{ c.case_id }}</code></a></td>
+        <td>{{ c.kit_name }}</td>
+        <td><span class="pill status-{{ c.status }}">{{ status_labels.get(c.status, c.status) }}</span></td>
+        <td>{% if c.applied_policy_id %}<code>{{ c.applied_policy_id }}</code>{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td class="num">{{ c.created_at[:10] }} {{ c.created_at[11:19] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">No cases in this range yet.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Recent activity</h2>
+  <p class="muted small">
+    The latest audit events in this range, newest first. The full log is on
+    <a href="/policies">Policies &amp; Audit</a>.
+  </p>
+  {% if d.recent_events %}
+  {% with timeline = d.recent_events %}{% include "partials/timeline.html" %}{% endwith %}
+  {% else %}
+  <p class="empty">No audit events in this range yet.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

@@ -1,4 +1,4 @@
-"""FastAPI application: three views, server-rendered, HTMX for actions.
+"""FastAPI application: four views, server-rendered, HTMX for actions.
 
 Deliberately boring: one process, no build step, no client framework. The
 interesting part of this project is what happens between the click and the
@@ -13,7 +13,7 @@ from typing import Any
 
 from contextlib import asynccontextmanager
 
-from fastapi import Form, HTTPException, Request
+from fastapi import Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -21,6 +21,7 @@ from fastapi import FastAPI
 
 from app import audit, db, seed
 from app.agent.providers import provider_label
+from app.dashboard import build_dashboard
 from app.config import (
     COMPANY_NAME,
     FACILITY_ID,
@@ -310,6 +311,18 @@ def reject_candidate(policy_id: str, reason: str = Form("rejected by the supervi
     with db.session() as conn:
         reject_policy(conn, policy_id, actor=OPERATOR, reason=reason)
     return RedirectResponse("/policies", status_code=303)
+
+
+# --------------------------------------------------------------- 4. dashboard
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard(request: Request, range_key: str = Query("all", alias="range")) -> HTMLResponse:
+    """History and usage, counted from the product's own records."""
+    with db.read_only() as conn:
+        data = build_dashboard(conn, range_key)
+    context = _base_context(request) | {"d": data}
+    return templates.TemplateResponse(request, "dashboard.html", context)
 
 
 # ------------------------------------------------------------------ reset
