@@ -107,7 +107,7 @@ Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 169 hermetic tests across both domains, a few seconds
+make test      # 168 hermetic tests across both domains, a few seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
