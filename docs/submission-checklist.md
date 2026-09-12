@@ -41,7 +41,7 @@ judge based solely on the text description, images, and video provided in the
 Submission."*
 
 Treat the video as the primary artifact, not a supplement. It is built to prove
-the entire workflow on its own — including the refusal, which is the part that
+the entire workflow on its own, including the refusal, which is the part that
 distinguishes this from an agent that merely acts. `docs/demo-script.md` holds
 the shot list; `tools/video/narration.json` is what is actually spoken.
 
@@ -51,7 +51,7 @@ the shot list; `tools/video/narration.json` is what is actually spoken.
 | --- | --- |
 | Technological Implementation | Real Strands agent; constrained policy DSL; replay-gated activation; hash-chained audit; 199 hermetic tests, 401 runs against both PostgreSQL and SQLite; swappable model provider; deployed to AgentCore Runtime and fired unattended from EventBridge Scheduler. The domain is a pack: a second one, accounts-payable invoice variance, ships on the same machinery and changed none of it. |
 | Design | Four coherent views, including a dashboard of history and usage; the decision card is the product surface; every claim on screen is traceable to a tool call; the policy diff makes a widened boundary impossible to approve by accident; a model call reports its own steps while it runs, so a forty-second wait is legible instead of a frozen page. |
-| Potential Impact | Any recurring human judgment call with a bounded action space — returns, claims, refunds, exceptions, approvals. |
+| Potential Impact | Any recurring human judgment call with a bounded action space: returns, claims, refunds, exceptions, approvals. |
 | Creativity & Originality | Not "an agent that writes SOPs". It converts one human decision into governed, replay-tested automation, and proves what it *would have done* before anyone trusts it. |
 | Presentation | A 3:21 video that proves the whole workflow, including the refusal, on the live app rather than slides. |
 
