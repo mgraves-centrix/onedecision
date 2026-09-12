@@ -58,6 +58,30 @@ summary into "What the numbers said", losing the line that framed the piece.
 Some overlap between the standfirst and the opening paragraph is correct. Every
 news article repeats itself between the headline, the standfirst and the lede.
 
+## Cross-linking, since there is no series feature
+
+Builder Center has no series or collection to put these in, so the sign-off does
+the job. Post 3 already carries links to the other two. Once post 3 is live, edit
+posts 1 and 2 and replace their sign-off with the matching version below,
+filling in post 3's URL.
+
+**Post 1's sign-off becomes:**
+
+> *Three posts on OneDecision, a Strands Agents project built for the Agents for
+> Humans hackathon: this one, [EventBridge Scheduler to AgentCore](https://builder.aws.com/content/3JFSvpuFac2q3oGJzdybB46V9CS/agents-for-humans-eventbridge-scheduler-to-agentcore),
+> and [guardrails and human approval gates](POST-3-URL). Code:
+> https://github.com/mgraves-centrix/onedecision*
+
+**Post 2's sign-off becomes:**
+
+> *Three posts on OneDecision, a Strands Agents project built for the Agents for
+> Humans hackathon: [cutting a Bedrock agent's tokens by 83%](https://builder.aws.com/content/3JFMPcu0rekYa1Y6LC5qt6vCctv/agents-for-humans-the-115000-token-step-that-was-really-a-schema-mismatch),
+> this one, and [guardrails and human approval gates](POST-3-URL). Code:
+> https://github.com/mgraves-centrix/onedecision*
+
+The point is post 2. Someone arrives there from searching an error message, and
+without this there is nothing telling them the other two exist.
+
 ## Verified on the platform
 
 Post 1 published with `amazon-bedrock`, `generative-ai`, `cost-optimization`,

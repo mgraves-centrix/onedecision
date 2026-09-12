@@ -48,15 +48,15 @@ at the moment of activation.
 
 ### Checks have bugs; missing fields don't
 
-Our first design had the agent propose actions
-and validation reject bad ones. Removing the field entirely turned a runtime check into a
-type error.
+Our first design had the agent propose actions and
+validation reject the bad ones. Removing the field turned a runtime check into a type
+error.
 
 ### The dangerous case is the near-match
 
-Once a policy exists, a case that *nearly* matches
-is where a helpful system quietly widens its own boundary. Ours escalates and names the
-condition that failed.
+Once a policy exists, a case that *nearly* matches is
+where a helpful system quietly widens its own boundary. Ours escalates, naming the condition
+that failed.
 
 ### Let people be more careful than the agent
 
@@ -105,5 +105,7 @@ is nothing to replay and nothing to bound, so this system will not automate it.
 That is the trade. An agent that can act on anything cannot prove what it would have done.
 We would rather ship the one that can prove it and automate less.
 
-*OneDecision is a Strands Agents project built for the Agents for Humans hackathon:
-https://github.com/mgraves-centrix/onedecision*
+*Three posts on OneDecision, a Strands Agents project built for the Agents for Humans
+hackathon: [cutting a Bedrock agent's tokens by 83%](https://builder.aws.com/content/3JFMPcu0rekYa1Y6LC5qt6vCctv/agents-for-humans-the-115000-token-step-that-was-really-a-schema-mismatch),
+[EventBridge Scheduler to AgentCore](https://builder.aws.com/content/3JFSvpuFac2q3oGJzdybB46V9CS/agents-for-humans-eventbridge-scheduler-to-agentcore),
+and this one. Code: https://github.com/mgraves-centrix/onedecision*
