@@ -38,7 +38,7 @@ Put `aws:SourceAccount` on the trust policy for `scheduler.amazonaws.com`, and s
 ## The payload is raw JSON, not base64
 
 This cost us two firings. `InvokeAgentRuntime`'s `payload` is a blob, so base64 is the
-instinct — and the AWS CLI enforces it, rejecting raw JSON with:
+instinct, and the AWS CLI enforces it, rejecting raw JSON with:
 
 ```
 Invalid base64: "{"case_id":"CASE-2003",...}"
@@ -53,7 +53,7 @@ Follow that instinct in the schedule and the runtime logs:
 
 The schedule delivered; the handler received base64 text and could not parse it. Scheduler
 passes the member through as written. Send **raw JSON** in the schedule's `Payload`, and use
-`fileb://` with raw JSON for the CLI — the CLI's own error message points the wrong way.
+`fileb://` with raw JSON for the CLI. Its own error message points the wrong way.
 
 With that corrected, the runtime logged what we were after:
 
@@ -84,7 +84,7 @@ accumulate state across firings. We say that plainly rather than let it be infer
 `aws logs filter-log-events --start-time ...` returned zero events for a window that
 definitely had them, including with no filter at all. The `agentcore logs --since 10m` CLI
 returned them immediately. If your filter counts look impossible, check the tool before
-concluding anything about the system — we reported "0 invocations" twice before realizing
+concluding anything about the system. We reported "0 invocations" twice before realizing
 the query was at fault.
 
 Also: a `ResourceNotFoundException` from `get-schedule` after the fire time is the *success*

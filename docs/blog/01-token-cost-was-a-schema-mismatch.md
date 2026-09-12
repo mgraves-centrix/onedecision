@@ -26,14 +26,14 @@ Twenty-four tool calls in one step, when the job needs roughly one. So we read t
 ```
 
 That last one is the tell. The model was probing with an action type named
-`probe_invalid` — the behavior of something trying to reverse-engineer a schema by
+`probe_invalid`: the behavior of something trying to reverse-engineer a schema by
 watching what the validator rejects.
 
 ## The actual cause
 
 Our design is deliberate about one thing: the agent proposes *conditions and a spend cap*,
 never actions. The action set is assembled server-side, so "the model invented a new
-action" isn't a failure mode we have to detect — there is no field to write one into.
+action" isn't a failure mode we have to detect. There is no field to write one into.
 
 But before offering a proposal, the agent must dry-run it through a `replay_candidate_policy`
 tool. And that tool validated against the **full stored policy**: actions required, unknown
@@ -51,8 +51,8 @@ Two changes, neither clever:
 1. The replay tool now accepts the same fields the agent already returns, and runs them
    through the same server-side conversion the real proposal uses. Actions still come only
    from the system; any the model sends are dropped and reported back.
-2. The prompt states the two validator rules the model kept discovering by collision — a
-   cost bound is required, nothing may exceed the ceiling — and asks for one replay of the
+2. The prompt states the two validator rules the model kept discovering by collision (a
+   cost bound is required, nothing may exceed the ceiling) and asks for one replay of the
    candidate it intends to offer, repeated only if the replay does not pass.
 
 Measured on the live path afterwards:
@@ -119,7 +119,7 @@ proposed boundaries are 44% of its output and the most useful thing on the scree
 
 When an agent burns tokens, look at the seams before the prompt. Every expensive loop we
 found came from the model reconciling two descriptions of the same thing. A tool
-description that disagrees with your schema is not a documentation problem — it is a bill,
+description that disagrees with your schema is not a documentation problem. It is a bill,
 payable per retry, in tokens and in latency.
 
 Measure before you swap models. "Use the smaller one" is the reflex when an agent feels
