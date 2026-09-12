@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 from paths import HERE, OUT
@@ -28,6 +29,24 @@ SCALE = {
 
 def run(*args: str) -> str:
     return subprocess.run(args, check=True, capture_output=True, text=True).stdout
+
+
+def opens_on_the_sync_flash(path: Path) -> bool:
+    """Is the first frame the magenta the recorder uses to line up the clocks?
+
+    The flash sits immediately before the first beat in the capture, so a start
+    time a few milliseconds early ships it. It is unmistakable: a whole frame of
+    #ff00ff, which nothing in the app comes near.
+    """
+    raw = subprocess.run(
+        ["ffmpeg", "-v", "error", "-i", str(path), "-frames:v", "1",
+         "-vf", "scale=1:1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+        check=True, capture_output=True,
+    ).stdout
+    if len(raw) < 3:
+        return False
+    r, g, b = raw[0], raw[1], raw[2]
+    return r > 180 and g < 80 and b > 180
 
 
 def duration(path: Path) -> float:
@@ -87,6 +106,9 @@ def main() -> None:
     run("ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listing),
         "-c", "copy", "-movflags", "+faststart", str(MP4))
     print(f"wrote {MP4.name}: {duration(MP4):.1f} s, {MP4.stat().st_size / 1e6:.1f} MB")
+    if opens_on_the_sync_flash(MP4):
+        sys.exit("the video opens on the magenta sync flash; push the first beat's "
+                 "start later in timeline.json and assemble again")
 
 
 if __name__ == "__main__":

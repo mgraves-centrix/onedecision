@@ -209,6 +209,12 @@ def click_and_skip_wait(
     time.sleep(0.2)
 
 
+def painted(page: Page, margin: float = 0.25) -> None:
+    """Block until what is on screen is this page, not the one it replaced."""
+    page.evaluate("() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
+    time.sleep(margin)
+
+
 def follow(page: Page, selector: str, ptr: Pointer) -> None:
     """A quick, on-camera navigation, such as a nav link or a case card."""
     press(page, selector, ptr)
@@ -393,6 +399,10 @@ def main() -> None:
 
         # 1 · the problem
         page.goto(BASE + "/")
+        # goto() returns when the page loads, which is the same instant the flash
+        # stops being on screen. Starting the beat there put a frame of magenta at
+        # the top of the video, so wait for the new page to be painted first.
+        painted(page)
         d.show("problem")
         ptr.glide(ptr.x, ptr.y, 0.2)  # bring the pointer into view
         d.hold("problem", 0.3)
