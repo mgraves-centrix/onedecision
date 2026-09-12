@@ -1,7 +1,7 @@
 {
   "title": "OneDecision architecture",
   "subtitle": "One agent may propose. Deterministic code decides, acts, and records. A person teaches the rule.",
-  "note": "Every tier below is in this repository. Synthetic business systems are simulated adapters, not production integrations.",
+  "note": "Every tier below is in this repository. Two domains ship on it: returns, and accounts-payable invoice variance. Business systems are simulated adapters, not production integrations.",
   "tiers": [
     {
       "id": "surfaces",
@@ -20,7 +20,7 @@
         {
           "id": "agentcore",
           "name": "AgentCore Runtime",
-          "meta": "POST /invocations · us-west-2",
+          "meta": "POST /invocations \u00b7 us-west-2",
           "functions": [
             "The same handler, deployed to AWS",
             "Returns the decision card as JSON"
@@ -29,7 +29,7 @@
         {
           "id": "web",
           "name": "Web app",
-          "meta": "Inbox · Decision · Policies · Dashboard",
+          "meta": "Inbox \u00b7 Decision \u00b7 Policies \u00b7 Dashboard",
           "functions": [
             "Where a supervisor reads and decides",
             "Phone, tablet, desktop"
@@ -45,7 +45,7 @@
         {
           "id": "agent",
           "name": "One Strands agent",
-          "meta": "investigate · card · propose",
+          "meta": "investigate \u00b7 card \u00b7 propose",
           "functions": [
             "Three invocations, one agent",
             "Typed output, re-derived downstream"
@@ -65,9 +65,9 @@
           "name": "Read-only tools",
           "meta": "five, all side-effect free",
           "functions": [
-            "get_return_case · find_approved_policy",
+            "get_return_case \u00b7 find_approved_policy",
             "compare_expected_and_received",
-            "lookup_replacement_cost · replay (dry run)"
+            "lookup_replacement_cost \u00b7 replay (dry run)"
           ]
         }
       ]
@@ -80,7 +80,7 @@
         {
           "id": "orchestrator",
           "name": "Orchestrator",
-          "meta": "handle_event · approve_and_teach",
+          "meta": "handle_event \u00b7 approve_and_teach",
           "functions": [
             "Runs the golden path end to end",
             "The only code that changes anything"
@@ -121,6 +121,15 @@
             "Work order, disposition, close",
             "Reads every write back before closing"
           ]
+        },
+        {
+          "id": "domains",
+          "name": "Domain packs",
+          "meta": "returns \u00b7 ap.invoice_variance",
+          "functions": [
+            "Facts, guardrails, actions, corpus",
+            "A second domain changed no machinery"
+          ]
         }
       ]
     },
@@ -141,7 +150,7 @@
         {
           "id": "human",
           "name": "Supervisor",
-          "meta": "approve · activate",
+          "meta": "approve \u00b7 activate",
           "functions": [
             "Approving records a decision only",
             "Activation is a separate, explicit act"
@@ -168,7 +177,7 @@
         {
           "id": "active",
           "name": "Active policy version",
-          "meta": "versioned · diffed · retirable",
+          "meta": "versioned \u00b7 diffed \u00b7 retirable",
           "functions": [
             "Activated by a person with a token",
             "A revision may narrow, never widen"
@@ -184,89 +193,380 @@
         {
           "id": "returns",
           "name": "Returns system",
-          "meta": "synthetic · read-only",
-          "functions": ["Cases, bill of materials, evidence"]
+          "meta": "synthetic \u00b7 read-only",
+          "functions": [
+            "Cases, bill of materials, evidence"
+          ]
         },
         {
           "id": "parts",
           "name": "Parts catalog",
-          "meta": "synthetic · read-only",
-          "functions": ["Replacement cost and stock status"]
+          "meta": "synthetic \u00b7 read-only",
+          "functions": [
+            "Replacement cost and stock status"
+          ]
         },
         {
           "id": "wms",
           "name": "Warehouse",
-          "meta": "synthetic · writes",
-          "functions": ["Work orders and dispositions", "Every write takes an idempotency key"]
+          "meta": "synthetic \u00b7 writes",
+          "functions": [
+            "Work orders and dispositions",
+            "Every write takes an idempotency key"
+          ]
         },
         {
           "id": "audit",
           "name": "Audit log",
-          "meta": "append-only · hash-chained",
-          "functions": ["Every event, tool call, approval, action", "The database refuses UPDATE and DELETE"]
+          "meta": "append-only \u00b7 hash-chained",
+          "functions": [
+            "Every event, tool call, approval, action",
+            "The database refuses UPDATE and DELETE"
+          ]
         },
         {
           "id": "db",
           "name": "Database",
           "meta": "SQLite or PostgreSQL",
-          "functions": ["One schema, versioned migrations"]
+          "functions": [
+            "One schema, versioned migrations"
+          ]
+        },
+        {
+          "id": "apledger",
+          "name": "AP ledger",
+          "meta": "synthetic \u00b7 second domain",
+          "functions": [
+            "Invoices, vendors, adjustments"
+          ]
         }
       ]
     }
   ],
   "edges": [
-    {"from": "event", "to": "orchestrator", "kind": "control", "label": "check-in event", "step": 1},
-    {"from": "orchestrator", "to": "agent", "kind": "control", "label": "investigate", "step": 2},
-    {"from": "agent", "to": "orchestrator", "kind": "advisory", "label": "typed report, advisory", "step": 3},
-    {"from": "orchestrator", "to": "facts", "kind": "control", "label": "re-derive", "step": 4},
-    {"from": "facts", "to": "guardrails", "kind": "control", "label": "facts", "step": 5},
-    {"from": "guardrails", "to": "engine", "kind": "control", "label": "clear", "step": 6},
-    {"from": "engine", "to": "execute", "kind": "control", "label": "a policy matches", "step": 7},
-    {"from": "engine", "to": "card", "kind": "control", "label": "no policy applies", "step": 8},
-
-    {"from": "agentcore", "to": "orchestrator", "kind": "control", "label": "invocation"},
-    {"from": "web", "to": "orchestrator", "kind": "control", "label": "check in · approve · activate"},
-    {"from": "agent", "to": "provider", "kind": "control", "label": "model call"},
-    {"from": "agent", "to": "tools", "kind": "control", "label": "tool calls, one at a time"},
-    {"from": "tools", "to": "returns", "kind": "read", "label": "case, BOM, evidence"},
-    {"from": "tools", "to": "parts", "kind": "read", "label": "replacement cost"},
-    {"from": "tools", "to": "replay", "kind": "control", "label": "dry-run a candidate"},
-    {"from": "facts", "to": "returns", "kind": "read", "label": "re-read the case"},
-    {"from": "facts", "to": "parts", "kind": "read", "label": "re-read the price"},
-    {"from": "guardrails", "to": "human", "kind": "escalate", "label": "blocked, so a person decides"},
-    {"from": "execute", "to": "wms", "kind": "write", "label": "work order · disposition"},
-    {"from": "execute", "to": "human", "kind": "escalate", "label": "verification mismatch"},
-    {"from": "card", "to": "human", "kind": "control", "label": "put to a person"},
-    {"from": "human", "to": "orchestrator", "kind": "control", "label": "approve and teach"},
-    {"from": "orchestrator", "to": "candidate", "kind": "control", "label": "validated proposal"},
-    {"from": "candidate", "to": "replay", "kind": "control", "label": "replay before offering"},
-    {"from": "replay", "to": "active", "kind": "gate", "label": "zero wrong actions, or no activation"},
-    {"from": "human", "to": "active", "kind": "gate", "label": "explicit activation + token"},
-    {"from": "active", "to": "engine", "kind": "control", "label": "the next hundred cases"},
-
-    {"from": "orchestrator", "to": "audit", "kind": "audit", "label": "every step"},
-    {"from": "tools", "to": "audit", "kind": "audit", "label": "every tool call"},
-    {"from": "guardrails", "to": "audit", "kind": "audit", "label": "every block"},
-    {"from": "execute", "to": "audit", "kind": "audit", "label": "every action and verification"},
-    {"from": "human", "to": "audit", "kind": "audit", "label": "who decided, and when"},
-    {"from": "active", "to": "audit", "kind": "audit", "label": "who activated, and when"},
-    {"from": "audit", "to": "web", "kind": "read", "label": "timeline · dashboard usage"},
-
-    {"from": "returns", "to": "db", "kind": "store", "label": "tables"},
-    {"from": "parts", "to": "db", "kind": "store", "label": "tables"},
-    {"from": "wms", "to": "db", "kind": "store", "label": "tables"},
-    {"from": "audit", "to": "db", "kind": "store", "label": "append-only table"},
-    {"from": "candidate", "to": "db", "kind": "store", "label": "policy store"},
-    {"from": "active", "to": "db", "kind": "store", "label": "policy store"}
+    {
+      "from": "event",
+      "to": "orchestrator",
+      "kind": "control",
+      "label": "check-in event",
+      "step": 1
+    },
+    {
+      "from": "orchestrator",
+      "to": "agent",
+      "kind": "control",
+      "label": "investigate",
+      "step": 2
+    },
+    {
+      "from": "agent",
+      "to": "orchestrator",
+      "kind": "advisory",
+      "label": "typed report, advisory",
+      "step": 3
+    },
+    {
+      "from": "orchestrator",
+      "to": "facts",
+      "kind": "control",
+      "label": "re-derive",
+      "step": 4
+    },
+    {
+      "from": "facts",
+      "to": "guardrails",
+      "kind": "control",
+      "label": "facts",
+      "step": 5
+    },
+    {
+      "from": "guardrails",
+      "to": "engine",
+      "kind": "control",
+      "label": "clear",
+      "step": 6
+    },
+    {
+      "from": "engine",
+      "to": "execute",
+      "kind": "control",
+      "label": "a policy matches",
+      "step": 7
+    },
+    {
+      "from": "engine",
+      "to": "card",
+      "kind": "control",
+      "label": "no policy applies",
+      "step": 8
+    },
+    {
+      "from": "agentcore",
+      "to": "orchestrator",
+      "kind": "control",
+      "label": "invocation"
+    },
+    {
+      "from": "web",
+      "to": "orchestrator",
+      "kind": "control",
+      "label": "check in \u00b7 approve \u00b7 activate"
+    },
+    {
+      "from": "agent",
+      "to": "provider",
+      "kind": "control",
+      "label": "model call"
+    },
+    {
+      "from": "agent",
+      "to": "tools",
+      "kind": "control",
+      "label": "tool calls, one at a time"
+    },
+    {
+      "from": "tools",
+      "to": "returns",
+      "kind": "read",
+      "label": "case, BOM, evidence"
+    },
+    {
+      "from": "tools",
+      "to": "parts",
+      "kind": "read",
+      "label": "replacement cost"
+    },
+    {
+      "from": "tools",
+      "to": "replay",
+      "kind": "control",
+      "label": "dry-run a candidate"
+    },
+    {
+      "from": "facts",
+      "to": "returns",
+      "kind": "read",
+      "label": "re-read the case"
+    },
+    {
+      "from": "facts",
+      "to": "parts",
+      "kind": "read",
+      "label": "re-read the price"
+    },
+    {
+      "from": "guardrails",
+      "to": "human",
+      "kind": "escalate",
+      "label": "blocked, so a person decides"
+    },
+    {
+      "from": "execute",
+      "to": "wms",
+      "kind": "write",
+      "label": "work order \u00b7 disposition"
+    },
+    {
+      "from": "execute",
+      "to": "human",
+      "kind": "escalate",
+      "label": "verification mismatch"
+    },
+    {
+      "from": "card",
+      "to": "human",
+      "kind": "control",
+      "label": "put to a person"
+    },
+    {
+      "from": "human",
+      "to": "orchestrator",
+      "kind": "control",
+      "label": "approve and teach"
+    },
+    {
+      "from": "orchestrator",
+      "to": "candidate",
+      "kind": "control",
+      "label": "validated proposal"
+    },
+    {
+      "from": "candidate",
+      "to": "replay",
+      "kind": "control",
+      "label": "replay before offering"
+    },
+    {
+      "from": "replay",
+      "to": "active",
+      "kind": "gate",
+      "label": "zero wrong actions, or no activation"
+    },
+    {
+      "from": "human",
+      "to": "active",
+      "kind": "gate",
+      "label": "explicit activation + token"
+    },
+    {
+      "from": "active",
+      "to": "engine",
+      "kind": "control",
+      "label": "the next hundred cases"
+    },
+    {
+      "from": "orchestrator",
+      "to": "audit",
+      "kind": "audit",
+      "label": "every step"
+    },
+    {
+      "from": "tools",
+      "to": "audit",
+      "kind": "audit",
+      "label": "every tool call"
+    },
+    {
+      "from": "guardrails",
+      "to": "audit",
+      "kind": "audit",
+      "label": "every block"
+    },
+    {
+      "from": "execute",
+      "to": "audit",
+      "kind": "audit",
+      "label": "every action and verification"
+    },
+    {
+      "from": "human",
+      "to": "audit",
+      "kind": "audit",
+      "label": "who decided, and when"
+    },
+    {
+      "from": "active",
+      "to": "audit",
+      "kind": "audit",
+      "label": "who activated, and when"
+    },
+    {
+      "from": "audit",
+      "to": "web",
+      "kind": "read",
+      "label": "timeline \u00b7 dashboard usage"
+    },
+    {
+      "from": "returns",
+      "to": "db",
+      "kind": "store",
+      "label": "tables"
+    },
+    {
+      "from": "parts",
+      "to": "db",
+      "kind": "store",
+      "label": "tables"
+    },
+    {
+      "from": "wms",
+      "to": "db",
+      "kind": "store",
+      "label": "tables"
+    },
+    {
+      "from": "audit",
+      "to": "db",
+      "kind": "store",
+      "label": "append-only table"
+    },
+    {
+      "from": "candidate",
+      "to": "db",
+      "kind": "store",
+      "label": "policy store"
+    },
+    {
+      "from": "active",
+      "to": "db",
+      "kind": "store",
+      "label": "policy store"
+    },
+    {
+      "from": "domains",
+      "to": "facts",
+      "kind": "control",
+      "label": "the fact record, and how it is derived"
+    },
+    {
+      "from": "domains",
+      "to": "guardrails",
+      "kind": "control",
+      "label": "its non-overridable invariants"
+    },
+    {
+      "from": "domains",
+      "to": "engine",
+      "kind": "control",
+      "label": "allowlisted fields and the fixed actions"
+    },
+    {
+      "from": "domains",
+      "to": "replay",
+      "kind": "control",
+      "label": "its labeled corpus"
+    },
+    {
+      "from": "domains",
+      "to": "execute",
+      "kind": "control",
+      "label": "writes and read-backs"
+    },
+    {
+      "from": "execute",
+      "to": "apledger",
+      "kind": "write",
+      "label": "adjustment \u00b7 payment release"
+    },
+    {
+      "from": "apledger",
+      "to": "db",
+      "kind": "store",
+      "label": "tables"
+    }
   ],
   "kinds": {
-    "control": {"label": "control flow", "color": "#5eead4"},
-    "advisory": {"label": "advisory output", "color": "#9aa4b6"},
-    "read": {"label": "read", "color": "#7dd3fc"},
-    "write": {"label": "write", "color": "#4ade80"},
-    "gate": {"label": "human gate", "color": "#fbbf24"},
-    "escalate": {"label": "escalation", "color": "#f87171"},
-    "audit": {"label": "audit record", "color": "#6b7488"},
-    "store": {"label": "persistence", "color": "#4b5468"}
+    "control": {
+      "label": "control flow",
+      "color": "#5eead4"
+    },
+    "advisory": {
+      "label": "advisory output",
+      "color": "#9aa4b6"
+    },
+    "read": {
+      "label": "read",
+      "color": "#7dd3fc"
+    },
+    "write": {
+      "label": "write",
+      "color": "#4ade80"
+    },
+    "gate": {
+      "label": "human gate",
+      "color": "#fbbf24"
+    },
+    "escalate": {
+      "label": "escalation",
+      "color": "#f87171"
+    },
+    "audit": {
+      "label": "audit record",
+      "color": "#6b7488"
+    },
+    "store": {
+      "label": "persistence",
+      "color": "#4b5468"
+    }
   }
 }
