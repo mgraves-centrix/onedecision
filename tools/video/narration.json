@@ -5,7 +5,7 @@
   },
   {
     "id": "arrive",
-    "text": "A kit is checked in at the returns dock, and that event is what starts the work, not somebody typing at a chatbot. The Strands agent investigates with four read-only tool calls. It pulls the case, reconciles what arrived against the bill of materials, prices the missing part, and checks for an approved policy. Every line of evidence names the tool that produced it. One neoprene strap missing, fourteen dollars. The serial matches and there's no damage, but nothing on file covers a case like this, so the agent stops and asks, once, and proposes where the boundary should sit."
+    "text": "A kit is checked in at the returns dock, and that event is what starts the work, not somebody typing at a chatbot. The Strands agent investigates with four read-only tool calls. It pulls the case, reconciles what arrived against the bill of materials, prices the missing part, and checks for an approved policy. Every line of evidence names the tool that produced it. One neoprene strap missing, fourteen dollars. The serial matches and there's no damage, but nothing on file covers a case like this, so the agent stops and asks once, then proposes where the boundary should sit."
   },
   {
     "id": "phone",
