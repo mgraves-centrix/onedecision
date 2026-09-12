@@ -6,6 +6,9 @@ Built for **Agents for Humans** · Professional Agents track · Strands Agents o
 
 ![OneDecision architecture](docs/architecture.png)
 
+Hover any component in [the interactive architecture](docs/architecture.html) to see what it
+connects to and which way the data moves. Both views render from `docs/architecture.json`.
+
 ---
 
 ## The problem

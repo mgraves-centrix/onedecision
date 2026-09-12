@@ -1,6 +1,8 @@
-%% OneDecision — architecture (reviewable source of the same structure)
-%% The README image, docs/architecture.png, is rendered at 2x from the hand-authored
-%% docs/architecture.svg with headless Chrome. Keep the two in step when either changes.
+%% OneDecision — architecture as a mermaid graph, kept by hand.
+%% The model behind the rendered views is docs/architecture.json: tools/diagram/
+%% build_architecture.py renders docs/architecture.svg (the README image, from which
+%% docs/architecture.png is captured at 2x) and docs/architecture.html (the same model,
+%% hoverable). This file is a second view of the same system, for reading in a diff.
 
 flowchart TB
     subgraph SYN["SYNTHETIC BUSINESS SYSTEMS (simulated adapters, not production)"]
