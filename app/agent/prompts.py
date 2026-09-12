@@ -29,6 +29,8 @@ Ground rules:
 - Everything you report is re-derived and checked against the source systems. If your
   report disagrees with the systems, the systems win and the case goes to a person.
 - Write for a busy returns supervisor: short, concrete, no internal deliberation.
+- Write American English. Color, not colour; authorization, not authorisation;
+  labor, not labour; -ize endings, not -ise.
 """
 
 INVESTIGATION_PROMPT = (
