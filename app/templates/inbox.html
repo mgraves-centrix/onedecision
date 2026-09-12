@@ -20,7 +20,10 @@
         <span class="kit">{{ case.kit_name }}</span>
         <span class="muted note">{{ case.scenario_note }}</span>
       </div>
-      <form method="post" action="/events/{{ case.case_id }}" class="inline">
+      <form method="post" action="/events/{{ case.case_id }}" class="inline"
+            data-wait="{{ case.case_id }}"
+            data-wait-title="Investigating the check-in"
+            data-wait-note="The agent reads and reports. Nothing is executed while this runs.">
         <button type="submit" class="btn">Check in</button>
       </form>
     </li>

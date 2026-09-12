@@ -28,7 +28,7 @@ from typing import Any
 from pydantic import ValidationError
 from strands import tool
 
-from app import audit
+from app import audit, progress
 from app.adapters import parts_catalog, returns_system
 from app.adapters.returns_system import AdapterError
 from app.audit import AuditEventType
@@ -61,6 +61,9 @@ class AgentContext:
     trace_id: str
     case_id: str
     exception_id: str | None = None
+    # Keys this run's entry in the in-memory progress channel, so the page
+    # waiting on the model can show each tool call as it happens.
+    progress_key: str | None = None
     calls: list[ToolCall] = field(default_factory=list)
     failures: list[str] = field(default_factory=list)
     transcript: list[dict[str, Any]] = field(default_factory=list)
@@ -76,6 +79,7 @@ class AgentContext:
             exception_id=self.exception_id,
             payload={"tool": name, "arguments": arguments, "ok": ok, "summary": summary},
         )
+        progress.tool_called(self.progress_key, name, ok=ok, summary=summary)
         if not ok:
             self.failures.append(f"{name}: {summary}")
 

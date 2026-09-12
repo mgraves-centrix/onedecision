@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
-from app import audit, db
+from app import audit, db, progress
 from app.adapters import warehouse
 from app.adapters.returns_system import AdapterError
 from app.agent.build import decision_card_agent, investigation_agent, policy_proposal_agent
@@ -460,7 +460,14 @@ def _handle_event(
         payload={"provider": settings.model_provider},
     )
 
-    ctx = AgentContext(conn=conn, trace_id=trace_id, case_id=case_id, exception_id=exception_id)
+    ctx = AgentContext(
+        conn=conn,
+        trace_id=trace_id,
+        case_id=case_id,
+        exception_id=exception_id,
+        progress_key=case_id,
+    )
+    progress.step(case_id, "Asking the agent to investigate")
     outcome = _run_investigation(ctx, case_id)
 
     def escalate(reasons: list[str], report: InvestigationReport | None = None) -> HandlingResult:
@@ -499,6 +506,7 @@ def _handle_event(
     assert report is not None
 
     # Facts come from the systems, not from the agent.
+    progress.step(case_id, "Re-deriving every fact from the source systems")
     try:
         facts = derive_facts(conn, case_id)
     except AdapterError as exc:
@@ -537,6 +545,7 @@ def _handle_event(
     active = [(p.policy_id, p.definition) for p in policy_store.list_active(conn)]
     matches = select_matching_policies(active, facts)
 
+    progress.step(case_id, "Running the hard guardrails")
     guard = evaluate_guardrails(
         facts,
         confidence=report.confidence,
@@ -655,6 +664,7 @@ def _handle_event(
             ["case falls outside every approved policy for this exception family"] + near,
             report,
         )
+    progress.step(case_id, "Writing the decision card for a person")
     card = _build_decision_card(ctx, conn, case_id, exception_id, trace_id)
     if card is None:
         return escalate(["agent could not produce a decision card"], report)
@@ -835,7 +845,14 @@ def approve_and_teach(
         conn, exception_id, outcome="approve_and_teach", decided_by=decided_by
     )
 
-    ctx = AgentContext(conn=conn, trace_id=trace_id, case_id=case_id, exception_id=exception_id)
+    ctx = AgentContext(
+        conn=conn,
+        trace_id=trace_id,
+        case_id=case_id,
+        exception_id=exception_id,
+        progress_key=exception_id,
+    )
+    progress.step(exception_id, "Asking the agent to draft the narrowest policy")
     facts = derive_facts(conn, case_id)
     _prepare_scripted_context(
         case_id=case_id,
@@ -856,6 +873,7 @@ def approve_and_teach(
     if not isinstance(proposal, PolicyProposal):
         raise OrchestratorError("agent did not return a typed PolicyProposal")
 
+    progress.step(exception_id, "Validating the draft against the policy schema")
     payload = proposal_to_payload(proposal)
     record = policy_store.create_candidate(
         conn,
@@ -865,6 +883,7 @@ def approve_and_teach(
         origin_decision_id=decision_card_id,
     )
 
+    progress.step(exception_id, "Replaying it against the labeled history")
     report = replay_candidate_policy(conn, record.definition)
     policy_store.attach_replay_report(conn, record.policy_id, report.to_dict(), trace_id=trace_id)
 

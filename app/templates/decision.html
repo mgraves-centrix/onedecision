@@ -62,7 +62,11 @@
     <p class="decided">Decided <strong>{{ decision.outcome }}</strong> by {{ decision.decided_by }} at {{ decision.decided_at }}.</p>
   {% else %}
   <div class="actions">
-    <form method="post" action="/exceptions/{{ exception.exception_id }}/approve" class="inline">
+    <form method="post" action="/exceptions/{{ exception.exception_id }}/approve" class="inline"
+          data-wait="{{ exception.exception_id }}"
+          data-wait-anchor="candidate"
+          data-wait-title="Turning your decision into a policy"
+          data-wait-note="Nothing is being executed. What comes back is a candidate policy, inert until you activate it.">
       <button type="submit" class="btn primary">Approve and teach</button>
     </form>
     <form method="post" action="/exceptions/{{ exception.exception_id }}/reject" class="inline">
@@ -79,7 +83,7 @@
 {% endif %}
 
 {% if candidate %}
-<section class="card policy">
+<section class="card policy" id="candidate">
   <h2>
     Proposed policy
     <span class="pill status-{{ candidate.status }}">{{ candidate.status }}</span>

@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi import FastAPI
 
-from app import audit, db, seed
+from app import audit, db, progress, seed
 from app.agent.providers import provider_label
 from app.dashboard import build_dashboard
 from app.config import (
@@ -86,9 +86,11 @@ STATUS_LABELS = {
 
 
 def _asset_version() -> str:
-    """Changes whenever app.css does, so browsers fetch the new stylesheet
-    instead of reusing a cached copy after an update."""
-    return str(int((BASE_DIR / "static" / "app.css").stat().st_mtime))
+    """Changes whenever a static asset does, so browsers fetch the new copy
+    instead of reusing a cached one after an update."""
+    static = BASE_DIR / "static"
+    newest = max(int((static / name).stat().st_mtime) for name in ("app.css", "waiting.js"))
+    return str(newest)
 
 
 def _base_context(request: Request) -> dict[str, Any]:
@@ -163,7 +165,11 @@ def inbox(request: Request) -> HTMLResponse:
 @app.post("/events/{case_id}")
 def ingest_event(case_id: str):
     """Simulate a returns-dock check-in event arriving for a case."""
-    result = handle_event(case_id)
+    progress.start(case_id, "Handling the check-in", "Check-in received at the dock")
+    try:
+        result = handle_event(case_id)
+    finally:
+        progress.finish(case_id)
     if result.status is ExceptionStatus.WAITING_DECISION:
         return RedirectResponse(f"/exceptions/{result.exception_id}", status_code=303)
     return RedirectResponse("/", status_code=303)
@@ -228,12 +234,28 @@ def exception_detail(request: Request, exception_id: str) -> HTMLResponse:
 
 @app.post("/exceptions/{exception_id}/approve")
 def approve(exception_id: str):
-    with db.session() as conn:
-        try:
-            approve_and_teach(conn, exception_id, decided_by=OPERATOR)
-        except OrchestratorError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return RedirectResponse(f"/exceptions/{exception_id}", status_code=303)
+    progress.start(exception_id, "Turning your decision into a policy", "Recording your decision")
+    try:
+        with db.session() as conn:
+            try:
+                approve_and_teach(conn, exception_id, decided_by=OPERATOR)
+            except OrchestratorError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+    finally:
+        progress.finish(exception_id)
+    # Straight to what the approval produced, rather than the top of a long page.
+    return RedirectResponse(f"/exceptions/{exception_id}#candidate", status_code=303)
+
+
+@app.get("/progress/{key}")
+def read_progress(key: str) -> dict[str, Any]:
+    """What the run behind a pending POST is doing right now.
+
+    Polled by the page that is waiting on it. In-memory and advisory: an unknown
+    key is not an error, it is a page that arrived before the work started, or
+    after it was pruned.
+    """
+    return progress.read(key) or {"label": "", "elapsed": 0.0, "done": False, "steps": []}
 
 
 @app.post("/exceptions/{exception_id}/reject")
@@ -338,6 +360,7 @@ def dashboard(request: Request, range_key: str = Query("all", alias="range")) ->
 @app.post("/demo/reset")
 def reset_demo():
     seed.seed(reset=True)
+    progress.clear()
     return RedirectResponse("/", status_code=303)
 
 
