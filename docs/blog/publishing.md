@@ -43,6 +43,21 @@ product and no term anyone searches. 83% is real: 114,748 tokens to 19,263.
 title: no product, no searchable term. The post's opening paragraph already makes
 the same point, so nothing is lost by moving it out of the title.
 
+## What goes in the body
+
+Not the title, and not the description. Builder Center renders the title as the
+page heading and the description as the standfirst above the byline, so pasting
+either into the body shows it twice.
+
+Paste **everything after the `#` line** in the Markdown file, opening paragraphs
+included. This is easy to get wrong: post 1 was first published with its two
+opening paragraphs sitting in the description field, and trimming that field to
+160 characters deleted them from the article. It went straight from a one-line
+summary into "What the numbers said", losing the line that framed the piece.
+
+Some overlap between the standfirst and the opening paragraph is correct. Every
+news article repeats itself between the headline, the standfirst and the lede.
+
 ## Verified on the platform
 
 Post 1 published with `amazon-bedrock`, `generative-ai`, `cost-optimization`,
