@@ -93,7 +93,9 @@ and a few takes are hundreds of megabytes. Override the location with
 
 - **Desktop beats:** every desktop beat is the live app on Bedrock in Chrome. The pointer is
   drawn in the page, because automated input doesn't move the macOS cursor. The teal outline
-  marks what the narration is talking about.
+  marks what the narration is talking about. A slow click keeps the camera on the waiting
+  panel for `WATCH[beat]` seconds so the run is seen reporting its own steps; the rest of the
+  wait, tens of seconds, still happens off camera.
 - **Phone beat:** real footage. There is one phone and it is the thing running the app, so
   nothing can film it being held; it records its own screen instead, reaching the app over the
   LAN. `frame_phone.py` wraps that recording in a drawn device body and cuts it to the beat:

@@ -32,6 +32,7 @@ import sys
 import tempfile
 import time
 import urllib.request
+from pathlib import Path
 
 from playwright.sync_api import Page, sync_playwright
 
@@ -43,8 +44,11 @@ BASE = ARGS[0] if ARGS else "http://onedecision.localhost:8000"
 TOKEN = os.environ.get("ONEDECISION_APPROVAL_TOKEN", "replace-me-local-demo-token")
 DUR: dict[str, float] = json.loads((OUT / "durations.json").read_text())
 RAW = OUT / "raw"
-PHONE = {"width": 390, "height": 844}
 LONG_MS = 300_000  # a model call on Bedrock can take minutes
+PHONE_BEAT = OUT / "phone-beat.mp4"
+# Seconds of the waiting panel to keep on camera after each slow click. Taken out
+# of the beat's own budget, so they cost the shots that follow, not the runtime.
+WATCH = {"arrive": 6.0, "next": 2.5, "boundary": 2.5}
 WIN = (1920, 1080)  # the Chrome window, and so the video frame
 ZOOM = 1.25  # Chrome's own page zoom, so the app reads at a normal size in 1080p
 FPS = 30
@@ -182,15 +186,24 @@ def press(page: Page, selector: str, ptr: Pointer | None) -> None:
     time.sleep(0.15)
 
 
-def click_and_skip_wait(rec: Recorder, beat: str, selector: str, ptr: Pointer | None) -> None:
-    """Click a control that starts a slow server call: show the click, skip the wait."""
+def click_and_skip_wait(
+    rec: Recorder, beat: str, selector: str, ptr: Pointer | None, watch: float = 0.0
+) -> None:
+    """Click a control that starts a slow server call, and skip most of the wait.
+
+    `watch` keeps the camera on the waiting panel for that many seconds first, so
+    the video shows the run reporting its own steps rather than cutting straight
+    to the answer. The rest of the wait, which is tens of seconds, still happens
+    off camera. Those seconds come out of the beat's own budget: `hold` measures
+    what a beat has already spent, so the shots after this one simply get shorter.
+    """
     press(rec.page, selector, ptr)
     # Playwright's click() blocks until the navigation it starts commits, which is
     # the whole model call, so the cut would land after the wait. A DOM click
     # returns at once; expect_navigation does the waiting, off camera.
     with rec.page.expect_navigation(timeout=LONG_MS):
         rec.page.locator(selector).first.evaluate("el => el.click()")
-        time.sleep(0.35)
+        time.sleep(0.35 + watch)
         rec.cut()
     rec.show(beat)
     time.sleep(0.2)
@@ -205,7 +218,16 @@ def follow(page: Page, selector: str, ptr: Pointer) -> None:
 
 
 def post(path: str) -> None:
-    urllib.request.urlopen(urllib.request.Request(BASE + path, method="POST"), timeout=120)
+    urllib.request.urlopen(urllib.request.Request(BASE + path, method="POST"), timeout=LONG_MS / 1000)
+
+
+def video_length(path: Path) -> float:
+    out = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+         "-of", "default=nw=1:nk=1", str(path)],
+        check=True, capture_output=True, text=True,
+    ).stdout
+    return float(out.strip())
 
 
 def check_in(case_id: str) -> str:
@@ -308,6 +330,10 @@ def find_flash(video) -> float:
 
 
 def main() -> None:
+    # Checked before a take is spent: the phone beat is real footage this script
+    # does not produce, and assemble.py cannot fill the gap if it is missing.
+    if not PHONE_BEAT.exists():
+        sys.exit(f"{PHONE_BEAT} is missing; build it with frame_phone.py first")
     RAW.mkdir(parents=True, exist_ok=True)
     size, win, crop = pick_display()
     device = capture_device(size)
@@ -378,7 +404,7 @@ def main() -> None:
         d.show("arrive")
         spot(page, check_in("CASE-2001"), ptr, "center")
         d.hold("arrive", 0.16)
-        click_and_skip_wait(d, "arrive", check_in("CASE-2001"), ptr)
+        click_and_skip_wait(d, "arrive", check_in("CASE-2001"), ptr, watch=WATCH["arrive"])
         exception_url = page.url
         spot(page, "table.evidence", ptr)
         d.hold("arrive", 0.5)
@@ -388,29 +414,12 @@ def main() -> None:
         d.hold("arrive", 1.0)
         d.cut()
 
-        # 3 · Dana decides from her phone (stand-in for real phone footage)
-        phone_browser = p.chromium.launch()
-        phone_ctx = phone_browser.new_context(
-            viewport=PHONE, device_scale_factor=2, is_mobile=True, has_touch=True,
-            record_video_dir=str(RAW / "phone"), record_video_size=PHONE,
-        )
-        phone_ctx.add_init_script(init_script(pointer=False))
-        phone_ctx.set_default_navigation_timeout(LONG_MS)
-        phone = phone_ctx.new_page()
-        ph = Recorder(phone, "phone")
-        phone.goto(exception_url)
-        ph.show("phone")
-        spot(phone, 'button:has-text("Approve and teach")')
-        ph.hold("phone", 0.5)
-        click_and_skip_wait(ph, "phone", 'button:has-text("Approve and teach")', None)
-        # The confirmation sits just below the buttons; the proposed policy is a long
-        # scroll away on a phone and would be caught mid-scroll.
-        spot(phone, "p.decided")
-        ph.hold("phone", 1.0)
-        ph.cut()
-        phone_video = phone.video.path()
-        phone_ctx.close()
-        phone_browser.close()
+        # 3 · Dana decides from her phone. That beat is real phone footage, cut and
+        # framed by frame_phone.py, so nothing here films it. The approval itself
+        # still has to happen for the rest of the take to have anything to show.
+        post(f"/exceptions/{exception_url.rsplit('/', 1)[-1]}/approve")
+        SEGMENTS.append({"beat": "phone", "source": "phone", "start": 0.0,
+                         "end": round(video_length(PHONE_BEAT), 3)})
 
         # 4 · teach, then replay
         page.reload()
@@ -441,7 +450,7 @@ def main() -> None:
         follow(page, nav("/"), ptr)
         spot(page, check_in("CASE-2002"), ptr, "center")
         d.hold("next", 0.14)
-        click_and_skip_wait(d, "next", check_in("CASE-2002"), ptr)
+        click_and_skip_wait(d, "next", check_in("CASE-2002"), ptr, watch=WATCH["next"])
         spot(page, case_card("CASE-2002"), ptr, "center")
         d.hold("next", 0.3)
         follow(page, case_card("CASE-2002"), ptr)
@@ -456,7 +465,7 @@ def main() -> None:
         follow(page, nav("/"), ptr)
         spot(page, check_in("CASE-2003"), ptr, "center")
         d.hold("boundary", 0.14)
-        click_and_skip_wait(d, "boundary", check_in("CASE-2003"), ptr)
+        click_and_skip_wait(d, "boundary", check_in("CASE-2003"), ptr, watch=WATCH["boundary"])
         spot(page, case_card("CASE-2003"), ptr, "center")
         d.hold("boundary", 0.26)
         follow(page, case_card("CASE-2003"), ptr)
@@ -499,7 +508,7 @@ def main() -> None:
         if s["source"] == "desktop":
             s["start"], s["end"] = round(s["start"] + offset, 3), round(s["end"] + offset, 3)
     (OUT / "timeline.json").write_text(json.dumps(
-        {"desktop": str(screen_video), "phone": str(phone_video), "endcard": str(REPO / "docs" / "thumbnail.png"),
+        {"desktop": str(screen_video), "phone": str(PHONE_BEAT), "endcard": str(REPO / "docs" / "thumbnail.png"),
          "exception_url": exception_url, "sync_offset": round(offset, 3), "segments": SEGMENTS},
         indent=2,
     ) + "\n")
