@@ -13,7 +13,7 @@
   },
   {
     "id": "teach",
-    "text": "Approving records her decision, and that is all it does. The agent now proposes a policy, and it can only propose in a constrained language, where every condition has to come from an allowlist of nine fields. The action set is fixed by the system, not by the agent: hold for parts, raise a replacement work order under the spend cap, close the exception. Then deterministic code replays the candidate against twenty-four historical cases, and it would have gotten zero of them wrong. If that number were anything but zero, the activate button wouldn't be here."
+    "text": "Her approval is recorded, and that is all it does. The agent now proposes a policy, and it can only propose in a constrained language, where every condition has to come from an allowlist of nine fields. The action set is fixed by the system, not by the agent: holding for parts, raising a replacement work order under the spend cap, and closing the exception. Then deterministic code replays the candidate against twenty-four historical cases, and it would have gotten zero of them wrong. If that number were anything but zero, the activate button wouldn't be here."
   },
   {
     "id": "activate",
