@@ -215,7 +215,7 @@ recording whose card makes that claim.
 - **Zero** false automatic actions, **zero** prohibited actions, and **zero** duplicate
   actions across 24 evaluation cases — measured by a harness that counts from the
   database, not asserted.
-- 168 hermetic tests on a clean clone, 341 runs across PostgreSQL and SQLite together in
+- 199 hermetic tests on a clean clone, 401 runs across PostgreSQL and SQLite together in
   under forty seconds, including prompt injection inside case notes, audit tampering,
   model timeouts, tool outages, and duplicate events. CI runs the whole suite, the smoke
   test, the golden path, and the safety gate on every push — and fails the build if the

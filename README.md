@@ -107,7 +107,7 @@ Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 168 hermetic tests across both domains, a few seconds
+make test      # 199 hermetic tests across both domains, a few seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
@@ -359,7 +359,7 @@ by a stray `.env` on disk. `.env` is gitignored and a test asserts it stays that
 
 ```bash
 make test        # hermetic. No network, no model calls. SQLite, plus PostgreSQL if it is up.
-make test-pg     # the whole suite against BOTH backends (300 runs)
+make test-pg     # the whole suite against BOTH backends (401 runs)
 pytest -m integration    # opt-in, needs a live model provider
 ```
 
