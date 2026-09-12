@@ -37,6 +37,6 @@
   },
   {
     "id": "close",
-    "text": "Every event, tool call, approval, and action lands in an append-only, hash-chained log the database refuses to edit. Across twenty-four evaluation cases, one hundred percent correct escalation, and zero false automatic actions. Teach the agent once. It safely handles the next hundred."
+    "text": "Every event, tool call, approval, and action lands in one log. It only ever appends, each entry is hashed onto the one before it, and the database refuses to edit it. Across twenty-four evaluation cases, one hundred percent correct escalation, and zero false automatic actions. Teach the agent once. It safely handles the next hundred."
   }
 ]

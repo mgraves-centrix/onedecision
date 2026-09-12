@@ -4,6 +4,10 @@ Usage: python tools/video/synth.py [voice] [engine]
 Reads narration.json. Writes var/video/audio/<beat>.wav (48 kHz stereo, with a
 short trailing pause) and var/video/durations.json, which record_live.py uses to
 pace the recording. Uses the AWS_PROFILE profile (default: onedecision).
+
+A beat whose line has not changed keeps the clip it already has, so fixing one
+line does not re-time every other beat and invalidate a take. Pass --all to
+resynthesize everything, which you want after changing the voice or engine.
 """
 
 from __future__ import annotations
@@ -20,8 +24,10 @@ PAD_SECONDS = 0.6
 PROFILE = os.environ.get("AWS_PROFILE", "onedecision")
 REGION = os.environ.get("AWS_REGION", "us-west-2")
 
-voice = sys.argv[1] if len(sys.argv) > 1 else "Ruth"
-engine = sys.argv[2] if len(sys.argv) > 2 else "generative"
+args = [a for a in sys.argv[1:] if a != "--all"]
+force = "--all" in sys.argv
+voice = args[0] if args else "Ruth"
+engine = args[1] if len(args) > 1 else "generative"
 
 
 def run(*args: str) -> str:
@@ -35,6 +41,16 @@ def main() -> None:
     for beat in beats:
         mp3 = AUDIO / f"{beat['id']}.mp3"
         wav = AUDIO / f"{beat['id']}.wav"
+        said = AUDIO / f"{beat['id']}.txt"
+        spoken = said.read_text() if said.exists() else None
+        if not force and wav.exists() and spoken == beat["text"]:
+            seconds = float(run(
+                "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                "-of", "default=nw=1:nk=1", str(wav),
+            ).strip())
+            durations[beat["id"]] = round(seconds, 3)
+            print(f"{beat['id']:<10} {seconds:6.2f} s  (unchanged)")
+            continue
         run(
             "aws", "polly", "synthesize-speech",
             "--profile", PROFILE, "--region", REGION,
@@ -50,6 +66,7 @@ def main() -> None:
             "ffprobe", "-v", "error", "-show_entries", "format=duration",
             "-of", "default=nw=1:nk=1", str(wav),
         ).strip())
+        said.write_text(beat["text"])
         durations[beat["id"]] = round(seconds, 3)
         print(f"{beat['id']:<10} {seconds:6.2f} s")
     (OUT / "durations.json").write_text(json.dumps(durations, indent=2) + "\n")
