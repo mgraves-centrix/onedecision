@@ -20,8 +20,9 @@ SCALE = {
     "desktop": "scale=1920:1080:flags=lanczos",
     # The AgentCore beat, recorded on its own by record_terminal.py.
     "terminal": "scale=1920:1080:flags=lanczos",
-    # The phone recording sits centered on the app's background color.
-    "phone": f"scale=-2:1000:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color={BG}",
+    # The phone beat is real screen-recording footage, already composited into a
+    # device frame on the app's background by tools/video/frame_phone.py.
+    "phone": "scale=1920:1080:flags=lanczos",
 }
 
 

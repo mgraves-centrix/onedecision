@@ -36,6 +36,7 @@ agentcore = [
 # and the AWS CLI; see tools/video/README.md.
 video = [
     "playwright==1.62.0",
+    "Pillow==12.3.0",
 ]
 
 [build-system]

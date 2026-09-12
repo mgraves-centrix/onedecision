@@ -94,9 +94,19 @@ and a few takes are hundreds of megabytes. Override the location with
 - **Desktop beats:** every desktop beat is the live app on Bedrock in Chrome. The pointer is
   drawn in the page, because automated input doesn't move the macOS cursor. The teal outline
   marks what the narration is talking about.
-- **Phone beat:** it's a headless, phone-sized stand-in. To use real phone footage, point
-  `"phone"` in `../onedecision-video/timeline.json` at your clip. Replace the two `phone`
-  segments with one that covers the 7.2-second beat, then re-run `assemble.py`.
+- **Phone beat:** real footage. There is one phone and it is the thing running the app, so
+  nothing can film it being held; it records its own screen instead, reaching the app over the
+  LAN. `frame_phone.py` wraps that recording in a drawn device body and cuts it to the beat:
+
+  ```bash
+  .venv/bin/python tools/video/frame_phone.py <recording.mp4> --start 51.9 --hold 52.9 53.95
+  ```
+
+  `--hold` slows one span, for the case this beat always has: a person scrolls to a button and
+  taps it in one motion, leaving the button on screen too briefly to read. It is real footage
+  played slower, never a still or a duplicated frame. Then point `"phone"` in
+  `../onedecision-video/timeline.json` at `phone-beat.mp4` with one segment covering the beat,
+  and re-run `assemble.py`.
 - **AgentCore beat:** it replays `agentcore-result.json`, the handler's result from a real
   `agentcore invoke "Investigate CASE-2001" --json`, without the CLI's session ID or local log
   path. To use a fresh capture, pass the new CLI output to `render_terminal.py`.
