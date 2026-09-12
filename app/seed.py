@@ -28,7 +28,17 @@ def seed(reset: bool = False) -> dict[str, int]:
 
     catalog = _load("catalog.json")
     cases = _load("cases.json")
-    counts = {"kits": 0, "components": 0, "parts": 0, "historical_cases": 0, "demo_cases": 0}
+    invoices = _load("ap_invoices.json")
+    counts = {
+        "kits": 0,
+        "components": 0,
+        "parts": 0,
+        "historical_cases": 0,
+        "demo_cases": 0,
+        "vendors": 0,
+        "historical_invoices": 0,
+        "demo_invoices": 0,
+    }
 
     with db.session() as conn:
         conn.execute("DELETE FROM kit_components")
@@ -40,6 +50,10 @@ def seed(reset: bool = False) -> dict[str, int]:
         conn.execute("DELETE FROM policies")
         conn.execute("DELETE FROM return_cases")
         conn.execute("DELETE FROM kit_catalog")
+        conn.execute("DELETE FROM ap_adjustments")
+        conn.execute("DELETE FROM ap_payment_releases")
+        conn.execute("DELETE FROM ap_invoices")
+        conn.execute("DELETE FROM ap_vendors")
 
         for kit in catalog["kits"]:
             conn.execute(
@@ -93,6 +107,46 @@ def seed(reset: bool = False) -> dict[str, int]:
                         case["expected_label"],
                         case["scenario_note"],
                         bool(case["is_historical"]),
+                    ),
+                )
+                counts[bucket] += 1
+
+        for vendor in invoices["vendors"]:
+            conn.execute(
+                "INSERT INTO ap_vendors (vendor_id, name, risk_tier, on_hold) VALUES (?,?,?,?)",
+                (vendor["vendor_id"], vendor["name"], vendor["risk_tier"], bool(vendor["on_hold"])),
+            )
+            counts["vendors"] += 1
+
+        for bucket, key in (
+            ("historical_invoices", "historical_invoices"),
+            ("demo_invoices", "demo_invoices"),
+        ):
+            for invoice in invoices[key]:
+                conn.execute(
+                    """INSERT INTO ap_invoices (invoice_id, vendor_id, vendor_invoice_no,
+                           po_number, po_total_usd, received_total_usd, invoice_total_usd,
+                           tax_amount_usd, expected_tax_usd, currency, evidence,
+                           submitter_notes, received_at, expected_label, scenario_note,
+                           is_historical)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    (
+                        invoice["invoice_id"],
+                        invoice["vendor_id"],
+                        invoice["vendor_invoice_no"],
+                        invoice["po_number"],
+                        invoice["po_total_usd"],
+                        invoice["received_total_usd"],
+                        invoice["invoice_total_usd"],
+                        invoice["tax_amount_usd"],
+                        invoice["expected_tax_usd"],
+                        invoice["currency"],
+                        json.dumps(invoice["evidence"]),
+                        invoice["submitter_notes"],
+                        invoice["received_at"],
+                        invoice["expected_label"],
+                        invoice["scenario_note"],
+                        bool(invoice["is_historical"]),
                     ),
                 )
                 counts[bucket] += 1

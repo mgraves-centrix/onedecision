@@ -43,7 +43,7 @@ from app.orchestrator import (
     revise_candidate,
 )
 from app.policy.proposal import RevisionError
-from app.policy.schema import ENUM_FIELDS
+from app.policy.schema import POLICY_FAMILY, spec_for
 from app.policy import store as policy_store
 from app.policy.schema import PolicyValidationError
 from app.policy.store import ActivationDenied
@@ -219,7 +219,7 @@ def exception_detail(request: Request, exception_id: str) -> HTMLResponse:
         "candidate": candidate_record,
         "candidate_diff": candidate_diff,
         "lineage": lineage,
-        "kit_categories": sorted(ENUM_FIELDS["kit_category"]),
+        "kit_categories": sorted(spec_for(POLICY_FAMILY).enum_fields["kit_category"]),
         "active_policies": active,
         "timeline": timeline,
     }

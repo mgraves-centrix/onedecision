@@ -5,6 +5,14 @@ operators, value types, thresholds, actions, and action parameters. Anything a
 model proposes that is not expressible here fails validation and can never be
 activated.
 
+The allowlist itself belongs to a domain (`app/domains/`), because what a policy
+may test and do depends on what kind of exception it governs. This module holds
+the rules that are true of every domain: a condition may only name an allowlisted
+field, compare it with an operator its type permits, and stay inside the hard
+ceiling; a policy must carry its domain's full action set, each action's
+parameters pinned to their allowlist, and any spend cap backed by a condition
+that bounds it.
+
 There is no `eval`, no generated Python, no SQL, no shell, and no
 natural-language condition anywhere in this file or in the engine that reads it.
 """
@@ -12,45 +20,45 @@ natural-language condition anywhere in this file or in the engine that reads it.
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Annotated, Literal, Union
+from typing import Any, Union
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-from app.config import MAX_MISSING_COMPONENTS_CEILING, MAX_REPLACEMENT_COST_CEILING_USD
+from app import domains
 
+# The domain this product shipped with, and the default family for a proposal.
 POLICY_FAMILY = "returns.missing_accessory"
 
-# --------------------------------------------------------------------- fields
 
-BOOL_FIELDS: frozenset[str] = frozenset(
-    {
-        "missing_component_serialized",
-        "missing_component_safety_critical",
-        "missing_component_essential",
-        "serial_match",
-        "new_damage_present",
-        "evidence_complete",
-    }
-)
+def spec_for(family: str) -> domains.DomainSpec:
+    """The domain that owns this family, loading the packs on first use."""
+    try:
+        return domains.get(family)
+    except KeyError:
+        domains.load()
+        return domains.get(family)
 
-NUMBER_FIELDS: frozenset[str] = frozenset(
-    {
-        "missing_component_count",
-        "replacement_cost_usd",
-    }
-)
 
-ENUM_FIELDS: dict[str, frozenset[str]] = {
-    "kit_category": frozenset({"camera_kit", "lens_kit", "audio_kit", "drone_kit"}),
-}
+def _field_kind(name: str) -> tuple[str, domains.DomainSpec] | tuple[None, None]:
+    """Which domain allowlists this field, and as what type."""
+    domains.load()
+    for spec in domains.all_specs():
+        if name in spec.bool_fields:
+            return "bool", spec
+        if name in spec.number_fields:
+            return "number", spec
+        if name in spec.enum_fields:
+            return "enum", spec
+    return None, None
 
-ALLOWED_FIELDS: frozenset[str] = BOOL_FIELDS | NUMBER_FIELDS | frozenset(ENUM_FIELDS)
 
-# Outer walls. A proposal may be *tighter* than these. It may never be looser.
-NUMERIC_CEILINGS: dict[str, float] = {
-    "replacement_cost_usd": MAX_REPLACEMENT_COST_CEILING_USD,
-    "missing_component_count": float(MAX_MISSING_COMPONENTS_CEILING),
-}
+def allowed_fields() -> frozenset[str]:
+    """Every field any registered domain allows a policy to test."""
+    domains.load()
+    out: frozenset[str] = frozenset()
+    for spec in domains.all_specs():
+        out |= spec.allowed_fields
+    return out
 
 
 class Operator(StrEnum):
@@ -83,38 +91,40 @@ class Condition(BaseModel):
     @field_validator("field")
     @classmethod
     def _field_allowlisted(cls, v: str) -> str:
-        if v not in ALLOWED_FIELDS:
+        kind, _ = _field_kind(v)
+        if kind is None:
             raise ValueError(
-                f"field '{v}' is not allowlisted; allowed: {sorted(ALLOWED_FIELDS)}"
+                f"field '{v}' is not allowlisted; allowed: {sorted(allowed_fields())}"
             )
         return v
 
     @model_validator(mode="after")
     def _check_operator_and_value(self) -> "Condition":
         field, op, value = self.field, self.operator, self.value
+        kind, spec = _field_kind(field)
 
-        if field in BOOL_FIELDS:
+        if kind == "bool":
             if op not in BOOL_OPERATORS:
                 raise ValueError(f"operator '{op}' not allowed on boolean field '{field}'")
             if not isinstance(value, bool):
                 raise ValueError(f"field '{field}' requires a boolean value, got {type(value).__name__}")
             return self
 
-        if field in NUMBER_FIELDS:
+        if kind == "number":
             if op not in NUMBER_OPERATORS:
                 raise ValueError(f"operator '{op}' not allowed on numeric field '{field}'")
             if isinstance(value, bool) or not isinstance(value, (int, float)):
                 raise ValueError(f"field '{field}' requires a numeric value")
             if value < 0:
                 raise ValueError(f"field '{field}' may not be compared against a negative value")
-            ceiling = NUMERIC_CEILINGS.get(field)
+            ceiling = spec.numeric_ceilings.get(field) if spec else None
             if ceiling is not None and op in {Operator.LT, Operator.LTE, Operator.EQ} and float(value) > ceiling:
                 raise ValueError(
                     f"field '{field}' threshold {value} exceeds the hard ceiling {ceiling}"
                 )
             return self
 
-        allowed_values = ENUM_FIELDS[field]
+        allowed_values = spec.enum_fields[field] if spec else frozenset()
         if op not in ENUM_OPERATORS:
             raise ValueError(f"operator '{op}' not allowed on enum field '{field}'")
         candidates = value if isinstance(value, list) else [value]
@@ -147,42 +157,28 @@ class Condition(BaseModel):
 # -------------------------------------------------------------------- actions
 
 
-class SetDispositionAction(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+class PolicyAction(BaseModel):
+    """One action from a domain's fixed set, with its parameters.
 
-    type: Literal["set_disposition"] = "set_disposition"
-    disposition: Literal["PARTS_HOLD"] = Field(
-        description="Only PARTS_HOLD may be set by policy. Everything else is a human action."
-    )
+    The parameters are open here and pinned by the domain's `ActionSpec` in
+    `PolicyDefinition`: a model cannot invent an action type, a parameter, or a
+    value, because each is checked against the spec that owns it.
+    """
 
+    model_config = ConfigDict(frozen=True, extra="allow")
 
-class CreateWorkOrderAction(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    type: str
 
-    type: Literal["create_work_order"] = "create_work_order"
-    work_order_type: Literal["REPLACEMENT_PARTS"] = Field(
-        description="Only replacement-parts work orders may be created by policy."
-    )
-    max_cost_usd: float = Field(
-        gt=0,
-        le=MAX_REPLACEMENT_COST_CEILING_USD,
-        description="Per-action spend cap. Enforced again at execution time.",
-    )
+    def params(self) -> dict[str, Any]:
+        return dict(self.model_extra or {})
 
 
-class CloseExceptionAction(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+class PolicyValidationError(Exception):
+    """Raised when a proposal cannot be expressed in the constrained language."""
 
-    type: Literal["close_exception"] = "close_exception"
-    resolution_code: Literal["RESOLVED_PARTS_REPLACEMENT"] = "RESOLVED_PARTS_REPLACEMENT"
-
-
-PolicyAction = Annotated[
-    Union[SetDispositionAction, CreateWorkOrderAction, CloseExceptionAction],
-    Field(discriminator="type"),
-]
-
-REQUIRED_ACTION_TYPES = ("set_disposition", "create_work_order", "close_exception")
+    def __init__(self, message: str, errors: list[str] | None = None) -> None:
+        super().__init__(message)
+        self.errors = errors or [message]
 
 
 # ------------------------------------------------------------------- policies
@@ -193,88 +189,154 @@ class PolicyDefinition(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    family: Literal["returns.missing_accessory"] = POLICY_FAMILY
+    family: str = POLICY_FAMILY
     name: str = Field(min_length=4, max_length=120)
     description: str = Field(max_length=600)
     conditions: list[Condition] = Field(min_length=1, max_length=12)
     actions: list[PolicyAction] = Field(min_length=1, max_length=4)
     min_confidence: float = Field(default=0.75, ge=0.5, le=1.0)
 
+    @field_validator("family")
+    @classmethod
+    def _family_registered(cls, v: str) -> str:
+        spec_for(v)  # raises KeyError with the registered families if unknown
+        return v
+
+    @property
+    def spec(self) -> domains.DomainSpec:
+        return spec_for(self.family)
+
     @model_validator(mode="after")
-    def _check_actions(self) -> "PolicyDefinition":
-        types = [a.type for a in self.actions]
-        if len(types) != len(set(types)):
-            raise ValueError("duplicate action types in policy")
-        for required in REQUIRED_ACTION_TYPES:
-            if required not in types:
-                raise ValueError(
-                    f"policy must include the '{required}' action; "
-                    "a policy that acts must also dispose and close"
-                )
+    def _check_conditions(self) -> "PolicyDefinition":
+        spec = self.spec
         fields = [c.field for c in self.conditions]
         if len(fields) != len(set(fields)):
             raise ValueError("a policy may test each field at most once")
+        for name in fields:
+            if name not in spec.allowed_fields:
+                raise ValueError(
+                    f"field '{name}' does not belong to family '{self.family}'; "
+                    f"allowed: {sorted(spec.allowed_fields)}"
+                )
         return self
 
     @model_validator(mode="after")
-    def _check_cost_cap_consistency(self) -> "PolicyDefinition":
-        """A spend cap must be backed by a matching cost condition."""
-        wo = next((a for a in self.actions if a.type == "create_work_order"), None)
-        if wo is None:
-            return self
-        cost_conditions = [
-            c
-            for c in self.conditions
-            if c.field == "replacement_cost_usd" and c.operator in {Operator.LT, Operator.LTE}
-        ]
-        if not cost_conditions:
-            raise ValueError(
-                "a policy that creates a work order must bound replacement_cost_usd "
-                "with an lt/lte condition"
-            )
-        bound = min(float(c.value) for c in cost_conditions)  # type: ignore[arg-type]
-        if wo.max_cost_usd > bound:
-            raise ValueError(
-                f"work order max_cost_usd {wo.max_cost_usd} exceeds the policy's own "
-                f"cost condition bound {bound}"
-            )
+    def _check_actions(self) -> "PolicyDefinition":
+        spec = self.spec
+        types = [a.type for a in self.actions]
+        if len(types) != len(set(types)):
+            raise ValueError("duplicate action types in policy")
+
+        for action in self.actions:
+            action_spec = spec.action(action.type)
+            if action_spec is None:
+                raise ValueError(
+                    f"action '{action.type}' is not an action of family '{self.family}'; "
+                    f"allowed: {[a.type for a in spec.actions]}"
+                )
+            params = action.params()
+            expected = set(action_spec.literals) | set(action_spec.caps)
+            unknown = sorted(set(params) - expected)
+            if unknown:
+                raise ValueError(
+                    f"action '{action.type}' has parameters that are not on its allowlist: {unknown}"
+                )
+            for param, allowed in action_spec.literals.items():
+                if param not in params:
+                    raise ValueError(f"action '{action.type}' requires '{param}'")
+                if params[param] not in allowed:
+                    raise ValueError(
+                        f"action '{action.type}' parameter '{param}' must be one of "
+                        f"{list(allowed)}, got '{params[param]}'"
+                    )
+            for param, ceiling in action_spec.caps.items():
+                if param not in params:
+                    raise ValueError(f"action '{action.type}' requires '{param}'")
+                value = params[param]
+                if isinstance(value, bool) or not isinstance(value, (int, float)):
+                    raise ValueError(f"action '{action.type}' parameter '{param}' must be a number")
+                if value <= 0:
+                    raise ValueError(f"action '{action.type}' parameter '{param}' must be greater than zero")
+                if float(value) > ceiling:
+                    raise ValueError(
+                        f"action '{action.type}' parameter '{param}' {value} exceeds the hard "
+                        f"ceiling {ceiling}"
+                    )
+
+        for required in spec.required_action_types:
+            if required not in types:
+                raise ValueError(
+                    f"policy must include the '{required}' action; "
+                    "a policy that acts must also complete and close the case"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def _check_cap_is_backed_by_a_condition(self) -> "PolicyDefinition":
+        """A cap must be backed by a condition that bounds the same fact."""
+        spec = self.spec
+        for action in self.actions:
+            action_spec = spec.action(action.type)
+            if action_spec is None or not action_spec.bound_by:
+                continue
+            param, bound_field = action_spec.bound_by
+            cap = action.params().get(param)
+            if cap is None:
+                continue
+            bounding = [
+                c
+                for c in self.conditions
+                if c.field == bound_field and c.operator in {Operator.LT, Operator.LTE}
+            ]
+            if not bounding:
+                raise ValueError(
+                    f"a policy with '{action.type}' must bound {bound_field} with an lt/lte condition"
+                )
+            bound = min(float(c.value) for c in bounding)  # type: ignore[arg-type]
+            if float(cap) > bound:
+                raise ValueError(
+                    f"action '{action.type}' {param} {cap} exceeds the policy's own "
+                    f"{bound_field} bound {bound}"
+                )
         return self
 
     def spend_cap(self) -> float:
-        """The most this policy may authorize on one work order."""
-        for action in self.actions:
-            if action.type == "create_work_order":
-                return float(action.max_cost_usd)
-        return 0.0
+        """The most this policy may authorize on one capped action."""
+        return self.spec.cap_of(list(self.actions))
 
-    def kit_category_restriction(self) -> str | None:
-        """The kit category this policy is limited to, if any."""
+    def enum_restriction(self, field_name: str) -> str | None:
+        """The single value this policy is limited to on an enum field, if any."""
         for condition in self.conditions:
-            if condition.field == "kit_category" and condition.operator == Operator.EQ:
+            if condition.field == field_name and condition.operator == Operator.EQ:
                 return str(condition.value)
         return None
+
+    def kit_category_restriction(self) -> str | None:
+        """The kit category this policy is limited to, if any (returns domain)."""
+        return self.enum_restriction("kit_category")
 
     def condition_summary(self) -> list[str]:
         return [c.describe() for c in self.conditions]
 
     def action_summary(self) -> list[str]:
+        spec = self.spec
         out = []
-        for a in self.actions:
-            if a.type == "set_disposition":
-                out.append(f"set disposition to {a.disposition}")
-            elif a.type == "create_work_order":
-                out.append(f"create {a.work_order_type} work order (cap ${a.max_cost_usd:.2f})")
-            else:
-                out.append(f"close exception as {a.resolution_code}")
+        for action in self.actions:
+            action_spec = spec.action(action.type)
+            out.append(
+                action_spec.describe(action.params()) if action_spec else action.type
+            )
         return out
 
 
-class PolicyValidationError(Exception):
-    """Raised when a proposal cannot be expressed in the constrained language."""
-
-    def __init__(self, message: str, errors: list[str] | None = None) -> None:
-        super().__init__(message)
-        self.errors = errors or [message]
+def __getattr__(name: str):
+    """`ALLOWED_FIELDS` used to be a module constant, before fields belonged to a
+    domain. It is computed on access now, so importing this module stays free of
+    side effects and the name keeps meaning what it always did: every field any
+    domain will let a policy test."""
+    if name == "ALLOWED_FIELDS":
+        return allowed_fields()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def validate_policy_payload(payload: dict) -> PolicyDefinition:

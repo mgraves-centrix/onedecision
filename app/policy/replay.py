@@ -18,10 +18,8 @@ if TYPE_CHECKING:
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from app.facts import derive_facts
-from app.policy.guardrails import evaluate_guardrails
 from app.policy.engine import match_policy
-from app.policy.schema import PolicyDefinition
+from app.policy.schema import PolicyDefinition, spec_for
 
 # Ground-truth labels carried by the synthetic historical cases.
 LABEL_AUTO = "auto_resolve"
@@ -61,11 +59,9 @@ class ReplayReport:
         return payload
 
 
-def historical_case_ids(conn: "Connection") -> list[str]:
-    rows = conn.execute(
-        "SELECT case_id FROM return_cases WHERE is_historical = ? ORDER BY case_id", (True,)
-    ).fetchall()
-    return [r["case_id"] for r in rows]
+def historical_case_ids(conn: "Connection", family: str = "returns.missing_accessory") -> list[str]:
+    """The labeled corpus this family replays against."""
+    return [case_id for case_id, _, _ in spec_for(family).corpus(conn)]
 
 
 def replay_candidate_policy(
@@ -87,22 +83,21 @@ def replay_candidate_policy(
     Nothing exempts anything from the rules that matter: zero false automatic
     actions, and a policy that automates nothing at all is still not activatable.
     """
-    ids = case_ids if case_ids is not None else historical_case_ids(conn)
+    spec = spec_for(definition.family)
+    labels = {case_id: (label, note) for case_id, label, note in spec.corpus(conn)}
+    ids = case_ids if case_ids is not None else list(labels)
 
     results: list[ReplayCaseResult] = []
     correct_auto = correct_escalate = false_auto = missed = 0
 
     for case_id in ids:
-        row = conn.execute(
-            "SELECT expected_label, scenario_note FROM return_cases WHERE case_id = ?",
-            (case_id,),
-        ).fetchone()
-        expected = row["expected_label"] if row else LABEL_ESCALATE
-        note = row["scenario_note"] if row else ""
+        # A case with no ground-truth label is treated as one that should escalate,
+        # so an unlabeled case can never count as a successful automation.
+        expected, note = labels.get(case_id, (LABEL_ESCALATE, ""))
 
         reasons: list[str] = []
         try:
-            facts = derive_facts(conn, case_id)
+            facts = spec.derive_facts(conn, case_id)
         except Exception as exc:  # a synthetic-system failure always escalates
             results.append(
                 ReplayCaseResult(
@@ -120,7 +115,7 @@ def replay_candidate_policy(
                 missed += 1
             continue
 
-        guard = evaluate_guardrails(facts, matching_policy_count=1)
+        guard = spec.guardrails(facts, matching_policy_count=1)
         if guard.blocked:
             predicted = LABEL_ESCALATE
             reasons.extend(guard.reasons)

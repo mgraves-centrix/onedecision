@@ -99,7 +99,7 @@ Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 150 hermetic tests, a few seconds
+make test      # 169 hermetic tests across both domains, a few seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
@@ -206,6 +206,65 @@ itself that a person should have seen. Zero is a design constraint, not an avera
 
 ---
 
+## Beyond returns
+
+The subject is returns because a demo needs one. The machinery underneath does not know
+what a camera is: roughly 60% of `app/` is domain-neutral, and everything that *is*
+domain-specific lives in one pack under `app/domains/`.
+
+A pack supplies six things and nothing else:
+
+1. the fact record a policy may test, and how those facts are derived,
+2. the non-overridable guardrails,
+3. the fixed action set, with its caps,
+4. an executor for those actions and a read-back verifier,
+5. a labeled historical corpus to replay against,
+6. the hard ceilings no policy may exceed.
+
+**A second domain ships in this repository.** `ap.invoice_variance` governs an
+accounts-payable exception: an invoice that does not match its purchase order. Its facts,
+guardrails, actions and systems of record have nothing in common with returns.
+
+| | Returns | Accounts payable |
+| --- | --- | --- |
+| Family | `returns.missing_accessory` | `ap.invoice_variance` |
+| The recurring question | *a kit came back missing its lens cap, what do I do?* | *the invoice is $42 over the PO, do I pay it?* |
+| Fields a policy may test | 9 | 9 |
+| Hard ceilings | $50 replacement, 1 component | $250 variance, 5% of the PO |
+| Fixed actions | hold for parts, raise a replacement work order, close | post a variance adjustment, release for payment, close |
+| Guardrails | serial mismatch, new damage, safety-critical or essential part, incomplete evidence | duplicate invoice, vendor on hold, no PO, receipt mismatch, tax mismatch, missing approver |
+| Labeled corpus | 24 return cases | 24 invoices |
+| Replay of the taught policy | 11 automated, 13 escalated, **0 wrong** | 12 automated, 12 escalated, **0 wrong** |
+
+What the second domain reuses **without changing a line of it**: the constrained policy
+language, the deterministic engine, the replay gate, the activation gate and its token,
+idempotent execution, read-back verification, the hash-chained audit log, the policy diff,
+and both database backends. Adding it *removed* 73 lines from the orchestrator, because
+returns-specific dispatch became a domain's own business.
+
+`tests/test_domain_ap_invoices.py` is the evidence: 17 tests that touch no returns code and
+needed no change to the governance code. They cover fact derivation from the ledger, every
+guardrail boundary, a policy language that refuses a field from another domain and an
+adjustment cap above its own condition, a replay that scores 24 labeled invoices, an
+activation refused without a passing replay and without a token, execution that pays once
+when run twice, verification that reads the ledger back, and the audit chain intact.
+
+**What a new domain costs:** about 480 lines of Python (a fact record and its derivation, the
+guardrails, the action set, an executor and verifier, a synthetic adapter), plus its
+fixtures, its labeled corpus and its tests.
+
+**What it does not include yet, honestly:** the web app's screens and the agent's tools and
+prompts are still returns-shaped, so the AP domain is exercised through the governance path
+and its tests rather than through the agent loop and the UI. Making a domain first-class in
+the interface is UI work on top of the seam, not another rewrite of the machinery.
+
+**Where this design refuses to go:** a domain has to reduce its judgment to allowlisted
+fields. Where the decision genuinely turns on free-text nuance that cannot be derived
+deterministically, there is nothing to replay and nothing to bound — and this system will
+not automate it. That is a constraint by construction, not an omission.
+
+---
+
 ## The synthetic world
 
 Everything is invented. The company is **Northgate Optics**, a fictional camera and
@@ -225,7 +284,10 @@ app/
   agent/           the one Strands agent: tools, prompts, model providers
     providers/     bedrock | anthropic | scripted (deterministic Model impl)
     tools.py       READ-ONLY tools. Nothing here writes.
-  adapters/        SYNTHETIC business systems (returns, parts, warehouse)
+  adapters/        SYNTHETIC business systems (returns, parts, warehouse, AP ledger)
+  domains/         domain packs: facts, guardrails, actions, corpus
+    returns.py     the returns domain
+    ap_invoices.py a second domain on the same machinery
   policy/
     schema.py      the allowlist: fields, operators, values, actions
     diff.py        policy-version diff, classified narrower / wider

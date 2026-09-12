@@ -13,29 +13,19 @@ from typing import Any
 
 from app.config import MAX_REPLACEMENT_COST_CEILING_USD
 from app.domain import PolicyProposal
-from app.policy.schema import PolicyDefinition
-from app.policy.schema import POLICY_FAMILY
-
-FIXED_ACTIONS: list[dict[str, Any]] = [
-    {"type": "set_disposition", "disposition": "PARTS_HOLD"},
-    {"type": "create_work_order", "work_order_type": "REPLACEMENT_PARTS", "max_cost_usd": None},
-    {"type": "close_exception", "resolution_code": "RESOLVED_PARTS_REPLACEMENT"},
-]
+from app.policy.schema import POLICY_FAMILY, PolicyDefinition, spec_for
 
 
-def proposal_to_payload(proposal: PolicyProposal) -> dict[str, Any]:
-    """Assemble the policy payload. Still untrusted; still validated downstream."""
-    cap = min(float(proposal.max_cost_usd), MAX_REPLACEMENT_COST_CEILING_USD)
+def proposal_to_payload(proposal: PolicyProposal, family: str = POLICY_FAMILY) -> dict[str, Any]:
+    """Assemble the policy payload. Still untrusted; still validated downstream.
 
-    actions: list[dict[str, Any]] = []
-    for template in FIXED_ACTIONS:
-        action = dict(template)
-        if action["type"] == "create_work_order":
-            action["max_cost_usd"] = cap
-        actions.append(action)
+    The agent proposes conditions and a cap; the domain supplies the action set,
+    so there is nowhere for a model to write an action of its own.
+    """
+    actions = spec_for(family).fixed_actions(float(proposal.max_cost_usd))
 
     return {
-        "family": POLICY_FAMILY,
+        "family": family,
         "name": proposal.name,
         "description": proposal.description,
         "conditions": [
@@ -83,6 +73,7 @@ def revised_payload(
     cap = min(float(max_cost_usd), MAX_REPLACEMENT_COST_CEILING_USD)
     if cap <= 0:
         raise RevisionError("spend cap must be greater than zero")
+    spec = spec_for(definition.family)
 
     conditions: list[dict[str, Any]] = []
     saw_cost = False
@@ -102,13 +93,6 @@ def revised_payload(
     if kit_category:
         conditions.append({"field": "kit_category", "operator": "eq", "value": kit_category})
 
-    actions: list[dict[str, Any]] = []
-    for template in FIXED_ACTIONS:
-        action = dict(template)
-        if action["type"] == "create_work_order":
-            action["max_cost_usd"] = cap
-        actions.append(action)
-
     return {
         "family": definition.family,
         "name": definition.name,
@@ -117,7 +101,7 @@ def revised_payload(
         # so the revised terms are restated here.
         "description": _revised_description(definition, cap, float(min_confidence), kit_category),
         "conditions": conditions,
-        "actions": actions,
+        "actions": spec.fixed_actions(cap),
         "min_confidence": float(min_confidence),
     }
 

@@ -1,0 +1,655 @@
+{
+  "_notice": "SYNTHETIC FIXTURE DATA. Every vendor, invoice, purchase order and approver below is invented for the OneDecision demo. No real supplier, ledger or payment system is represented. See docs/scope.md.",
+  "vendors": [
+    {
+      "vendor_id": "VEN-101",
+      "name": "Harbor Freight Lines",
+      "risk_tier": "low",
+      "on_hold": 0
+    },
+    {
+      "vendor_id": "VEN-102",
+      "name": "Cascade Packaging Co",
+      "risk_tier": "low",
+      "on_hold": 0
+    },
+    {
+      "vendor_id": "VEN-103",
+      "name": "Ridgeway Components",
+      "risk_tier": "medium",
+      "on_hold": 0
+    },
+    {
+      "vendor_id": "VEN-104",
+      "name": "Solent Instruments",
+      "risk_tier": "high",
+      "on_hold": 0
+    },
+    {
+      "vendor_id": "VEN-105",
+      "name": "Delta Courier Group",
+      "risk_tier": "low",
+      "on_hold": 1
+    }
+  ],
+  "historical_invoices": [
+    {
+      "invoice_id": "AP-1001",
+      "vendor_id": "VEN-101",
+      "vendor_invoice_no": "101-INV-0001",
+      "po_number": "PO-SYN-0001",
+      "po_total_usd": 2400.0,
+      "received_total_usd": 2400.0,
+      "invoice_total_usd": 2442.5,
+      "tax_amount_usd": 195.4,
+      "expected_tax_usd": 195.4,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0001",
+        "receipt_id": "RCP-SYN-0001",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-02T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "freight surcharge, 1.77% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1002",
+      "vendor_id": "VEN-101",
+      "vendor_invoice_no": "101-INV-0002",
+      "po_number": "PO-SYN-0002",
+      "po_total_usd": 1810.0,
+      "received_total_usd": 1810.0,
+      "invoice_total_usd": 1828.0,
+      "tax_amount_usd": 146.24,
+      "expected_tax_usd": 146.24,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0002",
+        "receipt_id": "RCP-SYN-0002",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-03T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "fuel adjustment, 0.99% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1003",
+      "vendor_id": "VEN-102",
+      "vendor_invoice_no": "102-INV-0003",
+      "po_number": "PO-SYN-0003",
+      "po_total_usd": 960.0,
+      "received_total_usd": 960.0,
+      "invoice_total_usd": 978.4,
+      "tax_amount_usd": 78.27,
+      "expected_tax_usd": 78.27,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0003",
+        "receipt_id": "RCP-SYN-0003",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-04T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "pallet count rounding, 1.92% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1004",
+      "vendor_id": "VEN-102",
+      "vendor_invoice_no": "102-INV-0004",
+      "po_number": "PO-SYN-0004",
+      "po_total_usd": 3120.0,
+      "received_total_usd": 3120.0,
+      "invoice_total_usd": 3151.2,
+      "tax_amount_usd": 252.1,
+      "expected_tax_usd": 252.1,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0004",
+        "receipt_id": "RCP-SYN-0004",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-05T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "packaging rounding, 1.00% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1005",
+      "vendor_id": "VEN-103",
+      "vendor_invoice_no": "103-INV-0005",
+      "po_number": "PO-SYN-0005",
+      "po_total_usd": 1440.0,
+      "received_total_usd": 1440.0,
+      "invoice_total_usd": 1468.8,
+      "tax_amount_usd": 117.5,
+      "expected_tax_usd": 117.5,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0005",
+        "receipt_id": "RCP-SYN-0005",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-06T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "minor price uplift, 2.00% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1006",
+      "vendor_id": "VEN-101",
+      "vendor_invoice_no": "101-INV-0006",
+      "po_number": "PO-SYN-0006",
+      "po_total_usd": 640.0,
+      "received_total_usd": 640.0,
+      "invoice_total_usd": 652.8,
+      "tax_amount_usd": 52.22,
+      "expected_tax_usd": 52.22,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0006",
+        "receipt_id": "RCP-SYN-0006",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-07T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "freight surcharge, 2.00% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1007",
+      "vendor_id": "VEN-102",
+      "vendor_invoice_no": "102-INV-0007",
+      "po_number": "PO-SYN-0007",
+      "po_total_usd": 2250.0,
+      "received_total_usd": 2250.0,
+      "invoice_total_usd": 2272.5,
+      "tax_amount_usd": 181.8,
+      "expected_tax_usd": 181.8,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0007",
+        "receipt_id": "RCP-SYN-0007",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-08T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "rounding, 1.00% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1008",
+      "vendor_id": "VEN-103",
+      "vendor_invoice_no": "103-INV-0008",
+      "po_number": "PO-SYN-0008",
+      "po_total_usd": 880.0,
+      "received_total_usd": 880.0,
+      "invoice_total_usd": 894.0,
+      "tax_amount_usd": 71.52,
+      "expected_tax_usd": 71.52,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0008",
+        "receipt_id": "RCP-SYN-0008",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-09T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "small uplift, 1.59% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1009",
+      "vendor_id": "VEN-101",
+      "vendor_invoice_no": "101-INV-0009",
+      "po_number": "PO-SYN-0009",
+      "po_total_usd": 4100.0,
+      "received_total_usd": 4100.0,
+      "invoice_total_usd": 4141.0,
+      "tax_amount_usd": 331.28,
+      "expected_tax_usd": 331.28,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0009",
+        "receipt_id": "RCP-SYN-0009",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-10T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "freight, 1.00% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1010",
+      "vendor_id": "VEN-102",
+      "vendor_invoice_no": "102-INV-0010",
+      "po_number": "PO-SYN-0010",
+      "po_total_usd": 1520.0,
+      "received_total_usd": 1520.0,
+      "invoice_total_usd": 1543.0,
+      "tax_amount_usd": 123.44,
+      "expected_tax_usd": 123.44,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0010",
+        "receipt_id": "RCP-SYN-0010",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-11T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "rounding, 1.51% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1011",
+      "vendor_id": "VEN-103",
+      "vendor_invoice_no": "103-INV-0011",
+      "po_number": "PO-SYN-0011",
+      "po_total_usd": 2680.0,
+      "received_total_usd": 2680.0,
+      "invoice_total_usd": 2706.8,
+      "tax_amount_usd": 216.54,
+      "expected_tax_usd": 216.54,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0011",
+        "receipt_id": "RCP-SYN-0011",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-12T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "uplift, 1.00% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1012",
+      "vendor_id": "VEN-101",
+      "vendor_invoice_no": "101-INV-0012",
+      "po_number": "PO-SYN-0012",
+      "po_total_usd": 770.0,
+      "received_total_usd": 770.0,
+      "invoice_total_usd": 784.0,
+      "tax_amount_usd": 62.72,
+      "expected_tax_usd": 62.72,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0012",
+        "receipt_id": "RCP-SYN-0012",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-13T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "freight, 1.82% over PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1013",
+      "vendor_id": "VEN-101",
+      "vendor_invoice_no": "101-INV-DUP1",
+      "po_number": "PO-SYN-0013",
+      "po_total_usd": 1200.0,
+      "received_total_usd": 1200.0,
+      "invoice_total_usd": 1218.0,
+      "tax_amount_usd": 97.44,
+      "expected_tax_usd": 97.44,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0013",
+        "receipt_id": "RCP-SYN-0013",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-14T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "duplicate: same vendor invoice number as AP-1014",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1014",
+      "vendor_id": "VEN-101",
+      "vendor_invoice_no": "101-INV-DUP1",
+      "po_number": "PO-SYN-0014",
+      "po_total_usd": 1200.0,
+      "received_total_usd": 1200.0,
+      "invoice_total_usd": 1218.0,
+      "tax_amount_usd": 97.44,
+      "expected_tax_usd": 97.44,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0014",
+        "receipt_id": "RCP-SYN-0014",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-15T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "duplicate: same vendor invoice number as AP-1013",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1015",
+      "vendor_id": "VEN-105",
+      "vendor_invoice_no": "105-INV-0015",
+      "po_number": "PO-SYN-0015",
+      "po_total_usd": 900.0,
+      "received_total_usd": 900.0,
+      "invoice_total_usd": 915.0,
+      "tax_amount_usd": 73.2,
+      "expected_tax_usd": 73.2,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0015",
+        "receipt_id": "RCP-SYN-0015",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-16T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "vendor is on payment hold",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1016",
+      "vendor_id": "VEN-102",
+      "vendor_invoice_no": "102-INV-0016",
+      "po_number": null,
+      "po_total_usd": null,
+      "received_total_usd": null,
+      "invoice_total_usd": 1340.0,
+      "tax_amount_usd": 107.2,
+      "expected_tax_usd": 107.2,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0016",
+        "receipt_id": "RCP-SYN-0016",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-17T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "no purchase order on file",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1017",
+      "vendor_id": "VEN-103",
+      "vendor_invoice_no": "103-INV-0017",
+      "po_number": "PO-SYN-0017",
+      "po_total_usd": 2000.0,
+      "received_total_usd": 1400.0,
+      "invoice_total_usd": 2030.0,
+      "tax_amount_usd": 162.4,
+      "expected_tax_usd": 162.4,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0017",
+        "receipt_id": "RCP-SYN-0017",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-18T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "goods received do not match the PO",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1018",
+      "vendor_id": "VEN-102",
+      "vendor_invoice_no": "102-INV-0018",
+      "po_number": "PO-SYN-0018",
+      "po_total_usd": 1650.0,
+      "received_total_usd": 1650.0,
+      "invoice_total_usd": 1674.75,
+      "tax_amount_usd": 210.0,
+      "expected_tax_usd": 133.98,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0018",
+        "receipt_id": "RCP-SYN-0018",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-19T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "tax does not reconcile",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1019",
+      "vendor_id": "VEN-104",
+      "vendor_invoice_no": "104-INV-0019",
+      "po_number": "PO-SYN-0019",
+      "po_total_usd": 3000.0,
+      "received_total_usd": 3000.0,
+      "invoice_total_usd": 3480.0,
+      "tax_amount_usd": 278.4,
+      "expected_tax_usd": 278.4,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0019",
+        "receipt_id": "RCP-SYN-0019",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-20T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "variance $480 is over the hard ceiling",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1020",
+      "vendor_id": "VEN-103",
+      "vendor_invoice_no": "103-INV-0020",
+      "po_number": "PO-SYN-0020",
+      "po_total_usd": 1100.0,
+      "received_total_usd": 1100.0,
+      "invoice_total_usd": 1188.0,
+      "tax_amount_usd": 95.04,
+      "expected_tax_usd": 95.04,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0020",
+        "receipt_id": "RCP-SYN-0020",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-21T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "variance 8.00% is over the hard ceiling",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1021",
+      "vendor_id": "VEN-102",
+      "vendor_invoice_no": "102-INV-0021",
+      "po_number": "PO-SYN-0021",
+      "po_total_usd": 1975.0,
+      "received_total_usd": 1975.0,
+      "invoice_total_usd": 2004.6,
+      "tax_amount_usd": 160.37,
+      "expected_tax_usd": 160.37,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0021",
+        "receipt_id": "RCP-SYN-0021",
+        "approver_id": ""
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-22T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "approver missing from the evidence",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1022",
+      "vendor_id": "VEN-104",
+      "vendor_invoice_no": "104-INV-0022",
+      "po_number": "PO-SYN-0022",
+      "po_total_usd": 5600.0,
+      "received_total_usd": 5600.0,
+      "invoice_total_usd": 5779.2,
+      "tax_amount_usd": 462.34,
+      "expected_tax_usd": 462.34,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0022",
+        "receipt_id": "RCP-SYN-0022",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-23T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "high-risk vendor, $179.20 variance above what the policy allows",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1023",
+      "vendor_id": "VEN-103",
+      "vendor_invoice_no": "103-INV-0023",
+      "po_number": "PO-SYN-0023",
+      "po_total_usd": 4800.0,
+      "received_total_usd": 4800.0,
+      "invoice_total_usd": 4920.0,
+      "tax_amount_usd": 393.6,
+      "expected_tax_usd": 393.6,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0023",
+        "receipt_id": "RCP-SYN-0023",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-24T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "$120 variance above what the policy allows",
+      "is_historical": true
+    },
+    {
+      "invoice_id": "AP-1024",
+      "vendor_id": "VEN-104",
+      "vendor_invoice_no": "104-INV-0024",
+      "po_number": "PO-SYN-0024",
+      "po_total_usd": 2600.0,
+      "received_total_usd": 2600.0,
+      "invoice_total_usd": 2678.0,
+      "tax_amount_usd": 214.24,
+      "expected_tax_usd": 214.24,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0024",
+        "receipt_id": "RCP-SYN-0024",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-25T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "high-risk vendor, $78 variance above what the policy allows",
+      "is_historical": true
+    }
+  ],
+  "demo_invoices": [
+    {
+      "invoice_id": "AP-2001",
+      "vendor_id": "VEN-101",
+      "vendor_invoice_no": "101-INV-D0001",
+      "po_number": "PO-SYN-0001",
+      "po_total_usd": 2380.0,
+      "received_total_usd": 2380.0,
+      "invoice_total_usd": 2421.5,
+      "tax_amount_usd": 193.72,
+      "expected_tax_usd": 193.72,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0001",
+        "receipt_id": "RCP-SYN-0001",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-02T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "DEMO 1 - unknown but safely teachable: $41.50 freight variance, everything else clean",
+      "is_historical": false
+    },
+    {
+      "invoice_id": "AP-2002",
+      "vendor_id": "VEN-102",
+      "vendor_invoice_no": "102-INV-D0002",
+      "po_number": "PO-SYN-0002",
+      "po_total_usd": 1800.0,
+      "received_total_usd": 1800.0,
+      "invoice_total_usd": 1818.0,
+      "tax_amount_usd": 145.44,
+      "expected_tax_usd": 145.44,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0002",
+        "receipt_id": "RCP-SYN-0002",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-03T09:20:00Z",
+      "expected_label": "auto_resolve",
+      "scenario_note": "DEMO 2 - approved repeat: matches the activated policy exactly",
+      "is_historical": false
+    },
+    {
+      "invoice_id": "AP-2003",
+      "vendor_id": "VEN-101",
+      "vendor_invoice_no": "101-INV-DUP1",
+      "po_number": "PO-SYN-0003",
+      "po_total_usd": 1200.0,
+      "received_total_usd": 1200.0,
+      "invoice_total_usd": 1218.0,
+      "tax_amount_usd": 97.44,
+      "expected_tax_usd": 97.44,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0003",
+        "receipt_id": "RCP-SYN-0003",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-04T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "DEMO 3 - boundary: duplicate of a historical invoice",
+      "is_historical": false
+    },
+    {
+      "invoice_id": "AP-2004",
+      "vendor_id": "VEN-104",
+      "vendor_invoice_no": "104-INV-D0004",
+      "po_number": "PO-SYN-0004",
+      "po_total_usd": 2400.0,
+      "received_total_usd": 2400.0,
+      "invoice_total_usd": 2710.0,
+      "tax_amount_usd": 216.8,
+      "expected_tax_usd": 216.8,
+      "currency": "USD",
+      "evidence": {
+        "po_number": "PO-SYN-0004",
+        "receipt_id": "RCP-SYN-0004",
+        "approver_id": "AP-USER-21"
+      },
+      "submitter_notes": "",
+      "received_at": "2026-08-05T09:20:00Z",
+      "expected_label": "escalate",
+      "scenario_note": "DEMO 4 - boundary: $310 variance exceeds the hard ceiling",
+      "is_historical": false
+    }
+  ]
+}

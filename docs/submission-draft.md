@@ -114,6 +114,48 @@ product — real agent, real tool calls, real typed output — with `make setup 
 Runtime through a thin entrypoint (`agentcore_main.py`) and the AgentCore CLI's CDK
 project, so the runtime is a transport detail rather than a second implementation.
 
+## Beyond the demo domain
+
+The fair question about any vertical demo: *is this just a returns app?*
+
+It is not, and the repository can show it rather than argue it. About 60% of `app/` is
+domain-neutral — the constrained policy language, the deterministic engine, the replay
+gate, the activation gate, idempotent execution, read-back verification, the hash-chained
+audit log, the policy diff, both database backends. What knows about cameras lives in one
+domain pack, which supplies six things: the fact record a policy may test and how it is
+derived, the guardrails, the fixed action set with its caps, an executor and a verifier, a
+labeled corpus to replay against, and the hard ceilings.
+
+**So we shipped a second domain.** `ap.invoice_variance` governs an accounts-payable
+exception: an invoice that does not match its purchase order. Same story, different room —
+an AP clerk sees the same $42 freight variance twenty times a week, approves it in thirty
+seconds, and never writes it down.
+
+| | Returns | Accounts payable |
+| --- | --- | --- |
+| The recurring question | *a kit came back missing its lens cap, what do I do?* | *this invoice is $42 over the PO, do I pay it?* |
+| Hard ceilings | $50 replacement, 1 component | $250 variance, 5% of the PO |
+| Fixed actions | hold for parts, raise a work order, close | post a variance adjustment, release for payment, close |
+| Guardrails | serial mismatch, new damage, safety-critical part, incomplete evidence | duplicate invoice, vendor on hold, no PO, receipt mismatch, tax mismatch, missing approver |
+| Replay of the taught policy | 11 automated, 13 escalated, **0 wrong** | 12 automated, 12 escalated, **0 wrong** |
+
+The second domain reuses every guarantee without changing a line of it, and adding it
+*removed* 73 lines from the orchestrator, because returns-specific dispatch became a
+domain's own business. A pack costs about 480 lines of Python plus its fixtures and tests.
+`tests/test_domain_ap_invoices.py` — 17 tests, touching no returns code — covers fact
+derivation, every guardrail boundary, a policy language that refuses a field from another
+domain, a replay across 24 labeled invoices, activation refused without a passing replay
+and without a token, execution that pays once when run twice, verification that reads the
+ledger back, and the audit chain intact.
+
+Honest limits: the web screens and the agent's tools and prompts are still returns-shaped,
+so the AP domain runs through the governance path and its tests rather than the agent loop
+and the UI. And a domain has to reduce its judgment to allowlisted fields — where a
+decision genuinely turns on free-text nuance, there is nothing to replay and nothing to
+bound, and this system will not automate it.
+
+---
+
 ## Challenges
 
 **Making "the model can't do that" true rather than asserted.** The first design had the

@@ -51,7 +51,7 @@ from app.policy.engine import select_matching_policies
 from app.policy.guardrails import evaluate_guardrails
 from app.policy.proposal import proposal_to_payload, revised_payload
 from app.policy.replay import replay_candidate_policy
-from app.policy.schema import PolicyDefinition, PolicyValidationError
+from app.policy.schema import PolicyDefinition, spec_for, PolicyValidationError
 
 
 class OrchestratorError(RuntimeError):
@@ -171,50 +171,14 @@ def execute_approved_policy(
         )
 
     definition: PolicyDefinition = record.definition
+    spec = spec_for(definition.family)
     results: list[ActionResult] = []
-    component = facts.missing_components[0] if facts.missing_components else None
 
     for action in definition.actions:
         key = idempotency_key(idem_key, action.type)
         try:
-            if action.type == "set_disposition":
-                out = warehouse.set_disposition(
-                    conn, case_id=case_id, disposition=action.disposition, idempotency_key=key
-                )
-                result = ActionResult(
-                    action=f"set_disposition:{action.disposition}",
-                    ok=True,
-                    idempotency_key=key,
-                    detail=f"disposition set to {action.disposition}",
-                    duplicate_suppressed=out["duplicate_suppressed"],
-                    reference=case_id,
-                )
-            elif action.type == "create_work_order":
-                if component is None:
-                    raise AdapterError("no missing component to raise a work order for")
-                if facts.replacement_cost_usd is None:
-                    raise AdapterError("replacement cost unavailable at execution time")
-                out = warehouse.create_work_order(
-                    conn,
-                    case_id=case_id,
-                    work_order_type=action.work_order_type,
-                    component_id=component.component_id,
-                    cost_usd=facts.replacement_cost_usd,
-                    max_cost_usd=action.max_cost_usd,
-                    idempotency_key=key,
-                )
-                result = ActionResult(
-                    action=f"create_work_order:{action.work_order_type}",
-                    ok=True,
-                    idempotency_key=key,
-                    detail=(
-                        f"{out['work_order_id']} for {component.component_id} at "
-                        f"${facts.replacement_cost_usd:.2f}"
-                    ),
-                    duplicate_suppressed=out["duplicate_suppressed"],
-                    reference=out["work_order_id"],
-                )
-            else:  # close_exception
+            if action.type == "close_exception":
+                # Closing the case is the machinery's own act, not the domain's.
                 _set_status(
                     conn,
                     exception_id,
@@ -228,6 +192,16 @@ def execute_approved_policy(
                     idempotency_key=key,
                     detail=f"exception closed under {record.label}",
                     reference=exception_id,
+                )
+            else:
+                out = spec.execute(conn, action, facts=facts, idem_key=key)
+                result = ActionResult(
+                    action=out["label"],
+                    ok=True,
+                    idempotency_key=key,
+                    detail=out["detail"],
+                    duplicate_suppressed=out["duplicate_suppressed"],
+                    reference=out["reference"],
                 )
         except AdapterError as exc:
             audit.record(
@@ -279,22 +253,9 @@ def verify_action(
     exception_id: str,
 ) -> VerificationResult:
     """Read the business systems back and confirm the writes actually landed."""
-    checks: list[str] = []
-    failures: list[str] = []
-
-    disposition = warehouse.get_disposition(conn, case_id)
-    if disposition and disposition["disposition"] == "PARTS_HOLD":
-        checks.append(f"disposition is {disposition['disposition']}")
-    else:
-        failures.append("disposition was not written as PARTS_HOLD")
-
-    work_orders = warehouse.get_work_orders(conn, case_id)
-    if len(work_orders) == 1:
-        checks.append(f"one work order on file: {work_orders[0]['work_order_id']}")
-    elif not work_orders:
-        failures.append("no replacement-parts work order was created")
-    else:
-        failures.append(f"{len(work_orders)} work orders exist for this case; expected exactly one")
+    record = policy_store.get(conn, policy_id)
+    # The domain reads its own systems back; the exception itself is ours.
+    checks, failures = spec_for(record.definition.family).verify(conn, case_id)
 
     row = conn.execute(
         "SELECT status, applied_policy_id FROM exceptions WHERE exception_id = ?", (exception_id,)
