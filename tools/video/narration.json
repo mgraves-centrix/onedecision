@@ -1,7 +1,7 @@
 [
   {
     "id": "problem",
-    "text": "This is OneDecision, a Strands Agents agent running on Claude Opus 5 through Amazon Bedrock. Dana runs returns for a camera rental company. Twenty times a week, a kit comes back missing something small, and someone asks her what to do. She answers in thirty seconds, and she has never had an hour to write it down. Rule-based automation can't help, because nobody wrote the rule. Everything you'll see runs on synthetic data."
+    "text": "This is OneDecision, an agent built with Strands Agents, running on Claude Opus 5 through Amazon Bedrock. Dana runs returns for a camera rental company. Twenty times a week, a kit comes back missing something small, and someone asks her what to do. She answers in thirty seconds, and she has never had an hour to write it down. Rule-based automation can't help, because nobody wrote the rule. Everything you'll see runs on synthetic data."
   },
   {
     "id": "arrive",

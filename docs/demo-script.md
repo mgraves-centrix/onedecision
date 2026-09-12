@@ -29,7 +29,7 @@ differ slightly between takes on Bedrock; the reference values are the offline r
 
 ## 0:00 — 0:25 · The problem (Inbox view)
 
-> This is OneDecision, a Strands Agents agent running on Claude Opus 5 through Amazon
+> This is OneDecision, an agent built with Strands Agents, running on Claude Opus 5 through Amazon
 > Bedrock.
 >
 > Dana runs returns for a camera rental company. Twenty times a week a kit comes back
