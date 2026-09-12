@@ -10,7 +10,9 @@ services:
       POSTGRES_PASSWORD: localdev
       POSTGRES_DB: onedecision
     ports:
-      - "127.0.0.1:5432:5432"
+      # ONEDECISION_PG_PORT publishes this somewhere else when 5432 is already
+      # taken on the host, which is common if another project runs PostgreSQL.
+      - "127.0.0.1:${ONEDECISION_PG_PORT:-5432}:5432"
     volumes:
       - onedecision-pgdata:/var/lib/postgresql/data
       - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro

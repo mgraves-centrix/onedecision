@@ -3,8 +3,11 @@ PY   := $(VENV)/bin/python
 PIP  := $(VENV)/bin/pip
 
 # Local PostgreSQL from docker-compose.yml. Override to point elsewhere.
-DATABASE_URL      ?= postgresql://onedecision:localdev@127.0.0.1:5432/onedecision
-TEST_DATABASE_URL ?= postgresql://onedecision:localdev@127.0.0.1:5432/onedecision_test
+# Set ONEDECISION_PG_PORT when 5432 is already taken on this machine: it moves the
+# published port and follows through into both connection strings.
+export ONEDECISION_PG_PORT ?= 5432
+DATABASE_URL      ?= postgresql://onedecision:localdev@127.0.0.1:$(ONEDECISION_PG_PORT)/onedecision
+TEST_DATABASE_URL ?= postgresql://onedecision:localdev@127.0.0.1:$(ONEDECISION_PG_PORT)/onedecision_test
 
 .DEFAULT_GOAL := help
 

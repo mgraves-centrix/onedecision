@@ -88,6 +88,14 @@ make test-pg   # the whole suite against BOTH backends
 make run
 ```
 
+If 5432 is already taken on your machine, publish the container somewhere else and
+everything follows, including both connection strings:
+
+```bash
+ONEDECISION_PG_PORT=55432 make db-up
+ONEDECISION_PG_PORT=55432 make test-pg
+```
+
 Or point at any PostgreSQL and the app follows:
 
 ```bash
