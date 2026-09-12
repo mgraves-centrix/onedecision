@@ -5,19 +5,19 @@
   },
   {
     "id": "arrive",
-    "text": "A kit is checked in at the returns dock. That's an event, not somebody typing a prompt at a chatbot. The Strands agent investigates it with four read-only tool calls. It pulls the case, reconciles what arrived against the bill of materials, prices the missing part, and checks for an approved policy. Every line of evidence names the tool that produced it. One neoprene strap is missing, fourteen dollars. The serial matches, and there's no damage. But no approved policy exists. So it doesn't act. It asks, once, and it proposes the boundary the answer should live inside."
+    "text": "A kit is checked in at the returns dock, and that event is what starts the work, not somebody typing at a chatbot. The Strands agent investigates with four read-only tool calls. It pulls the case, reconciles what arrived against the bill of materials, prices the missing part, and checks for an approved policy. Every line of evidence names the tool that produced it. One neoprene strap missing, fourteen dollars. The serial matches and there's no damage, but nothing on file covers a case like this, so the agent stops and asks, once, and proposes where the boundary should sit."
   },
   {
     "id": "phone",
-    "text": "Dana isn't at her desk. She approves from her phone, between two other jobs. That's the whole interruption."
+    "text": "Dana isn't at her desk. She approves from her phone, between two other jobs, and that's the whole interruption."
   },
   {
     "id": "teach",
-    "text": "Approving records her decision. It activates nothing. The agent now proposes a policy, and it can only propose in a constrained language, where every condition comes from an allowlist of nine fields. The actions, hold for parts, raise a replacement work order under the spend cap, and close the exception, weren't chosen by the agent. The action set is fixed by the system. Then deterministic code replays the candidate against twenty-four historical cases. It would have gotten zero of them wrong. If that number were anything but zero, the activate button wouldn't be here."
+    "text": "Approving records her decision, and that is all it does. The agent now proposes a policy, and it can only propose in a constrained language, where every condition has to come from an allowlist of nine fields. The action set is fixed by the system, not by the agent: hold for parts, raise a replacement work order under the spend cap, close the exception. Then deterministic code replays the candidate against twenty-four historical cases, and it would have gotten zero of them wrong. If that number were anything but zero, the activate button wouldn't be here."
   },
   {
     "id": "activate",
-    "text": "A human activates it. That's the only path from candidate to active. It needs a token, and it's refused without a passing replay. The model can't do this. It isn't a tool the agent has."
+    "text": "A human activates it, and that's the only path from candidate to active. It takes a token, and it's refused without a passing replay. The model can't do it, because it isn't a tool the agent has."
   },
   {
     "id": "next",
@@ -25,7 +25,7 @@
   },
   {
     "id": "boundary",
-    "text": "Now one that looks almost identical. Same kit, one cheap accessory missing. But the serial doesn't match. The wrong body came back. It refuses. Not because a prompt told it to be careful. A hard guardrail runs before any policy is consulted, and a policy can only ever narrow what's allowed. The preferred answer is always: ask a person."
+    "text": "Now one that looks almost identical: same kit, one cheap accessory missing. But the serial doesn't match, so the wrong body came back, and the system refuses. A hard guardrail runs before any policy is consulted, and a policy can only ever narrow what's allowed. When the rules run out, the answer is to ask a person."
   },
   {
     "id": "agentcore",
