@@ -1,0 +1,60 @@
+{
+  "series": {
+    "eyebrow": "Agents for Humans \u00b7 Strands Agents on Amazon Bedrock",
+    "title": "Teach the agent once.",
+    "title_quiet": "It safely handles<br>the next hundred.",
+    "sub": "One supervisor decision becomes a policy the system can apply, but only after deterministic code proves against real history what it would have done.",
+    "layout": "band",
+    "hero": "replay.png",
+    "caption": "Replay against 24 labeled historical cases, before activation is offered",
+    "flag": "replay passed"
+  },
+  "01-token-cost": {
+    "eyebrow": "Agents for Humans \u00b7 Debugging an agent's token bill",
+    "title": "115,000 tokens in one step.",
+    "title_quiet": "The model was not<br>the problem.",
+    "sub": "A tool's schema disagreed with the prompt, so the agent reverse-engineered it by watching the validator reject things. Every retry resent the whole conversation.",
+    "layout": "terminal",
+    "caption": "Twenty-four tool calls in a step that needs one, and the tell in the failures",
+    "flag": "114,748 \u2192 19,263",
+    "terminal": [
+      "$ read the agent.run records for one demo run",
+      "",
+      "investigation    cycles=3   tools=4    15.4s   11,109 tokens",
+      "decision_card    cycles=1   tools=0    27.9s    6,131 tokens",
+      "policy_proposal  cycles=15  tools=24  129.2s  114,748 tokens",
+      "",
+      "  1x  \"actions.0: Input tag 'probe_invalid' found using 'type'",
+      "       does not match any of the expected tags...\""
+    ]
+  },
+  "02-eventbridge": {
+    "eyebrow": "Agents for Humans \u00b7 EventBridge Scheduler to Bedrock AgentCore",
+    "title": "No operator. No browser.",
+    "title_quiet": "No click.",
+    "sub": "A one-shot schedule invokes the deployed runtime directly, with no Lambda in between, then deletes itself. The payload is raw JSON, whatever the CLI tells you.",
+    "layout": "terminal",
+    "terminal": [
+      "$ aws scheduler create-schedule --name onedecision-oneshot-demo \\",
+      "    --target file://target.json --action-after-completion DELETE",
+      "",
+      "2026-09-12T02:28:51Z  \"Invocation completed successfully (45.136s)\"",
+      "  sessionId: \"eventbridge-oneshot-session-...-onedecision-runtime\"",
+      "",
+      "$ aws scheduler list-schedules --query 'Schedules[].Name'",
+      "(none)"
+    ],
+    "caption": "The runtime's own log, carrying the session id the schedule gave it",
+    "flag": "fired and cleaned up"
+  },
+  "03-authority": {
+    "eyebrow": "Agents for Humans \u00b7 Where the boundary is enforced",
+    "title": "It refuses.",
+    "title_quiet": "Not because a prompt<br>told it to be careful.",
+    "sub": "Every tool the agent has is read-only. A hard guardrail runs before any policy is consulted, and a policy can only ever narrow what is allowed.",
+    "layout": "band",
+    "hero": "refusal.png",
+    "caption": "Same kit, one cheap accessory missing, and the serial does not match",
+    "flag": "escalated to a person"
+  }
+}

@@ -1,17 +1,25 @@
-# Blog cover
+# Blog covers
 
-`cover.html` renders the cover image for the Builder.aws posts at 1200x630. The
-numbers in it are not typed: `replay.png` is a screenshot of the real replay grid,
-taken from the app running against a finished take's database, so the cover shows
-the same evidence a reader would see in the product.
+One 1200x630 cover per Builder post, plus a series cover, rendered by
+`build_covers.py` from the spec in `covers.json`.
 
-To rebuild after a take, serve that take's database and re-shoot the element:
+```bash
+.venv/bin/python tools/blog/build_covers.py     # writes docs/blog/cover*.png
+```
+
+The evidence on each cover is the product's own. `replay.png` and `refusal.png`
+are screenshots of the running app, and the terminal blocks are real captured CLI
+and runtime output. No figure on a cover was typed to look good, which is the
+point: a cover that claims zero wrong actions should be showing the screen that
+says so.
+
+To re-shoot the screenshots after a new take, serve that take's database:
 
 ```bash
 ONEDECISION_MODEL_PROVIDER=scripted ONEDECISION_DB_PATH=../onedecision-video/take.db \
   .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8099
 ```
 
-Screenshot `.replay-grid` on the decision page at `device_scale_factor=2` into
-`replay.png`, then render `cover.html` in a 1200x630 viewport, also at 2x. The
-output is `docs/blog/cover.png`.
+Then screenshot `.replay-grid` on a decision page and `section.card.danger` on the
+escalated case, both at `device_scale_factor=2`, into `replay.png` and
+`refusal.png`.
