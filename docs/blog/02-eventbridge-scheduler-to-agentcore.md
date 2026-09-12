@@ -1,10 +1,14 @@
 # Agents for Humans: EventBridge Scheduler to AgentCore
 
-Our agent is event-driven: a returns dock emits a check-in, and the work starts. Nothing
-polls. But we wanted to show the deployed agent doing real work with nobody watching, so we
-pointed EventBridge Scheduler at Amazon Bedrock AgentCore Runtime.
+Two things about pointing EventBridge Scheduler at Amazon Bedrock AgentCore Runtime, neither
+of them in the CLI help.
 
-Two things are worth writing down, because neither is obvious from the CLI help.
+You do not need a Lambda in between. And the payload you put in the schedule is **raw JSON**,
+even though the AWS CLI rejects raw JSON and demands base64 for the same field. Getting that
+backwards cost us two firings and produced an error message that points at the wrong thing.
+
+What follows is from a one-shot schedule that invoked our deployed agent with nobody
+watching, then deleted itself.
 
 ## You do not need a Lambda in between
 
@@ -69,10 +73,12 @@ terminal.
 ## What it does not give you
 
 The universal target is fire-and-forget. Scheduler does not read the response, so the
-decision card that invocation produced went nowhere. If you need the outcome, and for
-anything past a demo you do, put a small Lambda in between. Not because Scheduler cannot
-reach the service, but because a scheduled sweep has to *list what is unhandled, build a
-payload per item, and record what came back*. That is code, not target configuration.
+decision card that invocation produced went nowhere. Our agent had done forty-five seconds
+of real work and nothing was listening.
+
+So the Lambda comes back, for anything past a demo. Not because Scheduler cannot reach the
+service, but because a scheduled sweep has to *list what is unhandled, build a payload per
+item, and record what came back*. That is code, not target configuration.
 
 A second limit, specific to how we deploy: each AgentCore session seeds its own SQLite
 database, so a scheduled firing proves the gated path runs unattended. It does not carry
@@ -91,11 +97,14 @@ signal when `ActionAfterCompletion: DELETE` is set. It fired and cleaned up afte
 
 ## When to use this at all
 
-For event-shaped work, don't schedule. Push. An event bus or a queue in front of the same
-gated path gives you retries, a dead-letter queue and backpressure. Scheduler is the right tool
-for time-based work: a nightly sweep, anything stuck in a waiting state past an SLA, a
-retry of failed verifications. Using cron to simulate events is a demo trick, and reviewers
-notice.
+Mostly, don't. For event-shaped work, push instead: an event bus or a queue in front of the
+same gated path gives you retries, a dead-letter queue and backpressure, and a schedule
+gives you none of those.
+
+Scheduler earns its place on time-based work, where there is no event to wait for. A nightly
+sweep. Anything stuck in a waiting state past its SLA. A retry of failed verifications. If
+you are reaching for cron to fake an event you already have, a reviewer will notice, and
+they will be right.
 
 *OneDecision is a Strands Agents project built for the Agents for Humans hackathon:
 https://github.com/mgraves-centrix/onedecision*
