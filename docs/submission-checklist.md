@@ -31,7 +31,7 @@ Target: submit by **noon Pacific on September 14**.
 | AgentCore Runtime deployment | **Done** | Deployed to `us-west-2` with the AgentCore CLI (`agentcore deploy`) and invoked live; the runtime is `READY`. Each session seeds its own SQLite database, so state does not persist across sessions. `docs/deployment-agentcore.md`. |
 | Live hosted-model demo | **Done** | `make smoke` passes live on both the Anthropic API (`claude-opus-5`) and Amazon Bedrock (`us.anthropic.claude-opus-5`), and the opt-in integration tests pass on Bedrock (3 of 3). |
 | Tracing / observability | **Partial** | Strands emits OTEL spans; wiring is documented, exporter not configured. |
-| Builder.aws posts (0.2 each, max 0.6) | **1 of 3 published** | Post 1 live: https://builder.aws.com/content/3JFMPcu0rekYa1Y6LC5qt6vCctv/agents-for-humans-the-115000-token-step-that-was-really-a-schema-mismatch (the slug still carries the original title). Posts 2 and 3 ready in `docs/blog/`; fields and tags in `docs/blog/publishing.md`. Stage Two only. |
+| Builder.aws posts (0.2 each, max 0.6) | **2 of 3 published** | Post 1: https://builder.aws.com/content/3JFMPcu0rekYa1Y6LC5qt6vCctv/agents-for-humans-the-115000-token-step-that-was-really-a-schema-mismatch (the slug still carries its original title). Post 2: https://builder.aws.com/content/3JFSvpuFac2q3oGJzdybB46V9CS/agents-for-humans-eventbridge-scheduler-to-agentcore (published with no tags; needs five added). Post 3 ready in `docs/blog/`; fields and tags in `docs/blog/publishing.md`. Stage Two only. |
 | AWS promotional credits | **Unavailable** | The resources page says all credits for this hackathon have been disbursed. |
 
 ## How judges will actually evaluate this
@@ -63,9 +63,9 @@ authorization. Nothing else is outstanding.
 1. **Publish the demo video** to YouTube or Vimeo, and put the link in row 10.
    The cut is done; only the upload is blocked.
 2. **Submit on Devpost**, from `docs/submission-draft.md`.
-3. **Publish the remaining two Builder.aws posts** from `docs/blog/`. Post 1 is
-   live. Stage Two only, so this can follow the submission, but it must land
-   before the deadline.
+3. **Publish post 3** from `docs/blog/`, and **add the five tags to post 2**,
+   which went out without any. Stage Two only, so this can follow the
+   submission, but it must land before the deadline.
 
 ## Pre-submission verification
 
