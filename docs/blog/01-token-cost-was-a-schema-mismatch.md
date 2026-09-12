@@ -1,4 +1,4 @@
-# Agents for Humans: the 115,000-token step that was really a schema mismatch
+# Agents for Humans: cutting Bedrock agent tokens by 83%
 
 One run of our demo used 169,000 tokens. One step accounted for 115,000 of them: asking the
 agent to propose a policy. That step took 129 seconds and 15 model cycles.

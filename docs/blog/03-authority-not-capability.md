@@ -1,4 +1,4 @@
-# Agents for Humans: the hard part is authority, not capability
+# Agents for Humans: guardrails and human approval gates
 
 An agent that can do the work is a weekend. An agent someone will let act unattended is a
 different project, and most of that project is deciding where the boundary is enforced.

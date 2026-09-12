@@ -1,4 +1,4 @@
-# Agents for Humans: firing a Bedrock AgentCore invocation from EventBridge Scheduler
+# Agents for Humans: EventBridge Scheduler to AgentCore
 
 Our agent is event-driven: a returns dock emits a check-in, and the work starts. Nothing
 polls. But we wanted to show the deployed agent doing real work with nobody watching, so we
