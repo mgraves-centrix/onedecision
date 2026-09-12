@@ -183,7 +183,30 @@ the design working, and tools now run one at a time. All three fixes have regres
 The opt-in integration tests then passed on Bedrock, 3 of 3, after one more fix: a shared
 test fixture had been forcing the offline provider, so those tests had always skipped.
 Finally, the agent was deployed to AgentCore Runtime with the AgentCore CLI and invoked
-live: it investigates a case on Bedrock and returns a decision card from AWS.
+live: it investigates a case on Bedrock and returns a decision card from AWS. It has since
+been redeployed from current main — runtime version 2 — and re-invoked, so the deployed
+code is the code in the repository rather than a snapshot of an earlier week.
+
+**A schema the model had to guess, and what it cost.** One Bedrock run of the demo used
+169,000 tokens, and 115,000 of them were a single step: proposing the policy. The cause was
+not the model. The agent proposes conditions and a spend cap — the action set is assembled
+server-side — but the tool that dry-runs a candidate demanded the *full stored policy*,
+actions and all, and its docstring never said so. So the model discovered a second,
+undocumented schema by trial and error: in one take, 17 of 23 replay calls were schema
+errors, one of them probing with an action literally typed `probe_invalid`. Making the
+tool accept the shape the agent already returns, and saying so in the prompt along with two
+validator rules it kept tripping over, took that step from 15 model cycles and 115K tokens
+to 4 cycles, 2 replays and 19K — measured on the live golden path, not estimated. Bedrock
+prompt caching is now on, which moved most remaining input to cache reads, and the
+dashboard shows cached tokens separately so its own arithmetic still adds up.
+
+**An agent that described the product wrongly.** A decision card on Bedrock told the
+supervisor that approving would "also activate a standing policy". It does not: approval
+records a decision and asks for a candidate, and only a person's separate activation, after
+a passing replay, makes a policy live. The prompt had said actions happen "after a human
+has approved it", which reads as approve-then-activate. That is a product claim appearing
+on screen, so the fix was the prompt plus a check in the take verifier that fails any
+recording whose card makes that claim.
 
 ## Accomplishments
 
@@ -192,10 +215,16 @@ live: it investigates a case on Bedrock and returns a decision card from AWS.
 - **Zero** false automatic actions, **zero** prohibited actions, and **zero** duplicate
   actions across 24 evaluation cases — measured by a harness that counts from the
   database, not asserted.
-- 150 hermetic tests, run against both PostgreSQL and SQLite for 300 total runs in
-  under thirty seconds, including prompt injection inside case notes,
-  audit tampering, model timeouts, tool outages, and duplicate events. CI runs the
-  whole suite, the smoke test, the golden path, and the safety gate on every push.
+- 168 hermetic tests on a clean clone, 341 runs across PostgreSQL and SQLite together in
+  under forty seconds, including prompt injection inside case notes, audit tampering,
+  model timeouts, tool outages, and duplicate events. CI runs the whole suite, the smoke
+  test, the golden path, and the safety gate on every push — and fails the build if the
+  PostgreSQL half silently skipped.
+- **A second domain on the same machinery**: accounts-payable invoice variance, 17 tests,
+  proven on both backends, with no change to the governance code.
+- **Verified from a clean clone**: a fresh `git clone`, no AWS account, no credentials, no
+  `.env` — setup, seed, tests, smoke, demo and eval, then the whole teach-once loop over
+  HTTP, ending with the audit chain intact.
 - The same Strands agent runs live on Claude Opus 5 through both the Anthropic API and
   Amazon Bedrock, deployed on AgentCore Runtime, and fully offline with no credentials.
 - A replay gate that shows a supervisor what a proposed policy *would have done* to their
@@ -208,13 +237,21 @@ that can do the work is a weekend. An agent a manager will actually let act unat
 needs a boundary that is enforced somewhere the model cannot reach, and evidence about
 that boundary that a non-engineer can read in thirty seconds.
 
+The second lesson was cheaper to learn and easier to repeat: when an agent burns tokens,
+look at the seams before the prompt. Every expensive loop in this build came from the model
+reconciling two descriptions of the same thing — a tool that wanted one shape while the
+schema returned another. Fixing the seam was worth six times what fixing the wording was.
+
 ## What's next
 
-PostgreSQL behind the AgentCore deployment so taught policies persist across sessions,
-the opt-in integration tests against the Anthropic API, policy expiry and periodic
-re-replay against newer history, and a second
-exception family, chosen to test whether the policy language generalizes or was quietly
-fitted to the first one.
+PostgreSQL behind the AgentCore deployment, so taught policies persist across sessions
+rather than living in a per-session database. The screens and the agent's tools and prompts
+for the second domain, which today runs through the governance path and its tests rather
+than the UI. Policy expiry with periodic re-replay against newer history, so a boundary
+taught in March has to re-earn its place in September. Event-driven triggers — a queue or
+an event bus feeding the same gated path — now that a scheduled invocation has shown the
+runtime will do the work with nobody watching. And the opt-in integration tests against the
+Anthropic API.
 
 ---
 
@@ -227,6 +264,8 @@ fitted to the first one.
 
 - Repository: https://github.com/mgraves-centrix/onedecision
 - Run locally: `make setup && make seed && make run` — no AWS account, no credentials
+- Architecture: `docs/architecture.png`, and `docs/architecture.html` for the hoverable
+  version, where each component lights up what it connects to and which way data moves
 - **[OWNER]** demo video link
 
 ## AWS Builder ID
