@@ -69,15 +69,14 @@ terminal.
 ## What it does not give you
 
 The universal target is fire-and-forget. Scheduler does not read the response, so the
-decision card that invocation produced went nowhere. If you need the outcome — and for
-anything beyond a demonstration you do — put a small Lambda in between. Not because
-Scheduler cannot reach the service, but because a scheduled sweep needs to *enumerate what
-is unhandled, build a payload per item, and record what came back*. That is code, not target
-configuration.
+decision card that invocation produced went nowhere. If you need the outcome, and for
+anything past a demo you do, put a small Lambda in between. Not because Scheduler cannot
+reach the service, but because a scheduled sweep has to *list what is unhandled, build a
+payload per item, and record what came back*. That is code, not target configuration.
 
 A second limit, specific to how we deploy: each AgentCore session seeds its own SQLite
-database, so a scheduled firing proves the gated path runs unattended. It does not
-accumulate state across firings. We say that plainly rather than let it be inferred.
+database, so a scheduled firing proves the gated path runs unattended. It does not carry
+state from one firing to the next. We say that plainly rather than let it be assumed.
 
 ## Debugging notes that cost us time
 
@@ -92,8 +91,8 @@ signal when `ActionAfterCompletion: DELETE` is set. It fired and cleaned up afte
 
 ## When to use this at all
 
-For event-shaped work, don't schedule — push. An event bus or a queue in front of the same
-gated path gives retries, a dead-letter queue and backpressure. Scheduler is the right tool
+For event-shaped work, don't schedule. Push. An event bus or a queue in front of the same
+gated path gives you retries, a dead-letter queue and backpressure. Scheduler is the right tool
 for time-based work: a nightly sweep, anything stuck in a waiting state past an SLA, a
 retry of failed verifications. Using cron to simulate events is a demo trick, and reviewers
 notice.
