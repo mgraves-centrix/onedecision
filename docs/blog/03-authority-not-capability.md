@@ -56,6 +56,21 @@ refused a human revision that automated *less* than proposed — the system decl
 person be conservative. The floor now applies to proposals and to widening revisions only.
 Zero false automatic actions is never waived.
 
+**A gate nobody can sit through is not a gate.** Approving a decision blocks on a model
+call for forty seconds. The page showed nothing for that whole time, which on a phone reads
+as a hung app — and a supervisor who thinks the tool is broken does not trust what it tells
+them afterwards. The fix was not making it faster. It was reporting what the run was
+actually doing: each phase and each tool call, with real timings, as the server reached
+them. The work is one synchronous transaction, so its audit rows are not readable by another
+request until it commits; the panel is fed by a small in-memory channel beside it that
+nothing which decides or records ever reads.
+
+One detail cost us an afternoon and generalizes past this project: a browser suspends timers
+on a document it is navigating away from. A page that submits a form normally can show a
+waiting panel but can never update it — ours sat on "Starting" for the full fifty seconds.
+Posting the form with `fetch` and navigating afterwards keeps the document alive, which is
+what makes the live steps possible at all.
+
 **The agent will describe your product, so check what it says.** On Bedrock, a decision card
 told the supervisor that approving would "also activate a standing policy". It does not.
 The prompt had said actions happen "after a human has approved it", which reads as
@@ -65,11 +80,13 @@ that claim.
 
 ## Is it just a returns app?
 
-Fair question, and one worth answering with code. About 60% of the application is
-domain-neutral: the policy language, the engine, the replay and activation gates, idempotent
-execution, read-back verification, the audit log. What knows about cameras is one domain
-pack — facts and how they're derived, guardrails, a fixed action set, an executor and
-verifier, a labeled corpus.
+Fair question, and one worth answering with code. Counting Python, the domain pack and its
+adapters are 837 lines against 5,415 of domain-neutral machinery: the policy language, the
+engine, the replay and activation gates, idempotent execution, read-back verification, the
+audit log. What knows about cameras is one pack — facts and how they're derived, guardrails,
+a fixed action set, an executor and verifier, a labeled corpus. (The web templates still
+speak returns; that copy is not in the count and would have to follow a second domain into
+the UI.)
 
 So we shipped a second pack: accounts-payable invoice variance. Different facts, different
 guardrails, a different ledger, different actions. It reuses every guarantee without

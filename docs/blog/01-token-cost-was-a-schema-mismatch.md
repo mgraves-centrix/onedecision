@@ -26,7 +26,7 @@ Twenty-four tool calls in one step, when the job needs roughly one. So we read t
 ```
 
 That last one is the tell. The model was probing with an action type named
-`probe_invalid` — the behaviour of something trying to reverse-engineer a schema by
+`probe_invalid` — the behavior of something trying to reverse-engineer a schema by
 watching what the validator rejects.
 
 ## The actual cause
@@ -40,7 +40,7 @@ tool. And that tool validated against the **full stored policy**: actions requir
 fields rejected. Its docstring said only "the candidate policy as a JSON object".
 
 So the system asked the model to work in one shape and handed it a tool that demanded
-another, without describing either. Seventeen of twenty-three replay calls in one take were
+another, without describing either. Seventeen of the twenty-four replay calls in one take were
 schema errors. Every retry resent a growing conversation, which is where 104,000 input
 tokens came from.
 
@@ -78,12 +78,52 @@ That broke a number on our own dashboard. The tile read "62.1K" over a caption o
 `inputTokens`. The figures no longer added up, and a reader would reasonably conclude the
 dashboard was wrong. It now shows "32 in · 52.8K cached · 9,316 out", which reconciles.
 
+## What was left when the seam was fixed
+
+With the loop down to four cycles, what remains is not a loop at all. We timed the three
+model calls on a single case:
+
+```
+investigation    15.2s   1,201 output tokens   3 cycles
+decision_card    27.9s   2,222 output tokens   1 cycle
+policy_proposal  22.5s   1,828 output tokens   2 cycles
+```
+
+The decision card is one uninterrupted generation: no tool calls, nothing to wait on but the
+model writing. Across all three, Claude Opus 5 produced about **79 output tokens per
+second**, and we were asking for roughly 5,600 of them.
+
+The obvious next move is a faster model, so we measured instead of assuming. Same case, same
+prompts, on Claude Sonnet 5:
+
+| | Opus 5 | Sonnet 5 |
+|---|---|---|
+| Output tokens per second | 79.4 | 83.5 |
+| Investigation | 15.2 s | 15.8 s |
+| Decision card | 27.9 s | **14.6 s** |
+| Policy proposal | 22.5 s | **33.3 s** |
+| Whole loop | ~65.6 s | 63.7 s |
+
+Two models, five percent apart on generation rate, and two seconds apart across the whole
+loop. Every difference in the middle rows is *how much each model chose to write*, not how
+fast it writes. Sonnet's card was quicker because it wrote half as much card; its policy
+proposal was eleven seconds slower because it took an extra cycle and produced 60% more
+output. It arrived at the same policy — the same eight conditions, replay passed — by a
+longer route.
+
+So "switch to the smaller model" is not a latency lever here. Once the seams are right, the
+levers left are writing less or accepting the time. We accepted the time: the card's
+proposed boundaries are 44% of its output and the most useful thing on the screen.
+
 ## What generalizes
 
 When an agent burns tokens, look at the seams before the prompt. Every expensive loop we
 found came from the model reconciling two descriptions of the same thing. A tool
 description that disagrees with your schema is not a documentation problem — it is a bill,
 payable per retry, in tokens and in latency.
+
+Measure before you swap models. "Use the smaller one" is the reflex when an agent feels
+slow. On this workload it would have bought two seconds and a thinner decision card.
 
 And log per-invocation usage from the start. We could answer "where did 169,000 tokens go?"
 in about a minute because the product already recorded cycles, tool calls and tokens per
