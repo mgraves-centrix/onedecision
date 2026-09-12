@@ -13,8 +13,9 @@
   "use strict";
 
   var POLL_MS = 600;
+  var TICK_MS = 100;
 
-  if (!window.fetch || !window.FormData || !window.URLSearchParams) return;
+  if (!window.fetch || !window.FormData || !window.URLSearchParams || !window.URL) return;
 
   function el(tag, cls, text) {
     var node = document.createElement(tag);
@@ -61,6 +62,26 @@
     });
   }
 
+  function go(next) {
+    var url = new URL(next, window.location.href);
+    if (url.pathname === window.location.pathname && url.search === window.location.search) {
+      // Same document. Assigning a URL that differs only by its fragment does
+      // not reload, and the page behind this panel is now out of date.
+      if (url.hash) window.location.hash = url.hash;
+      window.location.reload();
+      return;
+    }
+    window.location.assign(url.href);
+  }
+
+  function finished(view, steps, elapsed) {
+    render(view.list, steps, elapsed, true);
+    var item = el("li", "done");
+    item.appendChild(el("span", "waiting-step-text", "Done"));
+    item.appendChild(el("span", "waiting-step-at"));
+    view.list.appendChild(item);
+  }
+
   function failed(view, message) {
     view.list.innerHTML = "";
     var item = el("li", "failed");
@@ -90,6 +111,15 @@
     );
     var key = form.getAttribute("data-wait");
     var settled = false;
+    var started = Date.now();
+    var steps = [];
+
+    // The clock belongs to the client. Server elapsed arrives only with a poll
+    // and stops when the run does, so on its own the panel looks stuck.
+    var ticking = setInterval(function () {
+      if (settled || !steps.length) return;
+      render(view.list, steps, (Date.now() - started) / 1000, false);
+    }, TICK_MS);
 
     function poll() {
       if (settled || !key) return;
@@ -97,7 +127,8 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (data) {
           if (settled || !data || !data.steps || !data.steps.length) return;
-          render(view.list, data.steps, data.elapsed, false);
+          steps = data.steps;
+          render(view.list, steps, (Date.now() - started) / 1000, false);
         })
         .catch(function () { /* the panel is cosmetic; a failed poll changes nothing */ })
         .then(function () { if (!settled) setTimeout(poll, POLL_MS); });
@@ -107,24 +138,30 @@
     fetch(form.action, {
       method: "POST",
       body: new URLSearchParams(new FormData(form)),
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        // Asks for the destination instead of the page, so it is loaded once.
+        "X-OneDecision-Wait": "1",
+        Accept: "application/json",
+      },
       credentials: "same-origin",
     })
       .then(function (response) {
-        settled = true;
-        if (!response.ok) {
-          failed(view, "That did not go through (" + response.status + ").");
-          return;
-        }
-        // The POST answers 303 and fetch has already followed it, so this is
-        // the page the server wants shown. Fetch drops the fragment from a
-        // followed redirect, so the form names the section to land on.
-        var anchor = form.getAttribute("data-wait-anchor");
-        window.location.replace(response.url + (anchor ? "#" + anchor : ""));
+        if (!response.ok) return Promise.reject(new Error(String(response.status)));
+        return response.json();
       })
-      .catch(function () {
+      .then(function (body) {
         settled = true;
-        failed(view, "The connection dropped before the answer came back.");
+        clearInterval(ticking);
+        finished(view, steps, (Date.now() - started) / 1000);
+        go(body.next);
+      })
+      .catch(function (err) {
+        settled = true;
+        clearInterval(ticking);
+        failed(view, /^[45]\d\d$/.test(err && err.message)
+          ? "That did not go through (" + err.message + ")."
+          : "The connection dropped before the answer came back.");
       });
   });
 })();

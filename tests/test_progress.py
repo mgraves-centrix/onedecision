@@ -162,3 +162,48 @@ def test_approving_lands_on_what_it_produced(client):
 
     # And the page has that section to land on.
     assert 'id="candidate"' in client.get(f"/exceptions/{exception_id}").text
+
+
+# ----------------------------------------- what the waiting panel gets back
+
+
+def test_the_panel_is_told_where_to_go_instead_of_being_sent_there(client):
+    """It already has a page open; following a redirect would load twice."""
+    r = client.post("/events/CASE-2001", headers={"X-OneDecision-Wait": "1"},
+                    follow_redirects=False)
+    assert r.status_code == 200
+    exception_id = r.json()["next"].rsplit("/", 1)[-1]
+
+    approved = client.post(f"/exceptions/{exception_id}/approve",
+                           headers={"X-OneDecision-Wait": "1"}, follow_redirects=False)
+    assert approved.status_code == 200
+    assert approved.json() == {"next": f"/exceptions/{exception_id}#candidate"}
+
+
+def test_a_plain_browser_still_gets_its_redirect(client):
+    r = client.post("/events/CASE-2001", follow_redirects=False)
+    assert r.status_code == 303
+    exception_id = r.headers["location"].rsplit("/", 1)[-1]
+
+    approved = client.post(f"/exceptions/{exception_id}/approve", follow_redirects=False)
+    assert approved.status_code == 303
+    assert approved.headers["location"] == f"/exceptions/{exception_id}#candidate"
+
+
+def test_a_case_that_resolves_itself_sends_the_panel_back_to_the_inbox(client):
+    # CASE-2002 matches an activated policy, so it never reaches a decision.
+    r = client.post("/events/CASE-2001", follow_redirects=False)
+    exception_id = r.headers["location"].rsplit("/", 1)[-1]
+    client.post(f"/exceptions/{exception_id}/approve", follow_redirects=False)
+    policy_id = next(iter(_candidate_ids(client)))
+    client.post(f"/policies/{policy_id}/activate",
+                data={"approval_token": "test-approval-token"}, follow_redirects=False)
+
+    r = client.post("/events/CASE-2002", headers={"X-OneDecision-Wait": "1"},
+                    follow_redirects=False)
+    assert r.json() == {"next": "/"}
+
+
+def _candidate_ids(client):
+    import re
+    return re.findall(r"pol_[0-9a-f]+", client.get("/policies").text)

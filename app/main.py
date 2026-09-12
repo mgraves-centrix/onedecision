@@ -14,7 +14,7 @@ from typing import Any
 from contextlib import asynccontextmanager
 
 from fastapi import Form, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi import FastAPI
@@ -50,6 +50,9 @@ from app.policy.store import ActivationDenied
 
 BASE_DIR = Path(__file__).resolve().parent
 OPERATOR = "dana.r@northgate-optics.example"
+
+# The waiting panel sets this on the POST it makes on the form's behalf.
+WAIT_HEADER = "x-onedecision-wait"
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -162,8 +165,21 @@ def inbox(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "inbox.html", context)
 
 
+def _go(request: Request, url: str) -> Response:
+    """Where to go once a slow POST is done.
+
+    A browser posting the form gets the redirect it expects. The waiting panel
+    posts on the form's behalf and gets the destination as JSON instead: it
+    already has the page open, and following a redirect there would fetch the
+    answer once to throw it away and again to show it.
+    """
+    if request.headers.get(WAIT_HEADER) == "1":
+        return JSONResponse({"next": url})
+    return RedirectResponse(url, status_code=303)
+
+
 @app.post("/events/{case_id}")
-def ingest_event(case_id: str):
+def ingest_event(request: Request, case_id: str):
     """Simulate a returns-dock check-in event arriving for a case."""
     progress.start(case_id, "Handling the check-in", "Check-in received at the dock")
     try:
@@ -171,8 +187,8 @@ def ingest_event(case_id: str):
     finally:
         progress.finish(case_id)
     if result.status is ExceptionStatus.WAITING_DECISION:
-        return RedirectResponse(f"/exceptions/{result.exception_id}", status_code=303)
-    return RedirectResponse("/", status_code=303)
+        return _go(request, f"/exceptions/{result.exception_id}")
+    return _go(request, "/")
 
 
 # ------------------------------------------------- 2. decision and replay
@@ -233,7 +249,7 @@ def exception_detail(request: Request, exception_id: str) -> HTMLResponse:
 
 
 @app.post("/exceptions/{exception_id}/approve")
-def approve(exception_id: str):
+def approve(request: Request, exception_id: str):
     progress.start(exception_id, "Turning your decision into a policy", "Recording your decision")
     try:
         with db.session() as conn:
@@ -244,7 +260,7 @@ def approve(exception_id: str):
     finally:
         progress.finish(exception_id)
     # Straight to what the approval produced, rather than the top of a long page.
-    return RedirectResponse(f"/exceptions/{exception_id}#candidate", status_code=303)
+    return _go(request, f"/exceptions/{exception_id}#candidate")
 
 
 @app.get("/progress/{key}")
