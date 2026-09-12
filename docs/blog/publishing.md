@@ -69,14 +69,14 @@ filling in post 3's URL.
 
 > *Three posts on OneDecision, a Strands Agents project built for the Agents for
 > Humans hackathon: this one, [EventBridge Scheduler to AgentCore](https://builder.aws.com/content/3JFSvpuFac2q3oGJzdybB46V9CS/agents-for-humans-eventbridge-scheduler-to-agentcore),
-> and [guardrails and human approval gates](POST-3-URL). Code:
+> and [guardrails and human approval gates](https://builder.aws.com/content/3JFVF2VqkKqTA9DZkzC9OzvbVQT/agents-for-humans-guardrails-and-human-approval-gates). Code:
 > https://github.com/mgraves-centrix/onedecision*
 
 **Post 2's sign-off becomes:**
 
 > *Three posts on OneDecision, a Strands Agents project built for the Agents for
 > Humans hackathon: [cutting a Bedrock agent's tokens by 83%](https://builder.aws.com/content/3JFMPcu0rekYa1Y6LC5qt6vCctv/agents-for-humans-the-115000-token-step-that-was-really-a-schema-mismatch),
-> this one, and [guardrails and human approval gates](POST-3-URL). Code:
+> this one, and [guardrails and human approval gates](https://builder.aws.com/content/3JFVF2VqkKqTA9DZkzC9OzvbVQT/agents-for-humans-guardrails-and-human-approval-gates). Code:
 > https://github.com/mgraves-centrix/onedecision*
 
 The point is post 2. Someone arrives there from searching an error message, and
