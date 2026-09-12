@@ -24,7 +24,7 @@ The agent may propose. It may never act. Not as a policy but as a shape:
   action set is assembled server-side. "The model invented an action" is a missing field,
   not a check that might have a bug.
 - **Facts come from the systems, not the model.** The agent's report is checked against
-  facts worked out separately; a disagreement escalates. A made-up number, or a prompt
+  facts worked out separately; a disagreement escalates. A hallucination, or a prompt
   injection in an inspector's note, can only make the system more careful.
 - **Guardrails outrank policies** and run before any policy is consulted.
 
