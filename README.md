@@ -1,6 +1,6 @@
 # OneDecision
 
-**Teach the agent once; it safely handles the next hundred.**
+**Teach the agent once; it safely handles the next hundred decisions.**
 
 Built for **Agents for Humans** · Professional Agents track · Strands Agents on Claude Opus 5, deployed to Amazon Bedrock AgentCore Runtime
 

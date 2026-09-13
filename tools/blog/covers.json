@@ -2,7 +2,7 @@
   "series": {
     "eyebrow": "Agents for Humans \u00b7 Strands Agents on Amazon Bedrock",
     "title": "Teach the agent once.",
-    "title_quiet": "It safely handles<br>the next hundred.",
+    "title_quiet": "It safely handles the next<br>hundred decisions.",
     "sub": "One supervisor decision becomes a policy the system can apply, but only after deterministic code proves against real history what it would have done.",
     "layout": "band",
     "hero": "replay.png",

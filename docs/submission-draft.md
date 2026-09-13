@@ -11,7 +11,7 @@
 
 ## Elevator pitch (200 characters)
 
-> Teach the agent once; it safely handles the next hundred. OneDecision turns one
+> Teach the agent once; it safely handles the next hundred decisions. OneDecision turns one
 > approved human judgment call into a replay-tested, human-activated policy, and
 > escalates everything outside it.
 

@@ -1,6 +1,6 @@
 # OneDecision — Scope Lock
 
-**Tagline:** Teach the agent once; it safely handles the next hundred.
+**Tagline:** Teach the agent once; it safely handles the next hundred decisions.
 **Track:** Professional Agents · **Hackathon:** Agents for Humans
 **Scope frozen:** 2026-09-04
 

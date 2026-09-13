@@ -175,7 +175,7 @@ Intact**.]
 > correct escalation, **zero false automatic actions, zero prohibited actions, zero
 > duplicates**.
 >
-> Teach the agent once; it safely handles the next hundred.
+> Teach the agent once; it safely handles the next hundred decisions.
 
 **[END — 4:45]**
 
