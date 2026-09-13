@@ -8,7 +8,7 @@ Bedrock run whose case is still waiting on a decision, so the card, the evidence
 and the buttons are the real thing. Images 6 to 13 come from the finished take
 that the demo video was recorded against.
 
-Upload in this order. Devpost uses the first image as the project's thumbnail in
+Upload in this order. Devpost captions are limited to 140 characters; every caption below fits. Devpost uses the first image as the project's thumbnail in
 hackathon listings, so `00-cover.png` goes first: a dense screenshot is unreadable at that size. Captions are suggestions; Devpost takes one per image.
 
 | # | File | Caption |
@@ -19,7 +19,7 @@ hackathon listings, so `00-cover.png` goes first: a dense screenshot is unreadab
 | 3 | `03-evidence.png` | Every line of evidence names the tool that produced it. Nothing on this card is unattributed. |
 | 4 | `04-boundaries.png` | The agent proposes the boundaries the answer should live inside, and says plainly what it could not verify. |
 | 5 | `05-the-decision.png` | The only two buttons. Approving records the decision and asks for a policy; it activates nothing. |
-| 6 | `06-candidate-policy.png` | The proposed policy: conditions from an allowlist of nine fields, an action set fixed by the system, and exactly what changes against the active version. |
+| 6 | `06-candidate-policy.png` | The proposed policy: nine allowlisted fields, an action set fixed by the system, and exactly what changes against the active version. |
 | 8 | `08-replay-gate.png` | The gate: 24 labeled historical cases replayed. Eleven automated, thirteen escalated, zero wrong. One wrong blocks activation. |
 | 9 | `09-auto-resolved.png` | The next case, handled without a person. Work order raised, disposition set, both writes read back and verified. |
 | 10 | `10-refusal.png` | Same kit, same cheap accessory, but the serial does not match. A hard guardrail runs before any policy is consulted. |
