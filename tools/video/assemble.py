@@ -49,6 +49,32 @@ def opens_on_the_sync_flash(path: Path) -> bool:
     return r > 180 and g < 80 and b > 180
 
 
+def normalize_loudness(src: Path, dst: Path, target: float = -14.0) -> None:
+    """Bring the whole video to YouTube's loudness target, in two passes.
+
+    YouTube plays everything at about -14 LUFS and only ever turns loud uploads
+    down. A voiceover mixed at -24 plays ten decibels quieter than the video a
+    judge watched just before it. Measuring first lets the second pass reach the
+    target without clipping; the picture is copied, not re-encoded.
+    """
+    import json as _json
+    import re
+
+    probe = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-nostats", "-i", str(src), "-af",
+         f"loudnorm=I={target}:TP=-1.0:LRA=11:print_format=json", "-f", "null", "-"],
+        check=True, capture_output=True, text=True,
+    ).stderr
+    m = _json.loads(re.search(r"\{[^{}]*\}", probe[probe.rfind("[Parsed_loudnorm"):], re.S).group(0))
+    run("ffmpeg", "-y", "-loglevel", "error", "-i", str(src), "-af",
+        f"loudnorm=I={target}:TP=-1.0:LRA=11:measured_I={m['input_i']}:"
+        f"measured_TP={m['input_tp']}:measured_LRA={m['input_lra']}:"
+        f"measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true,"
+        "aresample=48000",
+        "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
+        "-movflags", "+faststart", str(dst))
+
+
 def duration(path: Path) -> float:
     return float(run("ffprobe", "-v", "error", "-show_entries", "format=duration",
                      "-of", "default=nw=1:nk=1", str(path)).strip())
@@ -103,8 +129,10 @@ def main() -> None:
 
     listing = WORK / "all.txt"
     listing.write_text("".join(f"file '{p}'\n" for p in beat_files))
+    joined_all = WORK / "all-joined.mp4"
     run("ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(listing),
-        "-c", "copy", "-movflags", "+faststart", str(MP4))
+        "-c", "copy", str(joined_all))
+    normalize_loudness(joined_all, MP4)
     print(f"wrote {MP4.name}: {duration(MP4):.1f} s, {MP4.stat().st_size / 1e6:.1f} MB")
     if opens_on_the_sync_flash(MP4):
         sys.exit("the video opens on the magenta sync flash; push the first beat's "
