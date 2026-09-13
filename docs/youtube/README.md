@@ -108,6 +108,12 @@ play there with embedding off.
 
 **Comments:** On. **Show how many viewers like this video:** On.
 
+**Shorts remixing:** Allow video and audio remixing (the default). Every remix links back
+to the original, so it is free discovery, and it does not stop anyone doing anything a
+screen recording could not already do. The only reason to turn it off would be to keep
+the synthetic narration from being reused out of context, and for a product demo that risk
+is small.
+
 ## Video elements
 
 **Subtitles:** Add, then "Upload file", "With timing", and choose `captions.en.srt`.
