@@ -1,7 +1,7 @@
 [
   {
     "id": "problem",
-    "text": "This is OneDecision, an agent built with Strands Agents, running on Claude Opus 5 through Amazon Bedrock. Dana runs returns for a camera rental company. Twenty times a week, a kit comes back missing something small, and someone asks her what to do. She answers in thirty seconds, and she has never had an hour to write it down. Rule-based automation can't help, because nobody wrote the rule. Everything you'll see runs on synthetic data."
+    "text": "This is OneDecision, an agent built with Strands Agents, running on Claude Opus 5 through Amazon Bedrock. It is for anyone who runs operations, where the same call lands on the same desk every week. Dana runs returns for a camera rental company. Twenty times a week, a kit comes back missing something small, and someone asks her what to do. She answers in thirty seconds, and she has never had an hour to write it down. Rule-based automation can't help, because nobody wrote the rule. Everything you'll see runs on synthetic data."
   },
   {
     "id": "arrive",
@@ -37,6 +37,6 @@
   },
   {
     "id": "close",
-    "text": "Every event, tool call, approval, and action lands in one log. It only ever appends, each entry is hashed onto the one before it, and the database refuses to edit it. Across twenty-four evaluation cases, one hundred percent correct escalation, and zero false automatic actions. Teach the agent once. It safely handles the next hundred."
+    "text": "Every event, tool call, approval, and action lands in one log. It only ever appends, each entry is hashed onto the one before it, and the database refuses to edit it. Across twenty-four evaluation cases, one hundred percent correct escalation, and zero false automatic actions. An agent that can act is easy. An agent someone will let act unattended is the one that ships. Teach the agent once. It safely handles the next hundred."
   }
 ]
