@@ -17,8 +17,8 @@ Rule-based automation handles the cases someone already wrote down. Everything e
 becomes an interruption.
 
 A returns supervisor at a small electronics reseller gets pinged twenty times a week
-with variations of the same question — *a kit came back missing its lens cap, what do I
-do?* — answers each one in thirty seconds, and never gets the hour it would take to
+with variations of the same question. *A kit came back missing its lens cap, what do I
+do?* She answers each one in thirty seconds, and never gets the hour it would take to
 turn that judgment into a written policy, let alone into automation. The knowledge stays
 in their head. The interruptions keep coming.
 
@@ -28,24 +28,29 @@ It closes that loop, once:
 
 1. An unfamiliar exception arrives **as an event**, not a chat prompt.
 2. A Strands agent investigates it with tools and reconciles the evidence.
-3. No approved policy covers it, so the agent produces **one compact decision card** —
+3. No approved policy covers it, so the agent produces **one compact decision card**:
    evidence, recommendation, what it is unsure about, and the boundaries it thinks the
    decision should live inside.
 4. The supervisor clicks **Approve and Teach**.
 5. The agent proposes a **tightly bounded, schema-validated policy**. It is inert.
 6. Deterministic code **replays** the candidate against 24 labeled historical cases.
 7. A **policy diff** shows exactly what changes, and flags anything that gets
-   *wider*. The supervisor can **revise** the boundary — tighten the spend cap,
-   raise the confidence floor, restrict it to one kit category — which creates a
+   *wider*. The supervisor can **revise** the boundary (tighten the spend cap,
+   raise the confidence floor, restrict it to one kit category), which creates a
    new candidate that is replayed again from scratch.
 8. The supervisor **explicitly activates** the version.
-8. The next matching case resolves automatically — work order raised, disposition set,
+9. The next matching case resolves automatically: work order raised, disposition set,
    writes verified, exception closed against the policy version.
-9. A risky near-match still escalates.
-10. Every step is in an append-only, hash-chained audit log.
+10. A risky near-match still escalates.
+11. Every step is in an append-only, hash-chained audit log.
+
+Every model call on that path takes tens of seconds, so the page reports what the run is
+doing while it runs: each phase and each tool call, with real timings, as the server
+reaches them. A forty-second wait that shows nothing reads as a hung app, and a
+supervisor who thinks the tool is broken will not trust what it says next.
 
 This is not an agent that writes SOPs. It converts recurring human judgment into
-governed, testable automation — and it can prove what that automation would have done
+governed, testable automation, and it can prove what that automation would have done
 before anyone trusts it.
 
 ---
@@ -74,7 +79,7 @@ replace-me-local-demo-token
 ```
 
 It is a placeholder, not a secret, and the activation screen prints it for you.
-Set `ONEDECISION_APPROVAL_TOKEN` to replace it — the on-screen notice disappears
+Set `ONEDECISION_APPROVAL_TOKEN` to replace it, and the on-screen notice disappears
 when you do.
 
 No account, no sign-up, no cloud, no credentials, no spend: the whole product
@@ -169,10 +174,10 @@ The separation between *reasoning* and *acting* is the product.
 | --- | --- | --- |
 | 1 | The model may propose. It may **never** activate. | `app/policy/store.py::activate` |
 | 2 | Deterministic code decides, not the model. Facts are re-derived from the systems and the agent's report is reconciled against them; a disagreement escalates. | `app/facts.py` |
-| 3 | Policies are **data**, not code — allowlisted fields, operators, value types, thresholds and actions. | `app/policy/schema.py` |
+| 3 | Policies are **data**, not code: allowlisted fields, operators, value types, thresholds and actions. | `app/policy/schema.py` |
 | 4 | No generated Python, SQL, shell, or natural-language conditions. No `eval` anywhere. | `app/policy/engine.py` |
 | 5 | Hard invariants outrank policies. A policy can only ever *narrow* automation. | `app/policy/guardrails.py` |
-| 6 | Replay gates activation: one false automatic action blocks it outright — for a human revision exactly as for an agent proposal. | `app/policy/replay.py` |
+| 6 | Replay gates activation: one false automatic action blocks it outright, for a human revision exactly as for an agent proposal. | `app/policy/replay.py` |
 | 6b | A revision can tighten or loosen a boundary within the guardrails, but has no way to remove a safety condition or add an action. | `app/policy/proposal.py` |
 | 7 | Default to escalation on anything ambiguous. | throughout |
 | 8 | Every state-changing action carries an idempotency key. | `app/adapters/warehouse.py` |
@@ -195,19 +200,19 @@ any disagreement between the agent's report and the source systems.
 
 ## Measured results
 
-From `make eval` — counted from the database after a real run, not estimated. Full
+From `make eval`, counted from the database after a real run, not estimated. Full
 report: [docs/evaluation-results.md](docs/evaluation-results.md).
 
 | Metric | Result | Target |
 | --- | --- | --- |
-| Cases evaluated | 24 fixed synthetic cases | — |
+| Cases evaluated | 24 fixed synthetic cases | n/a |
 | Task-completion rate | 100.0% | high |
 | Correct auto-resolution rate | 100.0% | high |
 | Correct-escalation rate | 100.0% | 100% |
 | **False automatic actions** | **0** | **0** |
 | **Prohibited actions** | **0** | **0** |
 | **Duplicate actions** | **0** | **0** |
-| Average end-to-end workflow | ~15 ms | — |
+| Average end-to-end workflow | ~15 ms | n/a |
 
 The number that matters is **false automatic actions**: cases the system acted on by
 itself that a person should have seen. Zero is a design constraint, not an average.
@@ -217,8 +222,10 @@ itself that a person should have seen. Zero is a design constraint, not an avera
 ## Beyond returns
 
 The subject is returns because a demo needs one. The machinery underneath does not know
-what a camera is: roughly 60% of `app/` is domain-neutral, and everything that *is*
-domain-specific lives in one pack under `app/domains/`.
+what a camera is. Counting Python, the domain pack and its adapters are 837 lines against
+5,415 that know nothing about cameras, and everything domain-specific lives in one pack
+under `app/domains/`. (The web templates still speak returns; that copy is not in the
+count, and a second domain in the UI would have to follow it.)
 
 A pack supplies six things and nothing else:
 
@@ -268,7 +275,7 @@ the interface is UI work on top of the seam, not another rewrite of the machiner
 
 **Where this design refuses to go:** a domain has to reduce its judgment to allowlisted
 fields. Where the decision genuinely turns on free-text nuance that cannot be derived
-deterministically, there is nothing to replay and nothing to bound — and this system will
+deterministically, there is nothing to replay and nothing to bound, so this system will
 not automate it. That is a constraint by construction, not an omission.
 
 ---
@@ -306,9 +313,12 @@ app/
   orchestrator.py  the golden path; the only code that acts
   facts.py         deterministic facts + reconciliation
   audit.py         append-only, hash-chained
+  progress.py      in-memory progress for the waiting panel; never read by anything
+                   that decides, acts, or records
   evaluation.py    the measurement harness
   main.py          FastAPI: inbox / decision+replay / policies+audit / dashboard
   dashboard.py     history and usage, counted from case records and the audit log
+  static/          app.css and waiting.js (the panel shown during a model call)
   agentcore.py     AgentCore Runtime handler, deployed through agentcore_main.py
   db/
     postgres_backend.py  deployment target: pooling, advisory lock, NUMERIC
@@ -319,7 +329,10 @@ tests/             hermetic; every test runs on both backends
 docs/              scope, architecture, database, evaluation, demo, provenance
 agentcore/         AgentCore CLI project: runtime config and CDK app
 agentcore_main.py  AgentCore Runtime entrypoint (imports app.agentcore)
-tools/video/       draft demo video: a live take in Chrome, Polly voiceover, assembly
+tools/video/       demo video: a live take in Chrome, Polly voiceover, assembly
+tools/diagram/     renders docs/architecture.{svg,png,html} from architecture.json
+tools/blog/        covers for the write-ups, built from real product screenshots
+tools/gallery/     the submission gallery, screenshots of the running app
 ```
 
 ## Database
@@ -327,7 +340,7 @@ tools/video/       draft demo video: a live take in Chrome, Polly voiceover, ass
 **PostgreSQL is the deployment target. SQLite is a labeled zero-setup demo
 backend**, kept so the product runs from a fresh clone with no server. One
 environment variable switches between them, and **the entire suite runs against
-both** — so they cannot drift.
+both**, so they cannot drift.
 
 Porting off SQLite surfaced three defects that were only invisible because
 SQLite has a single writer:
@@ -336,7 +349,7 @@ SQLite has a single writer:
    race with concurrent writers. Fixed with a transaction-scoped advisory lock,
    plus `UNIQUE(prev_hash)` as a backstop. Remove the lock and
    `test_concurrent_audit_appends_keep_the_chain_intact` fails immediately with
-   a duplicate-key violation on the forked head — the test has teeth.
+   a duplicate-key violation on the forked head. The test has teeth.
 2. **Event de-duplication was select-then-insert.** Two copies of one warehouse
    event both passed the check. Now `ON CONFLICT (event_key) DO NOTHING
    RETURNING`, so the database decides the race and the loser is a no-op.
@@ -348,12 +361,12 @@ Full write-up, including what still stands between this and production:
 
 ## Configuration
 
-Copy `.env.example` to `.env` and edit it — the app reads it on startup. Everything has
+Copy `.env.example` to `.env` and edit it. The app reads it on startup. Everything has
 a safe local default; nothing is required to run the demo.
 
 A real environment variable always beats the file, so a deployment cannot be overridden
 by a stray `.env` on disk. `.env` is gitignored and a test asserts it stays that way.
-**Never commit a real `.env`** — it is where an API key goes.
+**Never commit a real `.env`**. It is where an API key goes.
 
 ## Tests
 
@@ -370,10 +383,24 @@ audit behavior and tamper detection, malformed and incomplete evidence, prompt
 injection inside case notes, model timeout and tool failure, unknown case → decision
 card, approval → candidate without activation, failed replay blocking activation,
 explicit activation after successful replay, later matching case completing
-automatically, and a risky near-match escalating — plus, on PostgreSQL,
+automatically, and a risky near-match escalating, plus, on PostgreSQL,
 concurrent audit appends, concurrent duplicate events, and concurrent
 idempotency-key collisions.
 
+## Write-ups
+
+Three posts on building this, published on AWS Builder Center as the "Building
+OneDecision" series:
+
+1. [Cutting Bedrock agent tokens by 83%](https://builder.aws.com/content/3JFMPcu0rekYa1Y6LC5qt6vCctv/agents-for-humans-the-115000-token-step-that-was-really-a-schema-mismatch):
+   115,000 tokens went to one step, and the cause was a tool schema that disagreed with
+   the prompt.
+2. [EventBridge Scheduler to AgentCore](https://builder.aws.com/content/3JFSvpuFac2q3oGJzdybB46V9CS/agents-for-humans-eventbridge-scheduler-to-agentcore):
+   invoking the deployed runtime on a schedule with no Lambda in between, and why the
+   payload is raw JSON even though the CLI demands base64.
+3. [Guardrails and human approval gates](https://builder.aws.com/content/3JFVF2VqkKqTA9DZkzC9OzvbVQT/agents-for-humans-guardrails-and-human-approval-gates):
+   where the boundary is enforced, and why that is the hard part.
+
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+Apache-2.0. See [LICENSE](LICENSE). GitHub detects it, so it shows in the About sidebar.
