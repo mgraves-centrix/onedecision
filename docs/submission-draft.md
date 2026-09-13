@@ -69,7 +69,7 @@ phase and tool call, with real timings, instead of a page that looks frozen.
 
 ## How we built it
 
-**Python 3.11 · Strands Agents SDK · FastAPI · Pydantic · PostgreSQL, with SQLite as the
+**Python 3.11+ · Strands Agents SDK · FastAPI · Pydantic · PostgreSQL, with SQLite as the
 zero-setup demo backend · server-rendered HTML.** One process, no build step, no client
 framework.
 
