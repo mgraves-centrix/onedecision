@@ -1,6 +1,6 @@
 # Devpost gallery
 
-Fourteen images, 2880x1920 (3:2), each well under Devpost's 5 MB limit. Rebuild
+Fifteen images, 2880x1920 (3:2), each well under Devpost's 5 MB limit. Rebuild
 with `python tools/gallery/build_gallery.py`.
 
 Every shot is the running app, not a mockup. Images 1 to 5 come from a live
@@ -8,10 +8,12 @@ Bedrock run whose case is still waiting on a decision, so the card, the evidence
 and the buttons are the real thing. Images 6 to 13 come from the finished take
 that the demo video was recorded against.
 
-Upload in this order. Captions are suggestions; Devpost takes one per image.
+Upload in this order. Devpost uses the first image as the project's thumbnail in
+hackathon listings, so `00-cover.png` goes first: a dense screenshot is unreadable at that size. Captions are suggestions; Devpost takes one per image.
 
 | # | File | Caption |
 | --- | --- | --- |
+| 0 | `00-cover.png` | Teach it once. It handles the next hundred decisions, and zero wrong automatic actions on 24 past cases before a person switched it on. |
 | 1 | `01-inbox.png` | Six demo cases at the returns dock. Cases an approved policy covers resolve themselves and never appear as work. |
 | 2 | `02-decision-card.png` | One decision card: what happened, what it costs, and what the agent recommends. Written to be read in thirty seconds. |
 | 3 | `03-evidence.png` | Every line of evidence names the tool that produced it. Nothing on this card is unattributed. |
