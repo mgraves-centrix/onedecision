@@ -64,6 +64,9 @@ came back missing an accessory) and closes the learning loop exactly once.
     automatically, human decisions, agent runs, tool calls by tool, and model tokens
     when the provider reports them, all counted from the product's own records.
 
+Each model call takes tens of seconds, so the page shows the run while it runs: every
+phase and tool call, with real timings, instead of a page that looks frozen.
+
 ## How we built it
 
 **Python 3.11 · Strands Agents SDK · FastAPI · Pydantic · PostgreSQL, with SQLite as the
@@ -72,7 +75,7 @@ framework.
 
 There is exactly **one** Strands agent. It is invoked three times along the path:
 investigate, produce the decision card, propose the policy, each with the same tools and a
-task-specific prompt each time. Extra agents would have added moving parts, not
+task-specific prompt. Extra agents would have added moving parts, not
 capability.
 
 The interesting engineering is the line between reasoning and acting:
@@ -99,7 +102,7 @@ The interesting engineering is the line between reasoning and acting:
   the diff labels every change narrower or wider, and a revision is replayed from
   scratch before it can be activated. Building this surfaced a real flaw: the
   coverage floor in the replay gate was refusing revisions that automated *less*
-  than the agent proposed: the system was declining to let a person be more
+  than the agent proposed. The system was declining to let a person be more
   careful. The floor now applies to proposals and to widening revisions only.
   Zero false automatic actions is never waived.
 - **The audit log is append-only** and hash-chained; `UPDATE` and `DELETE` are rejected by
@@ -129,8 +132,7 @@ derived, the guardrails, the fixed action set with its caps, an executor and a v
 labeled corpus to replay against, and the hard ceilings.
 
 **So we shipped a second domain.** `ap.invoice_variance` governs an accounts-payable
-exception: an invoice that does not match its purchase order. Same story, different room.
-an AP clerk sees the same $42 freight variance twenty times a week, approves it in thirty
+exception: an invoice that does not match its purchase order. Same story, different room: an AP clerk sees the same $42 freight variance twenty times a week, approves it in thirty
 seconds, and never writes it down.
 
 | | Returns | Accounts payable |
@@ -174,7 +176,7 @@ fresh decision card.
 **Being honest about AWS.** The build environment's AWS credentials turned out to be
 invalid (`InvalidClientTokenId`). Rather than write deployment instructions from memory,
 the AgentCore SDK was installed and introspected, the entrypoint was built and its routes
-confirmed, and `docs/deployment-agentcore.md` states plainly which steps have not been run.
+confirmed, and nothing went into `docs/deployment-agentcore.md` until it had actually been run.
 The hosted-model path was then run live with Claude Opus 5, first on the Anthropic API and
 then on Amazon Bedrock through Opus 5's cross-Region inference profile. The smoke test
 passes on both, with real tool calls and typed output. Each live run found something the
@@ -194,7 +196,7 @@ code is the code in the repository rather than a snapshot of an earlier week.
 not the model. The agent proposes conditions and a spend cap (the action set is assembled
 server-side), but the tool that dry-runs a candidate demanded the *full stored policy*,
 actions and all, and its docstring never said so. So the model discovered a second,
-undocumented schema by trial and error: in one take, 17 of 23 replay calls were schema
+undocumented schema by trial and error: in one take, 17 of 24 replay calls were schema
 errors, one of them probing with an action literally typed `probe_invalid`. Making the
 tool accept the shape the agent already returns, and saying so in the prompt along with two
 validator rules it kept tripping over, took that step from 15 model cycles and 115K tokens
@@ -218,7 +220,7 @@ recording whose card makes that claim.
   actions across 24 evaluation cases, measured by a harness that counts from the
   database, not asserted.
 - 199 hermetic tests on a clean clone, 401 runs across PostgreSQL and SQLite together in
-  under forty seconds, including prompt injection inside case notes, audit tampering,
+  about forty seconds, including prompt injection inside case notes, audit tampering,
   model timeouts, tool outages, and duplicate events. CI runs the whole suite, the smoke
   test, the golden path, and the safety gate on every push, and fails the build if the
   PostgreSQL half silently skipped.
@@ -229,6 +231,9 @@ recording whose card makes that claim.
   HTTP, ending with the audit chain intact.
 - The same Strands agent runs live on Claude Opus 5 through both the Anthropic API and
   Amazon Bedrock, deployed on AgentCore Runtime, and fully offline with no credentials.
+- **It runs unattended.** A one-shot EventBridge Scheduler schedule invoked the deployed
+  runtime directly, with no Lambda and nobody watching, and the agent did its forty-five
+  seconds of work and then the schedule deleted itself.
 - A replay gate that shows a supervisor what a proposed policy *would have done* to their
   own history before they trust it.
 
@@ -242,7 +247,7 @@ that boundary that a non-engineer can read in thirty seconds.
 The second lesson was cheaper to learn and easier to repeat: when an agent burns tokens,
 look at the seams before the prompt. Every expensive loop in this build came from the model
 reconciling two descriptions of the same thing: a tool that wanted one shape while the
-schema returned another. Fixing the seam was worth six times what fixing the wording was.
+schema returned another. Fixing that seam took the step from 115,000 tokens to 19,000.
 
 ## What's next
 
