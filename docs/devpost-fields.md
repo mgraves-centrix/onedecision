@@ -49,6 +49,12 @@ no credentials and no network, which is what makes it usable by a judge.
 > Other checks: `make test` (199 tests, a few seconds), `make demo` (the golden
 > path in the terminal), `make eval` (the evaluation harness).
 
+## Video
+
+https://youtu.be/25Cw8DO1J-0
+
+Public, 3:33. Verified playable and embeddable while signed out.
+
 ## Architecture diagram (required)
 
 `docs/architecture.png`, 2880x2450 PNG, 0.6 MB. Well inside the 35 MB limit.

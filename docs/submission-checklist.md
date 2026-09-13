@@ -16,7 +16,7 @@ Target: submit by **noon Pacific on September 14**.
 | 7 | MIT or Apache license visible in the repository | **Done** | `LICENSE` (Apache-2.0). |
 | 8 | Architecture diagram | **Done** | `docs/architecture.json` is the model; `tools/diagram/build_architecture.py` renders `docs/architecture.svg`, `.png`, and the hoverable `docs/architecture.html`. `docs/architecture.mmd` is the earlier Mermaid source, kept for reference. |
 | 9 | AWS Builder ID | **Done** | `@cloudyai` |
-| 10 | Public YouTube or Vimeo demo, ≤ 5 minutes | **Owner** | Recorded and cut: `../onedecision-video/onedecision-demo-draft-16.mp4`, 3:33, loudness-normalized to -14 LUFS for YouTube, 1920x1080. Every desktop beat is the live app on Bedrock; the phone beat is a real iOS screen recording; the AgentCore beat replays a real invocation. `check_take.py` passes all 10 narration claims against the take's own database. Publishing needs the owner's account. |
+| 10 | Public YouTube or Vimeo demo, ≤ 5 minutes | **Done** | Public on YouTube: https://youtu.be/25Cw8DO1J-0 (3:33, verified public, playable and embeddable while signed out). Source: `../onedecision-video/onedecision-demo-draft-16.mp4`, loudness-normalized to -14 LUFS. Upload fields in `docs/youtube/README.md`. |
 | 11 | Working product demonstration | **Done** | Local app; judges can run it with no cloud account. |
 | 12 | Problem / audience / why it matters explained | **Done** | `README.md` and `docs/submission-draft.md`. |
 | 13 | Free judge access through judging | **Done** | Runs locally with no credentials, no account, no spend. |
@@ -60,9 +60,8 @@ the shot list; `tools/video/narration.json` is what is actually spoken.
 Everything below needs an account this project does not have, and explicit
 authorization. Nothing else is outstanding.
 
-1. **Publish the demo video** to YouTube or Vimeo, and put the link in row 10.
-   The cut is done; only the upload is blocked.
-2. **Submit on Devpost**, from `docs/submission-draft.md`.
+1. **Submit on Devpost**, from `docs/submission-draft.md` and `docs/devpost-fields.md`.
+   The video is public at https://youtu.be/25Cw8DO1J-0.
 
 ## Pre-submission verification
 

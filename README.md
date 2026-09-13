@@ -4,6 +4,8 @@
 
 Built for **Agents for Humans** · Professional Agents track · Strands Agents on Claude Opus 5, deployed to Amazon Bedrock AgentCore Runtime
 
+**[Watch the 3½-minute demo](https://youtu.be/25Cw8DO1J-0)**
+
 ![OneDecision architecture](docs/architecture.png)
 
 Hover any component in [the interactive architecture](docs/architecture.html) to see what it
