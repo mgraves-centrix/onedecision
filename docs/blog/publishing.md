@@ -58,29 +58,19 @@ summary into "What the numbers said", losing the line that framed the piece.
 Some overlap between the standfirst and the opening paragraph is correct. Every
 news article repeats itself between the headline, the standfirst and the lede.
 
-## Cross-linking, since there is no series feature
+## Use the series, not a hand-written sign-off
 
-Builder Center has no series or collection to put these in, so the sign-off does
-the job. Post 3 already carries links to the other two. Once post 3 is live, edit
-posts 1 and 2 and replace their sign-off with the matching version below,
-filling in post 3's URL.
+Builder Center has a series. Put all three in "Building OneDecision" and let the
+widget do the linking: it renders under the sign-off, lists every article in
+order with live titles, and stays correct when a title changes.
 
-**Post 1's sign-off becomes:**
+Do not hand-write "also in this series" links. We tried, and three variants that
+differed only in which item said "this one" got pasted into the wrong posts: post
+1 linked to itself and called post 2 "this one", post 3 did the same with post 1.
+The sign-off stays one line:
 
-> *Three posts on OneDecision, a Strands Agents project built for the Agents for
-> Humans hackathon: this one, [EventBridge Scheduler to AgentCore](https://builder.aws.com/content/3JFSvpuFac2q3oGJzdybB46V9CS/agents-for-humans-eventbridge-scheduler-to-agentcore),
-> and [guardrails and human approval gates](https://builder.aws.com/content/3JFVF2VqkKqTA9DZkzC9OzvbVQT/agents-for-humans-guardrails-and-human-approval-gates). Code:
-> https://github.com/mgraves-centrix/onedecision*
-
-**Post 2's sign-off becomes:**
-
-> *Three posts on OneDecision, a Strands Agents project built for the Agents for
-> Humans hackathon: [cutting a Bedrock agent's tokens by 83%](https://builder.aws.com/content/3JFMPcu0rekYa1Y6LC5qt6vCctv/agents-for-humans-the-115000-token-step-that-was-really-a-schema-mismatch),
-> this one, and [guardrails and human approval gates](https://builder.aws.com/content/3JFVF2VqkKqTA9DZkzC9OzvbVQT/agents-for-humans-guardrails-and-human-approval-gates). Code:
-> https://github.com/mgraves-centrix/onedecision*
-
-The point is post 2. Someone arrives there from searching an error message, and
-without this there is nothing telling them the other two exist.
+> *OneDecision is a Strands Agents project built for the Agents for Humans
+> hackathon: https://github.com/mgraves-centrix/onedecision*
 
 ## Verified on the platform
 
