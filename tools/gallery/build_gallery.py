@@ -28,6 +28,9 @@ BG = "0x10131a"
 HERO, FULL = "http://127.0.0.1:8100", "http://127.0.0.1:8101"
 
 # (file, base url, path, selector to bring to the top, pixels below the top)
+# Use a class, never a bare tag: `table` once matched the evidence table instead
+# of the diff, because the evidence comes first on the page. There is no separate
+# diff shot any more; the diff is already in frame in 06 and 11.
 SHOTS = [
     ("01-inbox",        HERO, "/",                          ".dock-list",              120),
     ("02-decision-card", HERO, "/exceptions/{hero}",         "section.card:has(h2)",     40),
@@ -35,7 +38,6 @@ SHOTS = [
     ("04-boundaries",   HERO, "/exceptions/{hero}",          "ul.boundaries",            60),
     ("05-the-decision", HERO, "/exceptions/{hero}",          ".actions",                260),
     ("06-candidate-policy", FULL, "/exceptions/{full1}",     "ul.conditions",            80),
-    ("07-policy-diff",  FULL, "/exceptions/{full1}",         ".diff-table, table",       80),
     ("08-replay-gate",  FULL, "/exceptions/{full1}",         ".replay-grid",             80),
     ("09-auto-resolved", FULL, "/exceptions/{full2}",        "ol.timeline",             120),
     ("10-refusal",      FULL, "/exceptions/{full3}",         "section.card.danger",     100),
