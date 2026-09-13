@@ -19,7 +19,7 @@ differ slightly between takes on Bedrock; the reference values are the offline r
 3. Browser at `http://127.0.0.1:8000`, window 1500×1000. Press **Reset demo**, so the
    Dashboard at the end counts only this take.
 4. Phone on the same Wi-Fi or on Tailscale, with the Inbox open at
-   `http://matts-macbook-air.onedecision.local:8000`.
+   the machine's LAN address, for example `http://192.168.1.20:8000`.
 5. A terminal tab with the AgentCore commands ready. **Pre-warm the runtime** by running
    the invoke once just before the take; a cold start took 46 seconds.
 6. The approval token on a fresh clone is `replace-me-local-demo-token`; the activation
