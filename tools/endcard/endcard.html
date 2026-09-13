@@ -1,0 +1,121 @@
+<!doctype html><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #10131a; --panel: #171b24; --panel-2: #1e232e; --line: #2a3140;
+    --ink: #e6e9ef; --dim: #9aa4b6; --faint: #6b7488;
+    --accent: #5eead4; --warn: #fbbf24;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1500px; height: 1000px; }
+  body {
+    background: var(--bg); color: var(--ink); font-family: var(--sans);
+    position: relative; overflow: hidden; padding: 78px 90px;
+    display: flex; flex-direction: column;
+  }
+  /* A faint grid, so the ground is not flat black. */
+  .grid {
+    position: absolute; inset: 0; pointer-events: none; opacity: .5;
+    background-image: linear-gradient(var(--line) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 58px 58px;
+    -webkit-mask-image: radial-gradient(120% 90% at 20% 0%, #000 30%, transparent 75%);
+            mask-image: radial-gradient(120% 90% at 20% 0%, #000 30%, transparent 75%);
+  }
+  .glow {
+    position: absolute; left: -12%; top: -28%; width: 55%; height: 70%;
+    background: radial-gradient(closest-side, rgba(94,234,212,.13), transparent 70%);
+    pointer-events: none;
+  }
+
+  .brand { display: flex; align-items: center; gap: 22px; position: relative; }
+  .badge {
+    width: 74px; height: 74px; border-radius: 18px; background: var(--accent);
+    color: #062b26; font-weight: 700; font-size: 44px;
+    display: grid; place-items: center;
+    box-shadow: 0 0 46px rgba(94, 234, 212, .35);
+  }
+  .wordmark { font-size: 64px; font-weight: 700; letter-spacing: -.03em; }
+
+  .tagline { margin-top: 30px; font-size: 36px; font-weight: 600; line-height: 1.3;
+             letter-spacing: -.015em; position: relative; }
+  .tagline .green { color: var(--accent); }
+
+  .flow { margin-top: auto; display: flex; align-items: center; gap: 30px; position: relative; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 24px 26px; width: 330px;
+  }
+  /* The policy card holds three claims that must each sit on one line. */
+  .card.policy { width: 392px; }
+  .label {
+    font-family: var(--mono); font-size: 15px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--faint); margin-bottom: 14px;
+  }
+  .card h3 { font-size: 23px; font-weight: 600; line-height: 1.3; margin-bottom: 18px; }
+  .btn {
+    display: inline-block; background: var(--accent); color: #062b26;
+    font-weight: 600; font-size: 19px; padding: 13px 20px; border-radius: 8px;
+  }
+  .card ul { list-style: none; display: grid; gap: 14px; }
+  .card li { display: grid; grid-template-columns: 24px 1fr; gap: 10px;
+             align-items: baseline; font-size: 19px; }
+  .tick { color: #4ade80; font-weight: 700; }
+  .arrow { color: var(--faint); font-size: 34px; flex: none; }
+
+  .hundred { margin-left: 14px; }
+  .cells { display: grid; grid-template-columns: repeat(10, 26px); gap: 7px; margin-top: 6px; }
+  .cell { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); }
+  .cell.esc { background: var(--warn); }
+  .legend { display: flex; gap: 22px; margin-top: 18px; font-size: 17px; color: var(--dim); }
+  .key { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 15px; height: 15px; border-radius: 4px; background: var(--accent); }
+  .dot.esc { background: var(--warn); }
+</style>
+
+<div class="grid"></div><div class="glow"></div>
+
+<div class="brand"><div class="badge">1</div><div class="wordmark">OneDecision</div></div>
+
+<p class="tagline">Teach the agent once.<br>
+  <span class="green">It safely handles the next hundred decisions.</span></p>
+
+<div class="flow">
+  <div class="card">
+    <div class="label">New exception</div>
+    <h3>Camera kit returned missing its strap</h3>
+    <span class="btn">Approve and Teach</span>
+  </div>
+  <div class="arrow">&rarr;</div>
+  <div class="card policy">
+    <div class="label">Policy v1</div>
+    <ul>
+      <li><span class="tick">&check;</span><span>Replayed on 24 past cases</span></li>
+      <li><span class="tick">&check;</span><span>Zero false automatic actions</span></li>
+      <li><span class="tick">&check;</span><span>Activated by a person</span></li>
+    </ul>
+  </div>
+  <div class="arrow">&rarr;</div>
+  <div class="hundred">
+    <div class="label">The next hundred</div>
+    <div class="cells" id="cells"></div>
+    <div class="legend">
+      <span class="key"><i class="dot"></i>Handled</span>
+      <span class="key"><i class="dot esc"></i>Escalated</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // One hundred cells, one escalated: the claim the video just finished proving.
+  const grid = document.getElementById("cells");
+  for (let i = 0; i < 100; i++) {
+    const c = document.createElement("div");
+    c.className = i === 45 ? "cell esc" : "cell";
+    grid.appendChild(c);
+  }
+</script>
