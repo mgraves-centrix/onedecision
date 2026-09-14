@@ -17,12 +17,14 @@ Standard, publicly available third-party dependencies are used and pinned in
 | Package | Version | Role |
 | --- | --- | --- |
 | `strands-agents` | 1.54.0 | the agent framework — central to the product |
-| `fastapi` / `starlette` | 0.141.1 | HTTP + server-rendered views |
+| `fastapi` | 0.141.1 | HTTP + server-rendered views |
 | `pydantic` | 2.13.5 | typed structured output and the policy schema |
 | `jinja2` | 3.1.6 | templates |
+| `python-multipart` | 0.0.32 | form posts |
 | `uvicorn` | 0.52.4 | ASGI server |
 | `boto3` | 1.43.88 | pulled in by the Bedrock provider |
-| `bedrock-agentcore` | 1.22.0 | **optional extra**, AgentCore Runtime entrypoint only |
+| `bedrock-agentcore` | 1.22.0 | AgentCore Runtime entrypoint; a main dependency because the AgentCore packager installs no extras |
+| `psycopg[binary,pool]` | 3.3.5 | PostgreSQL backend (`postgres` extra) |
 | `pytest`, `pytest-asyncio`, `httpx` | dev | tests |
 
 AI coding assistance was used during development, which the hackathon rules permit. All
@@ -38,7 +40,7 @@ and the synthetic dataset were specified and reviewed by the author.
 - No real customer records, PII, private SOPs, credentials, confidential business data,
   or proprietary information appears anywhere in the repository or in the demo.
 - Every "business system" the agent touches is a labeled synthetic adapter in
-  `app/adapters/` backed by local SQLite. None is a production integration, and the UI
+  `app/adapters/` backed by the app's own database (SQLite or PostgreSQL). None is a production integration, and the UI
   states this on every page.
 
 ## Verified environment claims

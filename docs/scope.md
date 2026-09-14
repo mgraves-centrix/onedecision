@@ -24,8 +24,9 @@ without interrupting anybody. Anything outside the approved boundary escalates.
 **Missing-accessory exceptions discovered while checking in returned
 high-value camera / electronics kits.**
 
-Nothing else. Not refunds. Not shipping. Not other industries. Not a generic
-workflow builder.
+Nothing else in the UI or the agent loop. Not refunds. Not shipping. Not a generic
+workflow builder. (A second exception family, accounts-payable invoice variance, was
+added later to the governance path and its tests; see the README.)
 
 ## 3. Fictional company and synthetic data
 
@@ -110,12 +111,11 @@ confidence below threshold.
 
 ## 6. Explicitly out of scope
 
-Additional industries or exception families · real refunds, payments, email, or
+Real refunds, payments, email, or
 third-party integrations · multi-tenancy · authentication beyond a demo
 approval token · mobile app · generic workflow builder · arbitrary
 natural-language automation · RAG or vector databases · multi-agent swarms ·
-generated executable code · computer vision or OCR · billing, reporting, or an
-analytics suite.
+generated executable code · computer vision or OCR · billing.
 
 ## 7. Architecture decisions
 
@@ -133,7 +133,7 @@ analytics suite.
 
 ## 8. Assumptions
 
-- **A1.** Judges run the project locally. `make setup && make seed && make run`
+- **A1.** Judges may run the project locally, so `make setup && make seed && make run`
   must work with no cloud account and no credentials.
 - **A2.** For most of the build, the AWS credentials in the environment were invalid
   (`sts:GetCallerIdentity` returned `InvalidClientTokenId`). Valid credentials were

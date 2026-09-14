@@ -110,8 +110,8 @@ What the packager does, from reading the CLI's packaging code and the built zip:
   `__pycache__`, and the `agentcore/` config directory. Everything else in the repository
   ships. The packaged zip is about 29 MB.
 - "Everything else" includes gitignored files, and the zip is capped at 250 MiB. Keep large
-  local artifacts out of the tree: video takes broke a deploy at 299 MB until the tools in
-  `tools/video/` were pointed at a directory beside the repository.
+  local artifacts, such as screen recordings, in a directory beside the repository;
+  they once pushed a deploy to 299 MB.
 
 ## Run it locally on the AgentCore contract (no AWS)
 

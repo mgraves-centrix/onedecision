@@ -6,8 +6,6 @@ Reads docs/architecture.json and writes:
   docs/architecture.svg   the tiered diagram used in the README
   docs/architecture.html  the same model, where hovering a component shows what
                           it connects to and which way the data moves
-  <out>/architecture-artifact.html  the page without its document wrapper, for
-                          publishing (default: alongside the repository)
 
 Keeping both outputs on one model is the point: the diagram cannot drift from
 the page, and neither can drift from the tier list without editing the model.
@@ -18,7 +16,6 @@ from __future__ import annotations
 
 import html
 import json
-import os
 import textwrap
 from pathlib import Path
 
@@ -26,7 +23,6 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 DOCS = REPO / "docs"
 MODEL = json.loads((DOCS / "architecture.json").read_text())
-ARTIFACT_OUT = Path(os.environ.get("ONEDECISION_VIDEO_OUT") or REPO.parent / f"{REPO.name}-video")
 
 # The product's own tokens (app/static/app.css), so the diagram and the app read
 # as one system rather than two.
@@ -525,12 +521,9 @@ def main() -> None:
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
         f"{body}</html>\n"
     )
-    ARTIFACT_OUT.mkdir(parents=True, exist_ok=True)
-    (ARTIFACT_OUT / "architecture-artifact.html").write_text(body)
     nodes = sum(len(t["nodes"]) for t in MODEL["tiers"])
     print(
-        f"wrote docs/architecture.svg, docs/architecture.html, and "
-        f"{ARTIFACT_OUT.name}/architecture-artifact.html: "
+        f"wrote docs/architecture.svg and docs/architecture.html: "
         f"{len(MODEL['tiers'])} tiers, {nodes} components, {len(MODEL['edges'])} connections"
     )
 

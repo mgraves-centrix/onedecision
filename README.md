@@ -8,8 +8,9 @@ Built for **Agents for Humans** · Professional Agents track · Strands Agents o
 
 ![OneDecision architecture](docs/architecture.png)
 
-Hover any component in [the interactive architecture](docs/architecture.html) to see what it
-connects to and which way the data moves. Both views render from `docs/architecture.json`.
+For the interactive version, open [docs/architecture.html](docs/architecture.html) in a
+browser from a local clone (GitHub shows it as source) and hover any component to see what
+it connects to and which way the data moves. Both views render from `docs/architecture.json`.
 
 ---
 
@@ -114,7 +115,7 @@ Or watch the whole thing in the terminal:
 
 ```bash
 make demo      # the golden path, start to finish
-make test      # 199 hermetic tests across both domains, a few seconds
+make test      # the hermetic suite across both domains, a few seconds
 make eval      # evaluation harness -> docs/evaluation-results.md
 make smoke     # minimal Strands agent + real tool calls + typed output
 ```
@@ -183,8 +184,8 @@ The separation between *reasoning* and *acting* is the product.
 | 6b | A revision can tighten or loosen a boundary within the guardrails, but has no way to remove a safety condition or add an action. | `app/policy/proposal.py` |
 | 7 | Default to escalation on anything ambiguous. | throughout |
 | 8 | Every state-changing action carries an idempotency key. | `app/adapters/warehouse.py` |
-| 9 | Append-only, hash-chained audit log; `UPDATE`/`DELETE` rejected by database triggers, and by `REVOKE` on PostgreSQL. | `app/audit.py`, `app/db/` |
-| 10 | No hidden chain-of-thought is surfaced or stored. | `app/agent/prompts.py` |
+| 9 | Append-only, hash-chained audit log; `UPDATE`/`DELETE` rejected by database triggers. PostgreSQL also revokes those privileges from `PUBLIC`; a non-owner application role is not set up yet (see `docs/database.md`). | `app/audit.py`, `app/db/` |
+| 10 | The decision card's summary is plain language for a supervisor; the output schema asks for no internal reasoning. | `app/domain.py` |
 
 **The agent has no state-changing tools at all.** Every tool in `app/agent/tools.py` is
 read-only. `execute_approved_policy`, `verify_action`, and policy activation are ordinary
@@ -214,7 +215,7 @@ report: [docs/evaluation-results.md](docs/evaluation-results.md).
 | **False automatic actions** | **0** | **0** |
 | **Prohibited actions** | **0** | **0** |
 | **Duplicate actions** | **0** | **0** |
-| Average end-to-end workflow | ~15 ms | n/a |
+| Average end-to-end workflow | 3.9 ms (scripted model, no network) | n/a |
 
 The number that matters is **false automatic actions**: cases the system acted on by
 itself that a person should have seen. Zero is a design constraint, not an average.
@@ -223,11 +224,13 @@ itself that a person should have seen. Zero is a design constraint, not an avera
 
 ## Beyond returns
 
-The subject is returns because a demo needs one. The machinery underneath does not know
-what a camera is. Counting Python, the domain pack and its adapters are 837 lines against
-5,415 that know nothing about cameras, and everything domain-specific lives in one pack
-under `app/domains/`. (The web templates still speak returns; that copy is not in the
-count, and a second domain in the UI would have to follow it.)
+The subject is returns because a demo needs one. The governance machinery underneath
+serves a second domain as well. Counting non-blank Python lines, the domain packs and their
+adapters are about 850 lines against about 5,550 in the rest of `app/`, and each domain's
+facts, guardrails, actions and corpus live in its pack under `app/domains/`. The rest is
+not fully domain-neutral yet: the agent's tools and prompts, the web templates, and a few
+defaults in the policy code (the default policy family, the fields the revision form
+offers) still speak returns.
 
 A pack supplies six things and nothing else:
 
@@ -253,14 +256,15 @@ guardrails, actions and systems of record have nothing in common with returns.
 | Labeled corpus | 24 return cases | 24 invoices |
 | Replay of the taught policy | 11 automated, 13 escalated, **0 wrong** | 12 automated, 12 escalated, **0 wrong** |
 
-What the second domain reuses **without changing a line of it**: the constrained policy
-language, the deterministic engine, the replay gate, the activation gate and its token,
-idempotent execution, read-back verification, the hash-chained audit log, the policy diff,
-and both database backends. Adding it *removed* 73 lines from the orchestrator, because
-returns-specific dispatch became a domain's own business.
+What the second domain reuses: the constrained policy language, the deterministic engine,
+the replay gate, the activation gate and its token, idempotent execution, read-back
+verification, the hash-chained audit log, the policy diff, and both database backends.
+Making room for it reshaped that code once, in the same commit: the policy schema became
+domain-driven, and returns-specific dispatch moved out of the orchestrator into the pack,
+which deleted 56 lines there and added 17.
 
-`tests/test_domain_ap_invoices.py` is the evidence: 17 tests that touch no returns code and
-needed no change to the governance code. They cover fact derivation from the ledger, every
+`tests/test_domain_ap_invoices.py` is the evidence: 17 tests that touch no returns code.
+They cover fact derivation from the ledger, every
 guardrail boundary, a policy language that refuses a field from another domain and an
 adjustment cap above its own condition, a replay that scores 24 labeled invoices, an
 activation refused without a passing replay and without a token, execution that pays once
@@ -328,13 +332,10 @@ app/
     migrations/          versioned SQL, one file per dialect
 fixtures/          synthetic catalog + 24 historical + 6 demo cases
 tests/             hermetic; every test runs on both backends
-docs/              scope, architecture, database, evaluation, demo, provenance
+docs/              scope, architecture, database, evaluation, deployment, provenance
 agentcore/         AgentCore CLI project: runtime config and CDK app
 agentcore_main.py  AgentCore Runtime entrypoint (imports app.agentcore)
-tools/video/       demo video: a live take in Chrome, Polly voiceover, assembly
-tools/diagram/     renders docs/architecture.{svg,png,html} from architecture.json
-tools/blog/        covers for the write-ups, built from real product screenshots
-tools/gallery/     the submission gallery, screenshots of the running app
+tools/diagram/     renders docs/architecture.{svg,html} from architecture.json
 ```
 
 ## Database
@@ -373,8 +374,8 @@ by a stray `.env` on disk. `.env` is gitignored and a test asserts it stays that
 ## Tests
 
 ```bash
-make test        # hermetic. No network, no model calls. SQLite, plus PostgreSQL if it is up.
-make test-pg     # the whole suite against BOTH backends (401 runs)
+make test        # hermetic. No network, no model calls. SQLite only.
+make test-pg     # the whole suite against BOTH backends; start PostgreSQL with make db-up
 pytest -m integration    # opt-in, needs a live model provider
 ```
 
@@ -394,7 +395,7 @@ idempotency-key collisions.
 Three posts on building this, published on AWS Builder Center as the "Building
 OneDecision" series:
 
-1. [Cutting Bedrock agent tokens by 83%](https://builder.aws.com/content/3JFMPcu0rekYa1Y6LC5qt6vCctv/agents-for-humans-the-115000-token-step-that-was-really-a-schema-mismatch):
+1. [Cutting Bedrock agent tokens by 83%](https://builder.aws.com/content/3JFMPcu0rekYa1Y6LC5qt6vCctv/agents-for-humans-cutting-bedrock-agent-tokens-by-83percent):
    115,000 tokens went to one step, and the cause was a tool schema that disagreed with
    the prompt.
 2. [EventBridge Scheduler to AgentCore](https://builder.aws.com/content/3JFSvpuFac2q3oGJzdybB46V9CS/agents-for-humans-eventbridge-scheduler-to-agentcore):

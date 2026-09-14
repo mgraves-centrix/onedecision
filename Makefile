@@ -29,7 +29,7 @@ seed: ## Reset the demo: rebuild SQLite from the synthetic fixtures
 run: ## Start the local web app on http://127.0.0.1:8000
 	$(VENV)/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
-test: ## Run the test suite (no network, no model calls). SQLite, plus Postgres if it is up.
+test: ## Run the test suite (no network, no model calls) on SQLite. See test-pg for both backends.
 	$(PY) -m pytest
 
 test-pg: ## Run the whole suite against BOTH SQLite and a local PostgreSQL

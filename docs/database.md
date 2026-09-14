@@ -5,8 +5,8 @@
 PostgreSQL is the deployment target. SQLite remains as an explicitly-labeled
 zero-setup demo backend so a hackathon judge can run the product from a fresh
 clone with no server and no credentials. Both are real, both run the same
-migrations, and **the entire test suite runs against both** — 300 runs, 150 per
-backend — so they cannot drift without CI going red.
+migrations, and **the entire test suite runs against both** in CI, so they cannot
+drift without CI going red.
 
 Switching is one environment variable:
 
@@ -144,8 +144,9 @@ app/db/
   sqlite_backend.py         demo backend
   postgres_backend.py       deployment backend: pool, advisory lock, NUMERIC
   migrations/
-    0001_baseline.sqlite.sql
-    0001_baseline.postgres.sql
+    0001_baseline.{sqlite,postgres}.sql
+    0002_policy_revisions.{sqlite,postgres}.sql
+    0003_ap_invoices.{sqlite,postgres}.sql
 ```
 
 Application code never imports a driver. It writes ANSI SQL with `?`
@@ -160,7 +161,7 @@ transaction and recorded in `schema_migrations`. A failed migration leaves
 nothing half-applied. `make migrate` applies anything outstanding.
 
 No ORM and no Alembic: there is no SQLAlchemy in this project to hang Alembic
-off, and 11 tables of explicit DDL is more legible than a generated migration
+off, and 14 tables of explicit DDL is more legible than a generated migration
 chain. If the schema grows past roughly twice this size, revisit that.
 
 ---

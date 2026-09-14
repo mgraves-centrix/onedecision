@@ -11,6 +11,9 @@ cdk/node_modules/
 # Ephemeral Staging
 .cache/*
 
+# Assistant context files the CLI writes at scaffold time; not needed to deploy
+.llm-context/
+
 # Packaged CodeZip artifact and its per-agent staging directory, both produced
 # by `agentcore package` / `agentcore deploy`
 *.zip
